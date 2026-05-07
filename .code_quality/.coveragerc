@@ -1,0 +1,19 @@
+[run]
+# STORAGE: Hidden file where raw coverage results are cached.
+data_file = .coverage
+
+# SOURCE: Now pointing exclusively to your 'src' directory. 
+# Coverage will ONLY track files inside this folder.
+source = src
+
+# OMIT: Since 'source' is now restricted to 'src', you only need to omit 
+# things inside that specific folder that shouldn't be tracked.
+omit =
+    */__init__.py
+    */__main__.py
+
+[report]
+# QUALITY GATE: Maintain the 90% threshold for your core logic.
+fail_under = 90
+precision = 2
+show_missing = True

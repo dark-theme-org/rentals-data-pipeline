@@ -1,0 +1,50 @@
+[tool.poetry]
+name = "rentals-data-pipeline"
+description = "Rentals data pipeline application."
+version = "0.0.0"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python"
+]
+authors = [
+  "daiha98"
+]
+packages = [
+  { include = "*", from = "src" }
+]
+
+[tool.poetry.dependencies]
+python = ">=3.14,<4.0"
+
+[tool.poetry.group.local]
+optional = true
+
+[tool.poetry.group.local.dependencies]
+ipykernel = "^6.25.2"
+ipywidgets = "^8.1.7"
+nbformat = "^5.10.4"
+matplotlib = "^3.9.2"
+seaborn = "^0.13.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.2.0"
+pytest-cov = "^4.0.0"
+pytest-env = "^1.1.3"
+pytest-mock = "^3.10.0"
+pre-commit = "^3.0.0"
+black = "^24.3.0"
+sqlfluff = "^3.3.0"
+autoflake = "^2.2.1"
+flake8 = "^6.1.0"
+pylint = "^2.14.5"
+isort = "^5.10.1"
+mypy = "^1.4.1"
+bandit = "^1.7.1"
+
+[[tool.poetry.source]]
+name = "PyPI"
+priority = "primary"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

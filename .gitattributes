@@ -1,0 +1,9 @@
+# Python scripts/modules and Jupyter Notebooks
+*.py linguist-detectable=true
+*.ipynb linguist-detectable=true
+
+# SQL scripts
+*.sql linguist-detectable=true
+
+# Terraform scripts/modules
+*.tf linguist-detectable=true

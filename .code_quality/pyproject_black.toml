@@ -1,0 +1,31 @@
+[tool.black]
+# LINE LENGTH: Set to 100 to match your SQLFluff and Flake8 configs. 
+# This ensures that your Python code and SQL models follow the same visual 
+# boundaries, which is great for split-screen development.
+line-length = 100
+
+# STRING NORMALIZATION: By setting this to 'true', Black will NOT 
+# force double quotes ("") everywhere. It will leave your single quotes ('') 
+# alone if you prefer them. This is a common choice for developers who 
+# find single quotes cleaner or more "Pythonic."
+skip-string-normalization = true
+
+# EXCLUDE: This uses a Regular Expression (Regex) to tell Black which 
+# directories to completely ignore.
+exclude = '''
+^/(
+  (
+      \.git
+    | \.mypy_cache
+    | \.tox
+    | venv
+    | .venv
+    | env
+    | .env
+    | _build
+    | build
+    | dist
+    | migrations
+  )/
+)
+'''

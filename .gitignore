@@ -77,6 +77,7 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+notebooks/local/*
 
 # IPython
 profile_default/
@@ -216,3 +217,16 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Datasets
+data/
+*.csv
+*.parquet
+*.pkl
+
+# Terraform
+tfplan.out
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+terraform.tfvars
