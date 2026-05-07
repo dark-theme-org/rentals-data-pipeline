@@ -4,7 +4,7 @@ fail_fast: true
 repos:
 
   - repo: https://github.com/pre-commit/pre-commit-hooks.git
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
       - id: check-merge-conflict
         name: check merge conflict
@@ -110,7 +110,7 @@ repos:
         entry: poetry run bandit -c .code_quality/bandit.yaml
         types: [python]
         exclude: (notebooks/)
-      
+
       - id: pytest
         name: pytest
         description: 'Python testing tool that helps you write better programs.'
