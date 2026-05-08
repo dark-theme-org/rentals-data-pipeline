@@ -1,16 +1,23 @@
 [tool.black]
-# LINE LENGTH: Set to 100 to match your SQLFluff and Flake8 configs. 
-# This ensures that your Python code and SQL models follow the same visual 
+# LINE LENGTH: Set to 100 to match your SQLFluff and Flake8 configs.
+# This ensures that your Python code and SQL models follow the same visual
 # boundaries, which is great for split-screen development.
 line-length = 100
 
-# STRING NORMALIZATION: By setting this to 'true', Black will NOT 
-# force double quotes ("") everywhere. It will leave your single quotes ('') 
-# alone if you prefer them. This is a common choice for developers who 
+# TARGET VERSION: Tells Black which Python version's syntax features are
+# available when formatting (e.g. PEP 695 type aliases, PEP 701 f-strings).
+# Aligns with the 3.13 floor declared in pyproject.toml.
+# Note: Black 26.x bumps pathspec to >=1.0, which conflicts with dbt-core,
+# so we stay on the 25.x line until dbt loosens that constraint.
+target-version = ["py313"]
+
+# STRING NORMALIZATION: By setting this to 'true', Black will NOT
+# force double quotes ("") everywhere. It will leave your single quotes ('')
+# alone if you prefer them. This is a common choice for developers who
 # find single quotes cleaner or more "Pythonic."
 skip-string-normalization = true
 
-# EXCLUDE: This uses a Regular Expression (Regex) to tell Black which 
+# EXCLUDE: This uses a Regular Expression (Regex) to tell Black which
 # directories to completely ignore.
 exclude = '''
 ^/(

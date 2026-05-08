@@ -1,9 +1,27 @@
+# Line endings: detect text files and normalize them to LF in the repo.
+* text=auto
+
+# Shell scripts must stay LF even on Windows checkouts. CRLF breaks the
+# shebang on macOS/Linux ('#!/bin/bash\r' is treated as a missing interpreter).
+*.sh text eol=lf
+
 # Python scripts/modules and Jupyter Notebooks
 *.py linguist-detectable=true
+*.py diff=python
 *.ipynb linguist-detectable=true
 
-# SQL scripts
+# Suppress inline diff for notebook JSON. Cell outputs and execution counts
+# mutate every run, polluting diffs with meaningless noise.
+*.ipynb -diff
+
+# SQL scripts. The 'diff=sql' driver is not built into Git; register it once
+# per machine to enable function-name hunk headers:
+#   git config diff.sql.xfuncname '^[ \t]*\(create\|alter\|drop\|select\|with\)[^;]*$'
 *.sql linguist-detectable=true
+*.sql diff=sql
 
 # Terraform scripts/modules
 *.tf linguist-detectable=true
+
+# Generated lockfile — exclude from GitHub's "Languages" stats.
+poetry.lock linguist-generated=true

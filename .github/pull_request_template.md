@@ -1,8 +1,3 @@
----
-name: Pull Request
-about: "Propose a set of changes that is Ready for Comments (RFC) or still a Work in Progress (WIP)."
----
-
 # :page_facing_up: Description
 
 ## :dart: Goal

@@ -9,9 +9,20 @@
         "editor.defaultFormatter": "ms-python.black-formatter",
         "editor.formatOnSave": true
     },
-    "autoflake.args": [
-        "--config=.code_quality/autoflake.cfg"
-    ],
+    "sqlfluff.config": "${workspaceFolder}/.code_quality/.sqlfluff",
+    "sqlfluff.executablePath": "${workspaceFolder}/.venv/bin/sqlfluff",
+    "sqlfluff.linter.run": "onSave",
+    "[sql]": {
+        "editor.defaultFormatter": "sqlfluff.vscode-sqlfluff",
+        "editor.formatOnSave": true
+    },
+    // Autoflake (mikoz.autoflake-extension) does not read config files; its
+    // CLI is built from individual settings below. Keep these in sync with
+    // .code_quality/autoflake.cfg, which is the source of truth used by
+    // pre-commit.
+    "autoflake-extension.remove-all-unused-imports": true,
+    "autoflake-extension.remove-unused-variables": true,
+    "autoflake-extension.ignore-init-module-imports": true,
     "flake8.args": [
         "--config=.code_quality/.flake8"
     ],
@@ -23,23 +34,20 @@
         "--settings-path=.code_quality/.isort.cfg"
     ],
     "mypy-type-checker.args": [
-        "--config-file=code_quality/mypy.ini"
+        "--config-file=.code_quality/mypy.ini"
     ],
     "bandit.args": [
-        "--configfile=code_quality/bandit.yaml"
+        "--configfile=.code_quality/bandit.yaml"
+    ],
+    "python.analysis.extraPaths": [
+        "src"
     ],
     "python.testing.pytestArgs": [
-        "-c=.code_quality/pytest.ini",
+        "-c",
+        ".code_quality/pytest.ini",
         "--cov=src",
         "--cov-config=.code_quality/.coveragerc"
     ],
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,
-    "sqlfluff.config": "${workspaceFolder}/.code_quality/.sqlfluff",
-    "sqlfluff.executablePath": "${workspaceFolder}/.venv/bin/sqlfluff",
-    "sqlfluff.linter.run": "onSave",
-    "[sql]": {
-        "editor.defaultFormatter": "sqlfluff.vscode-sqlfluff",
-        "editor.formatOnSave": true
-    },
 }

@@ -2,7 +2,6 @@
 name: Enhancement/Feature Request
 about: "Suggest completely new features or improvements to existing functionality."
 title: "[ENHANCEMENT/FEATURE] <title>"
-assignees: self
 labels: enhancement, feature
 ---
 

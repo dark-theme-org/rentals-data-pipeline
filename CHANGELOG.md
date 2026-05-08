@@ -2,20 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/)
-and this project adheres to [Semantic Versioning](http://semver.org/).
+The format is based on [Keep a Changelog](https://keepachangelog.com/)
+and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [Unreleased] - YYYY-MM-DD
+## [Unreleased]
 
-Here we write upgrading notes for changes introduced to develop. It's a team effort to make them as straightforward as possible.
+Here we write upgrading notes for changes introduced to `develop`. It's a team effort to make them as straightforward as possible.
 
 ### Added
 
 -
 
 ### Changed
+
+-
+
+### Deprecated
 
 -
 

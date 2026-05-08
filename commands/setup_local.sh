@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # install_claude
-# Installs the Claude CLI if not already present. Checks for an existing `claude` 
+# Installs the Claude CLI if not already present. Checks for an existing `claude`
 # binary and skips installation if found. Downloads and runs the official installer
 # from claude.ai; logs success or failure and continues execution regardless of the outcome.
 function install_claude() {
@@ -22,7 +22,7 @@ function install_claude() {
 
 # install_local_dependencies
 # Installs the 'local' Poetry dependency group. Runs `poetry install --only local` in an
-# interactive shell to ensure the virtual environment is properly activated; logs success or 
+# interactive shell to ensure the virtual environment is properly activated; logs success or
 # failure and continues execution regardless of the outcome.
 function install_local_dependencies() {
   echo "LOG::[INFO] Installing 'local' dependencies..."

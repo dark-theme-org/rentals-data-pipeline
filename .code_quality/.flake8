@@ -1,18 +1,21 @@
 [flake8]
-# LINE LENGTH: Set to 100 to match your SQLFluff config. 
+# LINE LENGTH: Set to 100 to match your SQLFluff config.
 # This keeps your Python and SQL style consistent across the project.
 max_line_length = 100
 
-# IGNORE: 
-# W503 (Line break occurred before a binary operator) is often ignored 
-# because the modern PEP 8 recommendation actually prefers breaking BEFORE 
+# IGNORE:
+# W503 (Line break occurred before a binary operator) is often ignored
+# because the modern PEP 8 recommendation actually prefers breaking BEFORE
 # the operator (e.g., in long math equations) rather than after it.
-ignore = W503
+# E203 (Whitespace before ':') is ignored because it conflicts with Black's
+# slice formatting (e.g., 'arr[1 : 5]'). Black is the source of truth for
+# spacing here, so Flake8 must defer.
+ignore = W503, E203
 
-# EXCLUDE: Prevents Flake8 from looking into directories that contain 
+# EXCLUDE: Prevents Flake8 from looking into directories that contain
 # compiled code, version control metadata, or virtual environments.
 # Even with 'src' as a target, this acts as a safety net.
-exclude = 
+exclude =
     .git,
     __pycache__,
     old,

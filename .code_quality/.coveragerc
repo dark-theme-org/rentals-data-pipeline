@@ -2,11 +2,17 @@
 # STORAGE: Hidden file where raw coverage results are cached.
 data_file = .coverage
 
-# SOURCE: Now pointing exclusively to your 'src' directory. 
+# SOURCE: Now pointing exclusively to your 'src' directory.
 # Coverage will ONLY track files inside this folder.
 source = src
 
-# OMIT: Since 'source' is now restricted to 'src', you only need to omit 
+# BRANCH COVERAGE: Tracks not just whether a line was executed, but whether
+# both branches of every 'if'/'elif'/'while'/'for' were actually taken.
+# This catches tests that exercise the happy path while leaving error
+# branches (e.g., 'if value is None: raise ...') untested.
+branch = True
+
+# OMIT: Since 'source' is now restricted to 'src', you only need to omit
 # things inside that specific folder that shouldn't be tracked.
 omit =
     */__init__.py
