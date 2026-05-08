@@ -74,16 +74,18 @@ user-invocable: true                      # Show in / menu
 
 - **`/setup`** — Set up the local development environment for new contributors
   - Detects the required Python version from `pyproject.toml` automatically
-  - Checks prerequisites (`pyenv`, `poetry`) and guides installation if missing
-  - Runs `pyenv install`, `poetry install`, sets up `pre-commit` hooks, runs `commands/setup_local.sh`, and finally `poetry shell`
-  - Validates each step before proceeding and surfaces errors clearly
+  - Checks prerequisites and enforces **Poetry `1.8.3` exactly** (offers `poetry self update 1.8.3` if mismatched)
+  - Runs `pyenv install`, then creates `.venv` manually with `$(pyenv which python) -m venv .venv` to bypass a Poetry 1.8.3 system-Python validation bug
+  - Clears Poetry caches, runs `poetry install` inside the activated venv, installs and refreshes `pre-commit` hooks, then runs `commands/setup_local.sh`
+  - Validates each step before proceeding; blocking failures stop the flow, non-blocking ones (e.g. `setup_local.sh`) are surfaced but don't abort
 
 - **`/commit`** — Stage, commit, and push the current branch end-to-end with project safety rails
-  - Refuses to commit on `develop` / `master` / `main` (must be on a `feature/*`, `fix/*`, or `enhancement/*` branch)
-  - Stages files by explicit path (never `git add -A` / `.`); flags risky patterns (`.env`, credentials, large files) for explicit opt-in
-  - Drafts a commit message from the staged diff and validates it against the project's commit-msg regex
-  - Lets pre-commit hooks run (never bypasses them); handles auto-fix retries and hard failures cleanly
-  - Confirms with the contributor before pushing; never force-pushes; never auto-resolves a divergent push
+  - Refuses to commit on `develop` / `master` / `main` (must be on a `feature/*`, `fix/*`, or `enhancement/*` branch); also aborts if a merge/rebase is in progress
+  - Aborts and redirects to `/setup` if `pre-commit` isn't installed or the `pre-commit` / `commit-msg` git hooks aren't wired
+  - Bundles all pending changes into a single commit; before staging, runs a two-layer security scan — flags risky filenames (`.env`, credentials, `*.key`/`*.pem`, files >500KB) **and** greps diff content for secret markers (PEM headers, cloud credential JSON keys, AWS/Slack/GitHub/GitLab token prefixes, `password=` / `token=` patterns, embedded-credential DB URLs); only after every pending file passes does it stage with `git add -A`, falling back to explicit paths if anything was flagged
+  - Drafts a single-line or multi-line commit message based on diff scope and validates the subject against `^((analysis|change|feature|fix|refactor|test): .*|Merge .*)$`
+  - Lets pre-commit hooks run (never `--no-verify`); retries up to twice on auto-fix hooks (`black`, `isort`, `autoflake`); on hard failures (`flake8`, `pylint`, `mypy`, `bandit`, `pytest`) leaves staging intact and asks the contributor to fix
+  - Confirms before pushing; fetches and aborts on divergence (no auto-pull/rebase); never force-pushes
 
 ### Creating New Skills
 

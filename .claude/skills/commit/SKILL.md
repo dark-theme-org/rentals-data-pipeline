@@ -1,6 +1,6 @@
 ---
 name: commit
-description: Stage, commit, and push the current branch end-to-end with project safety rails. Refuses commits to develop/master/main, never bypasses pre-commit hooks, never force-pushes.
+description: Stage, commit, and push the current branch end-to-end with project safety rails. Refuses commits to develop/master/main, scans staged content for secrets, never bypasses pre-commit hooks, never force-pushes.
 user-invocable: true
 allowed-tools: Bash, Read
 ---
@@ -8,10 +8,11 @@ allowed-tools: Bash, Read
 # Commit Skill
 
 Your task is to walk the contributor through staging, committing, and pushing
-the current branch's work in a single guided flow. This skill is opinionated
-about safety: it refuses commits to protected branches, never bypasses
-pre-commit hooks, never force-pushes, and never stages with `git add -A` /
-`git add .` (which can sweep up sensitive files like credentials).
+the current branch's work in a single guided flow. The default behavior is to
+bundle all pending changes into a single commit. This skill is opinionated
+about safety: it refuses commits to protected branches, scans staged content
+for secrets before committing, never bypasses pre-commit hooks, and never
+force-pushes.
 
 ## Language
 
@@ -22,8 +23,6 @@ Interact with the user in the same language they used to invoke the skill.
 - ❌ **Protected branches**: refuse to commit if the current branch is
   `develop`, `master`, or `main`. The contributor must switch to a
   `feature/*`, `fix/*`, or `enhancement/*` branch first.
-- ❌ **Never** run `git add -A`, `git add .`, or `git add --all`. Always
-  list explicit paths.
 - ❌ **Never** use `git commit --no-verify` or `--amend` unless the
   contributor explicitly requests it. If a pre-commit hook fails, fix the
   underlying issue and create a new commit.
@@ -201,17 +200,22 @@ stage** that file until the contributor either:
 - explicitly confirms the matched value is a documented placeholder or
   an already-revoked credential.
 
-After every file passes the scan, stage them with one `git add`
-listing each path explicitly:
+Once every pending file has passed both layers, stage them. The
+default — bundling all changes into one commit — is achieved with:
+
+```bash
+git add -A
+```
+
+This is acceptable **only because Steps 1–2 above already enumerated
+every pending path and the security scan ran on each one before this
+command fires.** If the scan flagged any file, do not run `git add -A`
+— either resolve the flagged files first, or fall back to listing the
+safe paths explicitly:
 
 ```bash
 git add path/one path/two path/three
 ```
-
-Do **not** use `git add -A`, `git add .`, or `git add --all`. The
-harness forbids these because they can sweep up sensitive files. The
-explicit-path list above is how we get "everything pending" while
-preserving the per-file security review.
 
 For files that need to be **untracked** (matched by `.gitignore` but
 still in the index — e.g. `.python-version`), use
@@ -300,7 +304,8 @@ first failing hook stops the run.
 `autoflake`, `isort`):
 
 1. Show the contributor a `git diff` of what was auto-fixed.
-2. Re-stage the same explicit paths from Step 3.
+2. Re-stage the same paths from Step 3 (re-run `git add -A` if that
+   was the original choice, or the explicit list otherwise).
 3. Retry the commit with the same approved message.
 4. Loop at most twice. If a third attempt is needed, bail and ask the
    contributor to investigate manually.
