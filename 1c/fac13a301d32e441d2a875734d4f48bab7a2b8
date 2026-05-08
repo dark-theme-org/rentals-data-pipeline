@@ -1,0 +1,25 @@
+.claude/skills/commit/SKILL.md
+  s_06d52a648f2e68::t_a584867032fd42 11-15
+  s_06d52a648f2e68::t_070b71983746cd 203-204,207,210-218
+  s_06d52a648f2e68::t_41345c4a7a3db2 3
+  s_06d52a648f2e68::t_c7c246d3852a0b 307-308
+CLAUDE.md
+  s_06d52a648f2e68::t_c40959172fa86b 77-80,83-84,86-88
+  s_06d52a648f2e68::t_c2f15615191f99 85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "1cfac13a301d32e441d2a875734d4f48bab7a2b8",
+  "prompts": {},
+  "sessions": {
+    "s_06d52a648f2e68": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ba667fb8-5896-4164-84f0-ff34d8af2016",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
