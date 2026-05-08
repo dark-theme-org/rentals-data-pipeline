@@ -1,0 +1,113 @@
+CODING_GUIDELINES.md
+  s_37a209a8a89d57::t_d98806c662a03f 22
+  s_37a209a8a89d57::t_d4cad018cb2341 59
+  s_37a209a8a89d57::t_ad7bfd72026cf0 63-72
+  s_37a209a8a89d57::t_95a645600c4d87 52
+  s_37a209a8a89d57::t_6896ab3bb75ac5 28
+  s_37a209a8a89d57::t_88223c62950d07 46
+  s_37a209a8a89d57::t_6fdd4a71c2f06b 42
+.gitignore
+  s_37a209a8a89d57::t_d93c064a5d7f23 222-224,226-228
+  s_37a209a8a89d57::t_dc3440a1664da1 242-256
+.code_quality/.coveragerc
+  s_37a209a8a89d57::t_b6e2e4b443d290 5,9-15
+.code_quality/autoflake.cfg
+  s_37a209a8a89d57::t_becb7af46edd30 12-13,16-20
+  s_37a209a8a89d57::t_6be59e4760e4ec 2-3,7-8
+commands/setup_local.sh
+  s_37a209a8a89d57::t_6be59e4760e4ec 4
+  s_37a209a8a89d57::t_e89729c3abd8e2 25
+CLAUDE.md
+  s_37a209a8a89d57::t_c71558d6f67fee 5-34
+  s_37a209a8a89d57::t_0a2e9341d3728f 78
+  s_37a209a8a89d57::t_c58ac3585a5198 81-87
+.claude/skills/commit/SKILL.md
+  s_37a209a8a89d57::t_3fbd133ea7d972 387-397
+  s_37a209a8a89d57::t_c4b6fbf72a1628 37-50,56-79
+  s_37a209a8a89d57::t_5310b431b54935 117-142
+  s_37a209a8a89d57::t_9642d4c3132c7e 84
+  s_37a209a8a89d57::t_0b000f351fc928 243,245-258,264-271,279-281
+  s_37a209a8a89d57::t_21266ba3f39864 169-177,188-200,204,212-224
+  s_37a209a8a89d57::t_19570f3c26c55b 85
+  s_37a209a8a89d57::t_339eb838b5ca25 51-55
+  s_37a209a8a89d57::t_645e05da696a2e 1-36,80-83,86-116,143-168,178,182-185,203,206-210,225-242,244,259-263,272-278,282-386
+  s_37a209a8a89d57::t_02d5e22e5dc67d 179-181,186-187,201-202,205,211
+.vscode/settings.json
+  s_37a209a8a89d57::t_13e5c0231969f6 19-25
+  s_37a209a8a89d57::t_67f2d3c7c54998 37,40-43,46-47
+.code_quality/.isort.cfg
+  s_37a209a8a89d57::t_2d51dd6959f370 3-5,8-18
+.vscode/extensions.json
+  s_37a209a8a89d57::t_3dff8446b3763f 1-21,25-37,41-46
+  s_37a209a8a89d57::t_8a7641afe41410 22-24,38-40
+commands/commands.md
+  s_37a209a8a89d57::t_b1df81189f4cb1 41-46
+  s_37a209a8a89d57::t_2359dd649840ff 1-40
+.code_quality/pyproject_black.toml
+  s_37a209a8a89d57::t_a5e7d82bb71562 9,12
+  s_37a209a8a89d57::t_8c5865d0c69ee4 10-11
+  s_37a209a8a89d57::t_6be59e4760e4ec 14-16,20
+  s_37a209a8a89d57::t_03c3757a8f8565 2-3,7-8
+.github/dependabot.yml
+  s_37a209a8a89d57::t_866ebf5efb953a 1-42
+.github/ISSUE_TEMPLATE/bug_request_template.md
+  s_37a209a8a89d57::t_949d62e6c815dc 1-2,4-30
+  h_334e5c58273adb 3
+CHANGELOG.md
+  s_37a209a8a89d57::t_44868980b3750e 5-6,10,12,22
+.code_quality/mypy.ini
+  s_37a209a8a89d57::t_6be59e4760e4ec 18-19,23,27-28,32,36,40-41
+  s_37a209a8a89d57::t_27c92175d55366 2-5,7-12
+  s_37a209a8a89d57::t_81c6116a50bb35 6
+.claude/skills/setup/SKILL.md
+  s_37a209a8a89d57::t_54f6119e2fe6c1 3
+  h_334e5c58273adb 19,36,39,82,85,88,104,110,112,125,209,223
+  s_37a209a8a89d57::t_d95be5d2d5c2eb 24-25
+  s_37a209a8a89d57::t_6be59e4760e4ec 64
+  s_37a209a8a89d57::t_5028af92073732 156-194
+  s_37a209a8a89d57::t_f3bd34d62cd2bc 197
+  s_37a209a8a89d57::t_862dc858a76a67 231
+pyproject.toml
+  s_37a209a8a89d57::t_9d17b920c39ec5 18
+  s_37a209a8a89d57::t_fe2c6147146be8 13
+  s_37a209a8a89d57::t_9cbdd6ddaec8f4 36
+  s_37a209a8a89d57::t_c016d1f36ce099 10
+  s_37a209a8a89d57::t_8fb46129fee899 31-33,35,37,40-42
+  s_37a209a8a89d57::t_fce5b43e1fa705 17
+  s_37a209a8a89d57::t_1c1f38de873efe 38
+  s_37a209a8a89d57::t_424903cdbc2b88 43
+.pre-commit-config.yaml
+  h_334e5c58273adb 43,55
+  s_37a209a8a89d57::t_f860b5cc9981fd 13-16,25-29,40-42,47,53-54,75-77,79,83-85,87-95,145-147,149
+.code_quality/.pylintrc
+  s_37a209a8a89d57::t_48d0b3cce1b677 525-528
+.code_quality/pytest.ini
+  s_37a209a8a89d57::t_ed9bc9fdf76171 8,11-16,18
+.code_quality/.flake8
+  s_37a209a8a89d57::t_6be59e4760e4ec 2,15,18
+  s_37a209a8a89d57::t_57c5a8d12f390f 6-8,10-13
+.gitattributes
+  s_37a209a8a89d57::t_75f814b59c7d9a 14
+  s_37a209a8a89d57::t_16c5726a92da90 1-7,10,13,15-19,21,25-27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "89bf37fa031805a83930a6e54ecca5f90fb4ced6",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_37a209a8a89d57": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "caba3806-ff3f-45e5-a864-9441596ccde9",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
