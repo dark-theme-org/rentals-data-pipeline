@@ -1,0 +1,150 @@
+poetry.lock
+  ai_agent 155-175,1212-1222,4581-4591,4968
+src/app/data/scrapers/sites/zap_imoveis.py
+  s_5e1fb7740209b5::t_5c6e4e9835b425 1
+  s_5e1fb7740209b5::t_c6663148788a65 10
+  h_334e5c58273adb 2-9,11,13-14,16-18
+  s_5e1fb7740209b5::t_7702140b0cc94f 12,15
+tests/conftest.py
+  s_1dcde0831e9268::t_79ae35c573f375 33-34,62-63,80-81,95-96,107-108
+  s_1dcde0831e9268::t_33fa1ab009c5be 1
+  s_1dcde0831e9268::t_ec46657cd7071c 6
+  h_334e5c58273adb 9-10,12-16,18-22,24-28,30-32
+  s_1dcde0831e9268::t_97186da426e0e2 2-5,7-8,35-61,64-79,82-94,97-106,109-110
+  s_1dcde0831e9268::t_3845a1bb817bca 11,17,23,29
+src/app/data/scrapers/sites/base.py
+  h_334e5c58273adb 2,8-11,23,29,31-34,37-39,42-43,48-50,59-60,71-73,77-85,92-97,99,101,104,112,151,158,160,162,167,196-199,205-207,218
+  s_a85b40244a7ba7::t_f5b1d1f1380e3f 19
+  s_5e1fb7740209b5::t_74e6ea8da415a7 36,53,67
+  s_1dcde0831e9268::t_4b12342270316e 169
+  s_b3b53348a0f2f3::t_ae7c1d3a9d6300 13
+  s_b3b53348a0f2f3::t_441040a4ec3735 172-173,178-179,219
+  s_b3b53348a0f2f3::t_39ddf9407b3098 4,12,14-18,21-22
+  s_a85b40244a7ba7::t_b5ad5617e1f8bd 20
+  s_b3b53348a0f2f3::t_f575e74bb0b0b1 117-121,124-129,140-142,152-157,159,164-166
+  s_b3b53348a0f2f3::t_b5724378f5d837 105-108,111,113-116,122-123,130-139,143-150,161,163
+  s_b3b53348a0f2f3::t_8ed76a65f1f996 5
+  s_5e1fb7740209b5::t_50c95cdfab5040 40-41,44,61-66
+  s_5e1fb7740209b5::t_d15280c3431d1c 69,100,102
+  s_b3b53348a0f2f3::t_be4e4cb9b24716 70,74-76,86-91,103
+  s_b3b53348a0f2f3::t_66d9d955b467a6 3
+  s_5e1fb7740209b5::t_54bb8bf805dfa5 1
+  s_b3b53348a0f2f3::t_5206d0472fe78c 25-28
+  s_b3b53348a0f2f3::t_8f816355687d6a 168,170-171,174-177,180-195,201-204,208-214,216-217
+  s_5e1fb7740209b5::t_df87200f8183ef 35,51,54-58,68
+  s_b3b53348a0f2f3::t_c56239b38b5825 109
+  s_b3b53348a0f2f3::t_71a623e1a46d3d 110
+  s_1dcde0831e9268::t_4437999987de70 7
+  s_5e1fb7740209b5::t_1d563f220517f9 47
+  s_b3b53348a0f2f3::t_b1583c0d2433f4 98
+  s_1dcde0831e9268::t_9421d2542f7681 215
+  s_b3b53348a0f2f3::t_fd8aa2b8fed23d 6
+  s_5e1fb7740209b5::t_39a0cf59d4517f 30
+  s_1dcde0831e9268::t_f61e88cbad2d93 45-46
+  s_1dcde0831e9268::t_3c3e0f0236277a 24
+  s_1dcde0831e9268::t_785832fb8fed36 200
+  s_a85b40244a7ba7::t_d98800b3ddac42 52
+tests/app/data/scrapers/test_settings.py
+  s_a85b40244a7ba7::t_f5b1d1f1380e3f 6
+  s_1dcde0831e9268::t_38c6f25d071190 1-5,7-41
+src/app/data/scrapers/sites/__init__.py
+  s_5e1fb7740209b5::t_c345cd650a7673 1
+tests/app/data/scrapers/sites/test_viva_real.py
+  h_334e5c58273adb 2,12,20,23-24,27,33
+  s_1dcde0831e9268::t_0e2a985cc2320e 1
+  s_1dcde0831e9268::t_771027325bfc72 3-11,13-19,21-22,25-26,28-32,34-36
+.claude/skills/pytest/SKILL.md
+  s_1dcde0831e9268::t_cf144a07ae7d26 31-40
+  s_1dcde0831e9268::t_b96ea3b5a78dbe 10,12,14,16,18,23-28,30
+  s_1dcde0831e9268::t_10d683146b30b1 1-4,6-9,11,13,15,17,41,43,45-64,66,83-177
+  s_1dcde0831e9268::t_d3606871efdefe 65,67-82
+  s_1dcde0831e9268::t_15bbe18c94facb 5
+  s_1dcde0831e9268::t_dcbad262bb96cc 19-22,29
+  s_1dcde0831e9268::t_1e761e2725a4f2 42,44
+src/app/data/scrapers/__init__.py
+  s_5e1fb7740209b5::t_6e9ca39a459122 1
+  h_334e5c58273adb 2-6
+.code_quality/mypy.ini
+  s_a85b40244a7ba7::t_0c8b1efc41d586 13-20
+CHANGELOG.md
+  s_a85b40244a7ba7::t_fb83e994f9a8d9 10
+  h_334e5c58273adb 14-15,19-20
+src/app/data/scrapers/settings.py
+  s_5e1fb7740209b5::t_d4618b7b8d4334 3-4,22,25,34
+  s_5e1fb7740209b5::t_5e20ab2a6f5b5e 1
+  s_5e1fb7740209b5::t_109c868ecd4ea4 2,5-10,17-18,24,26-29,35
+  h_334e5c58273adb 11-16,20-21,23,30-33,36-37
+  s_1dcde0831e9268::t_354d1c94e204cf 19
+tests/app/data/scrapers/sites/test_base.py
+  s_1dcde0831e9268::t_89983cb59a483b 1-6,12-144
+  s_a85b40244a7ba7::t_f5b1d1f1380e3f 9-11
+tests/app/data/scrapers/sites/test_zap_imoveis.py
+  s_1dcde0831e9268::t_f3ff5cdd3fb0f5 1
+  s_1dcde0831e9268::t_074cd361e855aa 3-11,13-19,21-22,25-26,28-32,34-36
+  h_334e5c58273adb 2,12,20,23-24,27,33
+.code_quality/.isort.cfg
+  s_a85b40244a7ba7::t_81c9cd7ff49708 19-25
+pyproject.toml
+  s_3a66b9499bd73d::t_d1d20afbd18f78 20
+  h_334e5c58273adb 21
+  s_b3b53348a0f2f3::t_81afcf8f2a952a 22
+  s_3a66b9499bd73d::t_234d2104c31b2b 18
+src/app/data/scrapers/sites/viva_real.py
+  s_5e1fb7740209b5::t_d3b2f75d33ef6d 8,12
+  s_5e1fb7740209b5::t_bf478e84c75753 1
+  s_5e1fb7740209b5::t_e408fa6906fbda 14,17
+  h_334e5c58273adb 2-7,9-11,13,15-16,18-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "821610457bcf37bb8916d40c539a6b1156c8218f",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_1dcde0831e9268": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9854cfcd-3a70-41f5-b474-8634e64d5e9d",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    },
+    "s_3a66b9499bd73d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dce2d180-23cd-404c-98ea-6b17fc5ffc6d",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    },
+    "s_5e1fb7740209b5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ca48f114-5fc9-4234-8634-f2f9d9a9cae9",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    },
+    "s_a85b40244a7ba7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "147b3112-9c32-45b8-8d67-d767ed8a2a0b",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    },
+    "s_b3b53348a0f2f3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0daebc0c-ab80-4fa2-890f-561501bd3847",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
