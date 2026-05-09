@@ -228,7 +228,6 @@ __marimo__/
 **/.DS_Store?
 
 # Datasets
-data/
 *.csv
 *.parquet
 *.pkl
