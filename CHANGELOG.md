@@ -7,32 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [Unreleased]
-
-Here we write upgrading notes for changes introduced to `develop`. It's a team effort to make them as straightforward as possible.
+## [Unreleased] - 2026-05-09
 
 ### Added
 
--
+- Set repository architecture with **core folders/files**;
+- Create `/scrapers` features to fetch and extract **properties** data.
 
 ### Changed
 
--
+- Adapt `.gitignore` to project needs;
+- New `README.md` template for properly project introduction.
 
 ### Deprecated
 
--
-
 ### Removed
-
--
 
 ### Fixed
 
--
-
 ### Security
-
--
-
----
