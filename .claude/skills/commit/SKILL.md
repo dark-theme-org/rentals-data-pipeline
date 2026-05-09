@@ -33,6 +33,34 @@ Interact with the user in the same language they used to invoke the skill.
 - ✅ Always show the contributor what's about to happen before each
   side-effecting action (stage, commit, push) and accept overrides.
 
+## Confirmation gates — three explicit asks, everything else auto
+
+The skill exposes exactly **three confirmation gates** to the contributor.
+Use the `AskUserQuestion` tool at each one:
+
+1. **Before staging** (Step 3) — show the file list, ask to proceed.
+2. **Before committing** (Step 5) — show the drafted commit message,
+   ask to proceed.
+3. **Before pushing** (Step 6) — show the commit SHA + target remote,
+   ask to proceed.
+
+Every other step — preflight checks, status surfacing, message drafting,
+auto-fix retries, the post-push report — runs **automatically without
+asking**. The skill only pauses outside the three gates when it must
+**raise an issue** that blocks progress, in which case it surfaces the
+problem and stops (or asks for a decision specific to that issue):
+
+- protected branch detected
+- merge / rebase in progress
+- pre-commit not installed or hooks not wired
+- security scan flagged a file (filename pattern or diff content)
+- pre-commit hard failure (`flake8`, `pylint`, `mypy`, `bandit`, `pytest`)
+- divergent remote on push
+- contributor-supplied commit message fails the prefix regex
+
+If none of these conditions trigger, the skill flows through the
+non-gate steps silently and stops only at the next of the three gates.
+
 ## Security mindset — read this before staging anything
 
 Leaking a credential into git history is hard to undo and may force the
@@ -200,7 +228,18 @@ stage** that file until the contributor either:
 - explicitly confirms the matched value is a documented placeholder or
   an already-revoked credential.
 
-Once every pending file has passed both layers, stage them. The
+Once every pending file has passed both layers, **gate 1 — ask before
+staging.** Use `AskUserQuestion` to show the contributor the list of
+files about to be staged and confirm:
+
+> Stage these N file(s) and proceed to commit drafting?
+>
+> Options:
+> - Stage all listed files
+> - Stage a subset (contributor lists paths)
+> - Cancel
+
+Only after the contributor confirms, run the stage command. The
 default — bundling all changes into one commit — is achieved with:
 
 ```bash
@@ -256,7 +295,9 @@ git diff --staged
 
 The decision is the skill's, based on `git diff --staged --stat`:
 high file count or mixed themes ⇒ multi-line; otherwise one-line.
-Show the proposal to the contributor and accept overrides.
+**Draft the message automatically — do not ask the contributor here.**
+The drafted message will be shown for confirmation at gate 2 (Step 5)
+together with the commit action.
 
 Either way, the **subject line** has this form:
 
@@ -288,7 +329,23 @@ bypass the hook.
 
 ### Step 5 — Commit
 
-Use a heredoc to preserve message formatting:
+**Gate 2 — ask before committing.** Use `AskUserQuestion` to show the
+drafted message and confirm:
+
+> Commit the staged changes with this message?
+>
+> ```
+> <drafted message>
+> ```
+>
+> Options:
+> - Commit with this message
+> - Edit the message (contributor provides a replacement, re-validate
+>   against the prefix regex)
+> - Cancel
+
+Only after confirmation, fire the commit. Use a heredoc to preserve
+message formatting:
 
 ```bash
 git commit -m "$(cat <<'EOF'
@@ -301,14 +358,15 @@ Pre-commit hooks fire automatically. `fail_fast: true` is set, so the
 first failing hook stops the run.
 
 **If the commit fails because hooks auto-modified files** (`black`,
-`autoflake`, `isort`):
+`autoflake`, `isort`): retry **automatically** — this is not a gate.
 
-1. Show the contributor a `git diff` of what was auto-fixed.
+1. Show the contributor a `git diff` of what was auto-fixed (info only,
+   no question).
 2. Re-stage the same paths from Step 3 (re-run `git add -A` if that
    was the original choice, or the explicit list otherwise).
 3. Retry the commit with the same approved message.
-4. Loop at most twice. If a third attempt is needed, bail and ask the
-   contributor to investigate manually.
+4. Loop at most twice. If a third attempt is needed, bail and surface
+   the situation as a raised issue so the contributor can investigate.
 
 **If the commit fails on a hard failure** (`flake8`, `pylint`, `mypy`,
 `bandit`, `pytest`):
@@ -322,13 +380,18 @@ first failing hook stops the run.
 
 ### Step 6 — Confirm and push
 
-Pushing is a shared-state action. Always ask before pushing, even though
-the contributor invoked `/commit`:
+**Gate 3 — ask before pushing.** Pushing is a shared-state action; always
+confirm even though the contributor invoked `/commit`. Use
+`AskUserQuestion`:
 
-> Push commit `<sha>` to remote? (y/n)
+> Push commit `<sha>` on `<branch>` to `origin`?
+>
+> Options:
+> - Push to remote
+> - Skip push (commit stays local)
 
-If they decline, exit cleanly. The commit stays local; they can push
-manually later.
+If they decline, exit cleanly with the post-commit report (Step 7). The
+commit stays local; they can push manually later.
 
 If they confirm, detect upstream tracking:
 

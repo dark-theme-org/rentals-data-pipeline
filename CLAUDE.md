@@ -82,10 +82,11 @@ user-invocable: true                      # Show in / menu
 - **`/commit`** — Stage, commit, and push the current branch end-to-end with project safety rails
   - Refuses to commit on `develop` / `master` / `main` (must be on a `feature/*`, `fix/*`, or `enhancement/*` branch); also aborts if a merge/rebase is in progress
   - Aborts and redirects to `/setup` if `pre-commit` isn't installed or the `pre-commit` / `commit-msg` git hooks aren't wired
+  - **Three explicit confirmation gates** — asks the contributor before staging, before committing, and before pushing; every other step (preflight, status surfacing, message drafting, auto-fix retries, post-push report) runs automatically and only pauses to surface a raised issue (security flag, hook failure, divergent remote, etc.)
   - Bundles all pending changes into a single commit; before staging, runs a two-layer security scan — flags risky filenames (`.env`, credentials, `*.key`/`*.pem`, files >500KB) **and** greps diff content for secret markers (PEM headers, cloud credential JSON keys, AWS/Slack/GitHub/GitLab token prefixes, `password=` / `token=` patterns, embedded-credential DB URLs); only after every pending file passes does it stage with `git add -A`, falling back to explicit paths if anything was flagged
   - Drafts a single-line or multi-line commit message based on diff scope and validates the subject against `^((analysis|change|feature|fix|refactor|test): .*|Merge .*)$`
   - Lets pre-commit hooks run (never `--no-verify`); retries up to twice on auto-fix hooks (`black`, `isort`, `autoflake`); on hard failures (`flake8`, `pylint`, `mypy`, `bandit`, `pytest`) leaves staging intact and asks the contributor to fix
-  - Confirms before pushing; fetches and aborts on divergence (no auto-pull/rebase); never force-pushes
+  - Fetches and aborts on divergence before pushing (no auto-pull/rebase); never force-pushes
 
 ### Creating New Skills
 
