@@ -80,13 +80,22 @@ user-invocable: true                      # Show in / menu
   - Validates each step before proceeding; blocking failures stop the flow, non-blocking ones (e.g. `setup_local.sh`) are surfaced but don't abort
 
 - **`/commit`** — Stage, commit, and push the current branch end-to-end with project safety rails
-  - Refuses to commit on `develop` / `master` / `main` (must be on a `feature/*`, `fix/*`, or `enhancement/*` branch); also aborts if a merge/rebase is in progress
+  - Refuses to commit on `develop` / `main` (must be on a `feature/*`, `fix/*`, or `enhancement/*` branch); also aborts if a merge/rebase is in progress
   - Aborts and redirects to `/setup` if `pre-commit` isn't installed or the `pre-commit` / `commit-msg` git hooks aren't wired
   - **Three explicit confirmation gates** — asks the contributor before staging, before committing, and before pushing; every other step (preflight, status surfacing, message drafting, auto-fix retries, post-push report) runs automatically and only pauses to surface a raised issue (security flag, hook failure, divergent remote, etc.)
   - Bundles all pending changes into a single commit; before staging, runs a two-layer security scan — flags risky filenames (`.env`, credentials, `*.key`/`*.pem`, files >500KB) **and** greps diff content for secret markers (PEM headers, cloud credential JSON keys, AWS/Slack/GitHub/GitLab token prefixes, `password=` / `token=` patterns, embedded-credential DB URLs); only after every pending file passes does it stage with `git add -A`, falling back to explicit paths if anything was flagged
   - Drafts a single-line or multi-line commit message based on diff scope and validates the subject against `^((analysis|change|feature|fix|refactor|test): .*|Merge .*)$`
   - Lets pre-commit hooks run (never `--no-verify`); retries up to twice on auto-fix hooks (`black`, `isort`, `autoflake`); on hard failures (`flake8`, `pylint`, `mypy`, `bandit`, `pytest`) leaves staging intact and asks the contributor to fix
   - Fetches and aborts on divergence before pushing (no auto-pull/rebase); never force-pushes
+
+- **`/pr`** — Open a pull request from the current feature branch into a target branch (defaults to `develop` or `main`, but the contributor may override to any branch) with the project's PR template auto-filled
+  - Refuses to PR from `develop` / `main` (must be on `feature/*`, `fix/*`, or `enhancement/*`); detects which protected branches (`develop` / `main`) exist on the remote and offers them as named options on the target-branch gate — **the contributor may override to any branch (including a non-protected one) by typing it in the auto-provided `Other` input**
+  - Aborts if `gh` is not installed or not authenticated, the remote isn't on GitHub, the branch has no upstream, is ahead of/divergent from the remote, or already has an open PR (surfaces the existing URL)
+  - **Two confirmation gates** — asks (1) which target branch to PR into, then (2) whether to open as **draft** or **ready for review**; everything else (preflight, diff analysis, label/assignee resolution, title drafting, template fill, post-create label/assignee application, report) runs automatically
+  - Auto-fills the four template sections (`Goal`, reviewer entry points, QA, Other) by analyzing commits and categorized file buckets across `<target>...HEAD`; preserves the template's `* [ ]` checkboxes for reviewers to tick
+  - Auto-resolves the **assignee** to the active `gh` login (from `gh api user --jq .login`) and picks **labels** from the repo's existing label set (commit-prefix + file-bucket signals, capped at 3–4); never creates new labels, never assigns anyone else
+  - Drafts the PR title in **sentence case with no commit prefix** — leading capital, lowercase rest, identifiers/file paths/slash-commands/acronyms preserved as-is; ~70-char cap, no trailing period (e.g. `Add three confirmation gates to /commit skill`)
+  - **Uses the `gh` CLI exclusively** for GitHub API calls — `gh auth status` / `gh api user` for auth, `gh pr list --head` for the duplicate-PR check, `gh label list` for label discovery, `gh pr create --body-file` for creation, then `gh pr edit --add-label --add-assignee` to attach labels/assignees post-create (no GitHub MCP, so per-account auth is just `gh auth switch`)
 
 ### Creating New Skills
 

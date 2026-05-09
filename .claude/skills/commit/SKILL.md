@@ -1,6 +1,6 @@
 ---
 name: commit
-description: Stage, commit, and push the current branch end-to-end with project safety rails. Refuses commits to develop/master/main, scans staged content for secrets, never bypasses pre-commit hooks, never force-pushes.
+description: Stage, commit, and push the current branch end-to-end with project safety rails. Refuses commits to develop/main, scans staged content for secrets, never bypasses pre-commit hooks, never force-pushes.
 user-invocable: true
 allowed-tools: Bash, Read
 ---
@@ -21,7 +21,7 @@ Interact with the user in the same language they used to invoke the skill.
 ## Hard rules — never violate these
 
 - ❌ **Protected branches**: refuse to commit if the current branch is
-  `develop`, `master`, or `main`. The contributor must switch to a
+  `develop` or `main`. The contributor must switch to a
   `feature/*`, `fix/*`, or `enhancement/*` branch first.
 - ❌ **Never** use `git commit --no-verify` or `--amend` unless the
   contributor explicitly requests it. If a pre-commit hook fails, fix the
@@ -130,7 +130,7 @@ git rev-parse --is-inside-work-tree
 git rev-parse --abbrev-ref HEAD
 ```
 
-**If the current branch is `develop`, `master`, or `main`:** abort
+**If the current branch is `develop` or `main`:** abort
 immediately. Tell the contributor:
 
 > Refusing to commit to `<branch>`. This branch is protected.
@@ -416,7 +416,7 @@ the push and tell the contributor to run `git pull --rebase` first.
 
 **Never** pass `--force` or `--force-with-lease` unless the contributor
 explicitly says "force push" — even then, double-check that the target
-branch is not `develop` / `master` / `main`.
+branch is not `develop` / `main`.
 
 ---
 
@@ -450,7 +450,7 @@ the contributor can click to open a PR — usually
 
 The skill must refuse and explain when:
 
-- The current branch is `develop`, `master`, or `main`.
+- The current branch is `develop` or `main`.
 - A merge or rebase is in progress.
 - **Pre-commit is not installed or the git hooks are not wired** —
   redirect the contributor to `/setup` Step 6.

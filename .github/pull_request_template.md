@@ -17,6 +17,6 @@ Tell us what kind of tests you made to reach the expected possibilities your cod
 
 * [ ] `tests/path/to/test_my_file.py::test_my_function`
 
-## :link:/:camera: Other relative informations (*e.g.* Links; CURLs; Screenshots)
+## :link: / :camera: Other relative informations (*e.g.* Links; CURLs; Screenshots)
 
 * Add informational resources that can help in a practical way understanding the PR.
