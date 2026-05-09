@@ -1,0 +1,151 @@
+default_install_hook_types: ["commit-msg", "pre-commit"]
+fail_fast: true
+
+repos:
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks.git
+    rev: v6.0.0
+    hooks:
+      - id: check-merge-conflict
+        name: check merge conflict
+        description: 'Checks for files that contain merge conflict strings.'
+
+      - id: check-case-conflict
+        name: check case conflict
+        description: 'Checks for files that would conflict in case-insensitive filesystems.'
+
+      - id: check-toml
+        name: check .toml files syntax
+        description: 'Checks for .toml files for parseable syntax.'
+
+      - id: check-yaml
+        name: check .yaml files syntax
+        description: 'Checks for .yaml files for parseable syntax.'
+
+      - id: check-json
+        name: check .json files syntax
+        description: 'Checks for .json files for parseable syntax.'
+        exclude: (\.vscode/)
+
+      - id: debug-statements
+        name: check debugger
+        description: 'Debugger imports and py37+ `breakpoint()` calls in python source.'
+
+      - id: end-of-file-fixer
+        name: end of file fixer
+        description: 'Ensures that a python file ends with one newline.'
+        types: [python]
+        exclude: (notebooks/)
+
+      - id: mixed-line-ending
+        name: mixed line ending
+        description: 'Detects mixed line endings and fixes the outliers.'
+
+      - id: trailing-whitespace
+        name: trailing whitespace
+        description: 'Trims trailing whitespace.'
+
+      - id: name-tests-test
+        name: check tests format
+        description: 'Verifies that test files are named correctly.'
+        args: [--pytest-test-first]
+
+      - id: detect-private-key
+        name: detect private key
+        description: 'Detects PEM-formatted private keys (RSA, EC, OpenSSH).'
+
+  - repo: local
+    hooks:
+      - id: sqlfluff-fix
+        name: sqlfluff fix
+        description: 'Automatically formats SQL files to follow project style guides.'
+        language: system
+        entry: poetry run sqlfluff fix --config .code_quality/.sqlfluff
+        types: [sql]
+        exclude: (notebooks/)
+
+      - id: sqlfluff-lint
+        name: sqlfluff lint
+        description: 'Lints SQL files to catch complex styling issues or logical ambiguities that cannot be auto-fixed.'
+        language: system
+        entry: poetry run sqlfluff lint --config .code_quality/.sqlfluff
+        types: [sql]
+        exclude: (notebooks/)
+
+      - id: autoflake
+        name: autoflake
+        description: 'Removes unused imports and unused variables from Python code.'
+        language: system
+        entry: poetry run autoflake --config .code_quality/autoflake.cfg
+        types: [python]
+        exclude: (notebooks/)
+
+      - id: isort
+        name: isort
+        description: 'Sort python imports and separate them into sections and by type.'
+        language: system
+        entry: poetry run isort --settings-path .code_quality/.isort.cfg
+        types: [python]
+        exclude: (notebooks/)
+
+      - id: black
+        name: black
+        description: 'PEP8 compliant opinionated formatter.'
+        language: system
+        entry: poetry run black --config .code_quality/pyproject_black.toml
+        types: [python]
+        exclude: (notebooks/)
+
+      - id: flake8
+        name: flake8
+        description: 'Tool to check the style and quality of some python code.'
+        language: system
+        entry: poetry run flake8 --config .code_quality/.flake8
+        types: [python]
+        exclude: (notebooks/)
+
+      - id: pylint
+        name: pylint
+        description: 'Static code analysis tool for Python programming.'
+        language: system
+        entry: poetry run pylint --rcfile .code_quality/.pylintrc
+        types: [python]
+        exclude: (notebooks/)
+
+      - id: mypy
+        name: mypy
+        description: 'Static type checker for Python code.'
+        language: system
+        entry: poetry run mypy --config-file .code_quality/mypy.ini
+        types: [python]
+        exclude: (notebooks/)
+
+      - id: bandit
+        name: bandit
+        description: 'Tool to find common security issues in Python code.'
+        language: system
+        entry: poetry run bandit -c .code_quality/bandit.yaml
+        types: [python]
+        exclude: (notebooks/)
+
+      - id: pytest
+        name: pytest
+        description: 'Python testing tool that helps you write better programs.'
+        language: system
+        entry: poetry run pytest -c .code_quality/pytest.ini --cov=src --cov-config=.code_quality/.coveragerc
+        types: [python]
+        pass_filenames: false
+        verbose: true
+
+  - repo: local
+    hooks:
+      - id: check-commit-message-prefix
+        name: check commit message prefix
+        description: >
+          'Commit messages must have one of the following prefixes:
+          ["analysis", "change", "feature", "fix", "refactor", "test"].
+          Merge commits are also allowed.'
+        language: pygrep
+        entry: '^((analysis|change|feature|fix|refactor|test): .*|Merge .*)$'
+        args: [--multiline, --negate]
+        stages: [commit-msg]
