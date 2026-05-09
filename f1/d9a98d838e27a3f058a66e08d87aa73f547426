@@ -1,0 +1,14 @@
+pyproject.toml
+  h_334e5c58273adb 28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "f1d9a98d838e27a3f058a66e08d87aa73f547426",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
