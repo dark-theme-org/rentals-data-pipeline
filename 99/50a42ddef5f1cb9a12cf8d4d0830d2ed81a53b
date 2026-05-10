@@ -1,0 +1,121 @@
+tests/app/data/scrapers/sites/test_zap_imoveis.py
+  s_d9e4565d79b9e9::t_ba2a877985337d 7,18-19,26
+tests/app/utils/test_gcs.py
+  s_d9e4565d79b9e9::t_74bbfe6a89d27a 1-6,8,10-11,15,17-19,21-23,26
+  s_d9e4565d79b9e9::t_67a0dae19b3a34 7,9,20,24-25
+  s_d9e4565d79b9e9::t_8903f75043ae10 12-14,16
+tests/app/entrypoints/test_scraper_data_to_bucket.py
+  s_d9e4565d79b9e9::t_771857580fc642 1-44
+src/app/data/scrapers/sites/base.py
+  s_b6da010c78576d::t_b4936478e5ee41 73
+  s_b6da010c78576d::t_cc48cda4596028 116
+  h_334e5c58273adb 49,71-72,74-75,105
+src/app/utils/utils.py
+  s_b6da010c78576d::t_500597042a1f77 1,7,15
+  h_334e5c58273adb 2-5,12-14,16-17
+  s_b85a37567467ff::t_510562d521e8cc 6,8-11
+pyproject.toml
+  s_896e8ce8a6ac0f::t_2100406b5280f0 21
+tests/conftest.py
+  s_d9e4565d79b9e9::t_4c04cddbe4cbfb 8,10-21,28
+  s_d9e4565d79b9e9::t_dfb89c65e13a79 9,22-27
+tests/app/utils/test_utils.py
+  s_d9e4565d79b9e9::t_d8998da19cb511 1-15
+src/app/utils/__init__.py
+  s_b6da010c78576d::t_86da998246e90f 1
+  h_334e5c58273adb 2-3,5-6
+  s_b85a37567467ff::t_db716b3ad13262 4
+tests/app/utils/test_decorators.py
+  s_d9e4565d79b9e9::t_9fa15a3c6c9d74 1-33
+tests/app/data/scrapers/sites/test_viva_real.py
+  s_d9e4565d79b9e9::t_537e566c6b34db 7,18-19,26
+src/app/utils/gcs.py
+  s_b85a37567467ff::t_90c325e05fd89f 7
+  s_b85a37567467ff::t_26a607cb5cfa36 3,5,9,11,23,27
+  s_b6da010c78576d::t_cc60c2fce5fc91 1,12-21,28,33,36-51,54,60-73,81,86
+  s_b85a37567467ff::t_f9e89c91c09c5a 10,30-32,34-35,56,58,75-78,84-85,87
+  h_334e5c58273adb 2,4,6,8,22,24-26,29,55,57,59,74,79-80,82-83
+  s_d9e4565d79b9e9::t_af04a5ea0befde 52-53
+src/app/utils/decorators.py
+  h_334e5c58273adb 2,6,8-10,13,15,33,36,39-54
+  s_b6da010c78576d::t_252e2bac435958 1,16-32,35,38
+  s_e43182da1f1c34::t_98b3535e31c9c8 5,7,11-12,14,34,37
+src/app/data/scrapers/sites/viva_real.py
+  h_334e5c58273adb 9-10,20
+CHANGELOG.md
+  h_334e5c58273adb 16-18
+src/app/data/scrapers/__init__.py
+  h_334e5c58273adb 3,7
+  s_b6da010c78576d::t_04e34fb480768f 1
+src/app/data/scrapers/sites/zap_imoveis.py
+  h_334e5c58273adb 7-8,18
+tests/app/data/scrapers/sites/test_base.py
+  s_d9e4565d79b9e9::t_6fc8a0ff190985 30
+src/app/entrypoints/scraper_data_to_bucket.py
+  s_12eff870b23179::t_374355e85f6cec 5,7,11,17-18,21-22,43-50,52-62
+  s_b6da010c78576d::t_5adf40e6d66e32 1
+  h_334e5c58273adb 2,12-13,16,19-20,23-35,42,51,63-66
+  s_896e8ce8a6ac0f::t_069f4d33f5cc6d 3-4,6,8-10,14-15,36
+  s_b6da010c78576d::t_efe03e19c831a7 37-41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "9950a42ddef5f1cb9a12cf8d4d0830d2ed81a53b",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_12eff870b23179": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a3c6cd7b-3932-477d-ae43-0f217d65b187",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    },
+    "s_896e8ce8a6ac0f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "af49cd22-b92d-4497-b5bc-9d49dcf1d405",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    },
+    "s_b6da010c78576d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f21b9362-ebc4-4b93-80a2-0a6d638545c1",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    },
+    "s_b85a37567467ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "972d47c4-659b-4251-a9c2-6fa53ed14c04",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    },
+    "s_d9e4565d79b9e9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "032a1681-5617-40b4-9846-3054fd0ccda2",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    },
+    "s_e43182da1f1c34": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8d443e7a-e1fc-49c3-9700-3ee623828b54",
+        "model": "unknown"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
