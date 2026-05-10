@@ -6,8 +6,8 @@ from app.data.scrapers.sites.base import SiteScraper
 PROPERTY_TYPES_VIVA_REAL = PropertyTypes(
     apartment="apartamento_residencial", house="casa_residencial"
 )
-
-URL_VIVA_REAL: str = "https://www.vivareal.com.br/aluguel/{uf}/{city}/{property_type}/"
+SITE_NAME_VIVA_REAL: str = "vivareal"
+URL_VIVA_REAL: str = "https://www.{site}.com.br/aluguel/{uf}/{city}/{property_type}/"
 
 
 class VivaRealScraper(SiteScraper):
@@ -17,4 +17,5 @@ class VivaRealScraper(SiteScraper):
     """
 
     _PROPERTY_TYPES = PROPERTY_TYPES_VIVA_REAL
+    _SITE_NAME = SITE_NAME_VIVA_REAL
     _URL_TEMPLATE = URL_VIVA_REAL

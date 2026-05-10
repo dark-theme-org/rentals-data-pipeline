@@ -4,8 +4,8 @@ from app.data.scrapers.settings import PropertyTypes
 from app.data.scrapers.sites.base import SiteScraper
 
 PROPERTY_TYPES_ZAP_IMOVEIS = PropertyTypes(apartment="apartamentos", house="casas")
-
-URL_ZAP_IMOVEIS: str = "https://www.zapimoveis.com.br/aluguel/{property_type}/{uf}+{city}/"
+SITE_NAME_ZAP_IMOVEIS: str = "zapimoveis"
+URL_ZAP_IMOVEIS: str = "https://www.{site}.com.br/aluguel/{property_type}/{uf}+{city}/"
 
 
 class ZapImoveisScraper(SiteScraper):
@@ -15,4 +15,5 @@ class ZapImoveisScraper(SiteScraper):
     """
 
     _PROPERTY_TYPES = PROPERTY_TYPES_ZAP_IMOVEIS
+    _SITE_NAME = SITE_NAME_ZAP_IMOVEIS
     _URL_TEMPLATE = URL_ZAP_IMOVEIS

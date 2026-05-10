@@ -46,6 +46,7 @@ class SiteScraper:
     url: str | None = field(default=None, init=False)
 
     _PROPERTY_TYPES: ClassVar[PropertyTypes]
+    _SITE_NAME: ClassVar[str]
     _URL_TEMPLATE: ClassVar[str]
 
     @property
@@ -66,6 +67,11 @@ class SiteScraper:
             If :attr:`city` is not registered in :data:`CITIES_UF`.
         """
         return CITIES_UF[self.city]
+
+    @classmethod
+    def get_site_name(cls) -> str:
+        """Return the site identifier bound to this scraper class."""
+        return cls._SITE_NAME
 
     def set_url(self, property_type: str) -> Self:
         """
@@ -96,6 +102,7 @@ class SiteScraper:
             ``_PROPERTY_TYPES``.
         """
         self.url = self._URL_TEMPLATE.format(
+            site=self._SITE_NAME,
             uf=str(self.uf),
             city=str(self.city),
             property_type=getattr(self._PROPERTY_TYPES, property_type),
@@ -106,7 +113,7 @@ class SiteScraper:
         retry=retry_if_exception_type(requests.RequestException),
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=1, max=10),
-        before_sleep=before_sleep_log(logger, logging.WARNING),
+        before_sleep=before_sleep_log(logger, logging.WARNING),  # type: ignore[arg-type]
         reraise=True,
     )
     def fetch_and_parse_html(self, timeout: int = 5) -> Self:

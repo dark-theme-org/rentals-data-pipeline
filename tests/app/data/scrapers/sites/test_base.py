@@ -27,6 +27,7 @@ def stub_scraper_(
         PropertyTypes(apartment=property_apartment, house=property_house),
         raising=False,
     )
+    monkeypatch.setattr(SiteScraper, "_SITE_NAME", "stub", raising=False)
     monkeypatch.setattr(SiteScraper, "_URL_TEMPLATE", _STUB_URL_TEMPLATE, raising=False)
     return SiteScraper(city=City.MACAE)
 
