@@ -1,0 +1,32 @@
+README.md
+  s_dce73dde4f22d7::t_c8395ebaeee7e9 4-8
+  s_dce73dde4f22d7::t_37fd79becbbbff 24
+  s_dce73dde4f22d7::t_e27a1529733221 12,16
+  s_dce73dde4f22d7::t_87284469c5f11c 52,56-60
+tests/README.md
+  s_dce73dde4f22d7::t_fb6757514ae3d2 2-32
+src/README.md
+  s_dce73dde4f22d7::t_4bbd1d75b8738c 2-6,8-53
+  s_dce73dde4f22d7::t_bbc7c85c3c4f13 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "36cc7b418db76d2190b235a9a4b4135ce8111a8b",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_dce73dde4f22d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "daa88f6c-81f3-492b-a2f5-0aef2fe2ac14",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
