@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 
 - Set repository architecture with **core folders/files**;
-- Create `/scrapers` features to fetch and extract **properties** data.
+- Create `/scrapers` features to fetch and extract **properties** data;
+- Use `/terraform` as IaaC to manage cloud resources.
 
 ### Changed
 
