@@ -1,0 +1,64 @@
+tests/app/utils/test_utils.py
+  s_dce73dde4f22d7::t_aafe48eccff518 25,29,34,37,41
+  s_dce73dde4f22d7::t_d473e2552612b7 6
+  s_dce73dde4f22d7::t_6e5712cb5c8efc 3-4,19-24,26-28,30-33,35-36,38-40,42-46
+  s_dce73dde4f22d7::t_b006a641dcedfd 1
+terraform/variables.tf
+  s_dce73dde4f22d7::t_83754aa39f6356 15-16
+  s_dce73dde4f22d7::t_fdeb84b1f29512 12-14,17
+src/app/utils/utils.py
+  s_dce73dde4f22d7::t_8b6c4837d47141 92
+  h_334e5c58273adb 11,28,30-31,54
+  s_dce73dde4f22d7::t_92dfb981c16f3c 4,7-9,12,26-27,58-91,93-96
+  s_dce73dde4f22d7::t_f3443346f1c3c9 29
+  s_dce73dde4f22d7::t_9699b89e1b61b9 34-53,55-57
+  s_dce73dde4f22d7::t_f33f7ae7c50b22 1,3
+  s_dce73dde4f22d7::t_d527b1e90cace4 32-33
+tests/conftest.py
+  s_dce73dde4f22d7::t_9b6efaadb3c336 42-47
+src/app/utils/__init__.py
+  s_dce73dde4f22d7::t_b7451b4ac2488f 9,18
+  h_334e5c58273adb 5,14
+  s_dce73dde4f22d7::t_b7a29946f93391 4,6-8,10-11,13,15-17,19-21
+terraform/gcs.tf
+  s_dce73dde4f22d7::t_b9245e32196393 2-6
+src/app/entrypoints/scraper_data_to_bucket.py
+  h_334e5c58273adb 13,24,42,54
+  s_dce73dde4f22d7::t_816db50aff1bbb 52-53,55
+  s_dce73dde4f22d7::t_6b9868bc8e3aa9 12,14-16,18-20
+  s_dce73dde4f22d7::t_048729e6583537 17
+src/app/data/scrapers/sites/base.py
+  s_dce73dde4f22d7::t_a14fc6205edf87 107
+  s_dce73dde4f22d7::t_53d233ad1f5223 10
+  h_334e5c58273adb 153,222
+  s_dce73dde4f22d7::t_d3605d4e36f0de 154-156,158,165
+terraform/iam.tf
+  s_dce73dde4f22d7::t_7ea0109f10a0fe 11-17
+pyproject.toml
+  s_dce73dde4f22d7::t_51472f21fddb46 19
+tests/app/data/scrapers/sites/test_base.py
+  s_dce73dde4f22d7::t_335abfb63c6efb 7
+  s_dce73dde4f22d7::t_4d42679001a39f 87
+  s_dce73dde4f22d7::t_6495e35956af06 104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "d37dd760241abecf6ebd3a7b2e9d3755a4e4483a",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_dce73dde4f22d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "daa88f6c-81f3-492b-a2f5-0aef2fe2ac14",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
