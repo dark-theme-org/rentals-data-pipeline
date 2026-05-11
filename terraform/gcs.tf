@@ -1,9 +1,9 @@
 resource "google_storage_bucket" "scraper-bucket" {
-  name                        = "scraper-rentals-data"
-  location                    = var.region
-  force_destroy               = false
-  project                     = var.project_id
-  storage_class               = "STANDARD"
+  name          = "scraper-rentals-data"
+  location      = var.region
+  force_destroy = false
+  project       = var.project_id
+  storage_class = "STANDARD"
 
   lifecycle_rule {
     condition {

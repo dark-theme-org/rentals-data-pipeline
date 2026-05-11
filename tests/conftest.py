@@ -39,6 +39,12 @@ def expected_uf_() -> str:
     return "rj"
 
 
+@pytest.fixture(name="sa_email")
+def sa_email_() -> str:
+    """Throwaway service-account email used by credential-resolution tests."""
+    return "test-sa@example.iam.gserviceaccount.com"
+
+
 @pytest.fixture(name="property_apartment")
 def property_apartment_() -> str:
     """Stand-in slug used to construct the `apartment` field on `PropertyTypes`."""

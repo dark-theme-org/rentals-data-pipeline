@@ -9,10 +9,19 @@ from typing import Dict
 from google.cloud import storage
 
 from app.data.scrapers import City, VivaRealScraper, ZapImoveisScraper
-from app.utils import Environment, FileExtensions, task
+from app.utils import (
+    PROJECT_ID,
+    Environment,
+    FileExtensions,
+    ServiceAccountNames,
+    configure_logging,
+    get_credentials,
+    task,
+)
 from app.utils.gcs import ScraperBucket
 
 logger = logging.getLogger(__name__)
+configure_logging()
 
 ScraperMapping = namedtuple("ScraperMapping", ["scraper_class"])
 SCRAPER_MAPPING: Dict[str, ScraperMapping] = {
@@ -30,6 +39,7 @@ executed_at = datetime.now(timezone.utc).strftime(
     "%Y-%m-%dT%H-%M-%SZ"
 )  # -> TODO: Should be auto-filled
 file_extension = FileExtensions.JSON  # -> TODO: Should be auto-filled
+sa_name = ServiceAccountNames.GCS  # -> TODO: Should be auto-filled
 
 
 @task(label="scraper_data_to_bucket")
@@ -39,7 +49,10 @@ def scraper_data_to_bucket() -> None:
     listings page, and upload the extracted payload as a single JSON blob to
     the matching :class:`ScraperBucket` location.
     """
-    gcs_client = storage.Client()
+    gcs_client = storage.Client(
+        credentials=get_credentials(sa_name),
+        project=PROJECT_ID,  # -> TODO: Should be auto-filled
+    )
     for site in sites:
         scraper_class = SCRAPER_MAPPING[site].scraper_class
         for property_type in property_types:

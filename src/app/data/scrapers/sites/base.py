@@ -6,9 +6,8 @@ from dataclasses import dataclass, field
 from http import HTTPStatus
 from typing import ClassVar, Self
 
-import requests
 from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
+from curl_cffi import requests
 from tenacity import (
     before_sleep_log,
     retry,
@@ -20,11 +19,6 @@ from tenacity import (
 from app.data.scrapers.settings import CITIES_UF, UF, City, PropertyTypes
 
 logger = logging.getLogger(__name__)
-
-headers: dict = {
-    "User-Agent": UserAgent().random,
-    "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
-}
 
 
 @dataclass
@@ -110,7 +104,7 @@ class SiteScraper:
         return self
 
     @retry(
-        retry=retry_if_exception_type(requests.RequestException),
+        retry=retry_if_exception_type(requests.exceptions.RequestException),
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=1, max=10),
         before_sleep=before_sleep_log(logger, logging.WARNING),  # type: ignore[arg-type]
@@ -156,16 +150,19 @@ class SiteScraper:
             )
         try:
             logger.info(f"[{self.__class__.__name__}] Fetching '{self.url}' ...")
-            response = requests.get(self.url, headers=headers, timeout=timeout)
+            headers = {"Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8"}
+            response = requests.get(
+                self.url, headers=headers, timeout=timeout, impersonate="chrome120"
+            )
             if response.status_code != HTTPStatus.OK:
-                raise requests.HTTPError(
+                raise requests.exceptions.HTTPError(
                     f"Expected {HTTPStatus.OK}, got {response.status_code} from '{self.url}'.",
                     response=response,
                 )
             logger.info(
                 f"[{self.__class__.__name__}] Request to '{self.url}' successfully executed!"
             )
-        except requests.RequestException:
+        except requests.exceptions.RequestException:
             logger.exception(f"[{self.__class__.__name__}] Failed to fetch '{self.url}'.")
             raise
         logger.info(f"[{self.__class__.__name__}] Parsing HTML ...")
@@ -222,5 +219,5 @@ class SiteScraper:
         listings: dict[str, dict] = {
             element["item"]["@id"]: element["item"] for element in item_list["itemListElement"]
         }
-        logger.info(f"[{self.__class__.__name__}] Succesfulky extracted '{len(listings)}' items.!")
+        logger.info(f"[{self.__class__.__name__}] Succesfully extracted '{len(listings)}' items!")
         return listings

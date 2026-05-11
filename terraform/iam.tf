@@ -8,3 +8,10 @@ resource "google_storage_bucket_iam_member" "sa" {
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${google_service_account.sa.email}"
 }
+
+resource "google_service_account_iam_member" "sa_token_creator" {
+  for_each           = toset(var.developer_principals)
+  service_account_id = google_service_account.sa.name
+  role               = "roles/iam.serviceAccountTokenCreator"
+  member             = each.value
+}
