@@ -4,6 +4,7 @@ from app.data.scrapers.settings import City, PropertyTypes
 from app.data.scrapers.sites.base import SiteScraper
 from app.data.scrapers.sites.zap_imoveis import (
     PROPERTY_TYPES_ZAP_IMOVEIS,
+    SITE_NAME_ZAP_IMOVEIS,
     URL_ZAP_IMOVEIS,
     ZapImoveisScraper,
 )
@@ -14,13 +15,15 @@ def test_module_constants() -> None:
     assert isinstance(PROPERTY_TYPES_ZAP_IMOVEIS, PropertyTypes)
     assert PROPERTY_TYPES_ZAP_IMOVEIS.apartment == "apartamentos"
     assert PROPERTY_TYPES_ZAP_IMOVEIS.house == "casas"
-    assert URL_ZAP_IMOVEIS == "https://www.zapimoveis.com.br/aluguel/{property_type}/{uf}+{city}/"
+    assert SITE_NAME_ZAP_IMOVEIS == "zapimoveis"
+    assert URL_ZAP_IMOVEIS == "https://www.{site}.com.br/aluguel/{property_type}/{uf}+{city}/"
 
 
 def test_inheritance_and_class_vars() -> None:
     """Test ZapImoveisScraper inherits SiteScraper and binds the expected class vars."""
     assert issubclass(ZapImoveisScraper, SiteScraper)
     assert ZapImoveisScraper._PROPERTY_TYPES is PROPERTY_TYPES_ZAP_IMOVEIS  # pylint: disable=w0212
+    assert ZapImoveisScraper._SITE_NAME == SITE_NAME_ZAP_IMOVEIS  # pylint: disable=w0212
     assert ZapImoveisScraper._URL_TEMPLATE == URL_ZAP_IMOVEIS  # pylint: disable=w0212
 
 

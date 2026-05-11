@@ -3,8 +3,8 @@
 import json
 
 import pytest
-import requests
 from bs4 import BeautifulSoup
+from curl_cffi import requests
 from pytest_mock import MockerFixture
 
 from app.data.scrapers.settings import City, PropertyTypes
@@ -27,6 +27,7 @@ def stub_scraper_(
         PropertyTypes(apartment=property_apartment, house=property_house),
         raising=False,
     )
+    monkeypatch.setattr(SiteScraper, "_SITE_NAME", "stub", raising=False)
     monkeypatch.setattr(SiteScraper, "_URL_TEMPLATE", _STUB_URL_TEMPLATE, raising=False)
     return SiteScraper(city=City.MACAE)
 
@@ -83,7 +84,7 @@ def test_fetch_and_parse_html_retries_then_succeeds(
     ok_response = mocker.MagicMock(status_code=200, text=html_with_item_list)
     get = mocker.patch(
         _REQUESTS_GET,
-        side_effect=[requests.ConnectionError("flaky"), ok_response],
+        side_effect=[requests.exceptions.ConnectionError("flaky"), ok_response],
     )
 
     stub_scraper.set_url("apartment").fetch_and_parse_html()
@@ -100,7 +101,7 @@ def test_fetch_and_parse_html_raises_http_error_after_retries(
     response = mocker.MagicMock(status_code=503, text="boom")
     get = mocker.patch(_REQUESTS_GET, return_value=response)
 
-    with pytest.raises(requests.HTTPError):
+    with pytest.raises(requests.exceptions.HTTPError):
         stub_scraper.set_url("apartment").fetch_and_parse_html()
 
     assert get.call_count == 3

@@ -16,9 +16,9 @@ packages = [
 [tool.poetry.dependencies]
 python = ">=3.13,<3.14"
 beautifulsoup4 = "^4.14.3"
+curl-cffi = "^0.7"
 dbt-bigquery = "^1.11.1"
-fake-useragent = "^2.2.0"
-requests = "^2.33.1"
+google-cloud-storage = "^3.1.1"
 tenacity = "^9.1.4"
 
 [tool.poetry.group.local]

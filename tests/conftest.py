@@ -5,6 +5,27 @@ import json
 import pytest
 from pytest_mock import MockerFixture
 
+from app.utils import Environment, FileExtensions
+from app.utils.gcs import ScraperBucket
+
+
+@pytest.fixture(name="env")
+def env_() -> Environment:
+    """Default deployment environment used by GCS-target tests."""
+    return Environment.DEV
+
+
+@pytest.fixture(name="file_extension")
+def file_extension_() -> FileExtensions:
+    """Default file extension for blob payloads."""
+    return FileExtensions.JSON
+
+
+@pytest.fixture(name="scraper_bucket")
+def scraper_bucket_(env: Environment, expected_city: str) -> ScraperBucket:
+    """ScraperBucket bound to a canonical (env, site, city, property_type) tuple."""
+    return ScraperBucket(env=env, site="vivareal", city=expected_city, property_type="apartment")
+
 
 @pytest.fixture(name="expected_city")
 def expected_city_() -> str:
@@ -16,6 +37,12 @@ def expected_city_() -> str:
 def expected_uf_() -> str:
     """Canonical two-letter UF code expected for `UF.RJ`."""
     return "rj"
+
+
+@pytest.fixture(name="sa_email")
+def sa_email_() -> str:
+    """Throwaway service-account email used by credential-resolution tests."""
+    return "test-sa@example.iam.gserviceaccount.com"
 
 
 @pytest.fixture(name="property_apartment")
