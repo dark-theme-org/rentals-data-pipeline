@@ -6,6 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Rentals data pipeline. Application code lives in `src/` (src-layout), tests mirror that structure in `tests/`, notebooks in `notebooks/`, operational scripts in `scripts/`, all linter/formatter configs in `.code_quality/`.
 
+Cloud execution is driven by two YAML registries at the project root:
+
+- **`tasks.yml`** — defines every executable task: operator type, entrypoint, Cloud Run machine config, and input parameters with defaults. Terraform reads this to create Cloud Run Jobs; the Docker image reads it at container startup via `scripts/setup_docker.py`.
+- **`dags.yml`** — defines the DAGs that sequence tasks into Cloud Workflows. Each operation references a task by name and maps workflow-level `{VAR}` placeholders to task input parameters.
+
+The `Dockerfile` builds one image per task (`--build-arg TASK_NAME=<name>`). `scripts/setup_docker.py` is the container entrypoint: it reads `tasks.yml`, validates and injects parameter defaults via `TASK_NAME`, then execs the task command.
+
 ## Stack & version pins
 
 - **Python 3.13** — pinned tightly (`>=3.13,<3.14`); see constraints below for why.
