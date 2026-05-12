@@ -1,0 +1,89 @@
+CLAUDE.md
+  s_de61555e940d43::t_8833f5cf75459d 79
+  s_de61555e940d43::t_53953aa0399fae 7
+tests/app/entrypoints/test_scraper_data_to_bucket.py
+  s_de61555e940d43::t_5dca8b46f9f2ce 10,13,20,23-24
+tests/conftest.py
+  s_de61555e940d43::t_3dbd78016e24af 10
+  s_de61555e940d43::t_4b169727952dd3 139-162
+CHANGELOG.md
+  h_334e5c58273adb 15,17-19
+tasks.yml
+  h_334e5c58273adb 4,6
+  s_de61555e940d43::t_8337912a719cf2 1-2
+dags.yml
+  h_334e5c58273adb 6,8,10
+  s_de61555e940d43::t_2c64291e5ffde1 1-3
+  s_de61555e940d43::t_27cadef60adf4f 4-5,7,9,12-17
+  s_de61555e940d43::t_23ab31fa696a30 11
+src/app/utils/validations.py
+  h_334e5c58273adb 8,16-18,32-33,39-40,56,63,70,72-75,79,86,93,95-98,144-145,147,150
+  s_de61555e940d43::t_81ac8c23279409 148
+  s_de61555e940d43::t_5695b5d1ec8d52 100
+  s_de61555e940d43::t_ad5a64541da71f 34-38
+  s_de61555e940d43::t_9010c901f9753a 45-52,102,109-110,118,126,133-134,143
+  s_de61555e940d43::t_c3bb506655955d 124
+  s_de61555e940d43::t_37089effda74f4 1-5,7,9-11,13-15,19-31,41-44,53-55,57-62,64-69,71,76-78,80-85,87-92,94,99,101,103-108,111-117,119-123,125,127-132,135-142,146,149
+  s_de61555e940d43::t_8d594d87a868bb 6,12
+scripts/setup_docker.py
+  s_de61555e940d43::t_5306ab142bea8e 7,22,29-32,44,48-51,53,64-65,67-68
+  s_de61555e940d43::t_0eda963c2196a9 5,18,52,54
+  s_de61555e940d43::t_ef187aa2e5e9ca 6,12
+  h_334e5c58273adb 11,15,17,19,47,59,61,63,66,71
+  s_de61555e940d43::t_627ad4f4f2081e 16
+  s_de61555e940d43::t_b169a40507f10d 20-21,45
+  s_de61555e940d43::t_df6235e3cb3556 23-28,33-43,46
+Dockerfile
+  s_de61555e940d43::t_5b4bca02c74da6 15
+  s_de61555e940d43::t_20b3186909f5c4 1-14,16,19-21
+  s_de61555e940d43::t_dbb83f46e6ed10 17-18
+  s_de61555e940d43::t_041ce57ab5b9fb 22
+tests/app/utils/test_validations.py
+  s_de61555e940d43::t_cdd94f3608a7f6 1-76
+scripts/README.md
+  s_de61555e940d43::t_8e8704b0defc12 1,3-4,15,23-24,28,47-55
+.code_quality/pytest.ini
+  s_de61555e940d43::t_06e5ea41373c3e 19-23
+scripts/setup_local.sh
+  s_de61555e940d43::t_6b9aa15b946ab7 1-39
+pyproject.toml
+  ai_agent 23
+poetry.lock
+  ai_agent 1,24,128,151,659,663-769,773,1160,1235,1251,1354,1356,1362-1364,1388,1466,1468,1470-1471,1474,1481-1482,1485,1488,1518,1522,1524,1543,1870,1892,1897-1898,1919,1925,2168,2342,2346-2436,2578,3044,3048-3096,3105,3127,3444-3445,3597,4228,4232-4346,4351,4356-4357,4563-4564,4568-4569,4750,4755-4756,4812,4862,4865,4869,4874-4875,4988,4996,4998
+.dockerignore
+  h_334e5c58273adb 1,8-12,15-17
+  s_de61555e940d43::t_c614cc7df077e0 2-7,13,18-19
+  s_de61555e940d43::t_50734d34d28f0e 14
+.claude/skills/setup/SKILL.md
+  s_de61555e940d43::t_7556397b439868 25,197
+src/app/entrypoints/scraper_data_to_bucket.py
+  s_de61555e940d43::t_db32daba5eba7e 41
+  s_de61555e940d43::t_fe5c03aa0e9106 18
+  h_334e5c58273adb 29,43,45,47,50,52
+  s_de61555e940d43::t_9ad6aa5af30379 40,55-58
+src/app/utils/__init__.py
+  s_de61555e940d43::t_4f533fe55de938 12,19
+src/app/utils/gcs.py
+  h_334e5c58273adb 17,21,33,43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.6",
+  "base_commit_sha": "d38a0ce6fa0a0205557189f15b706a7e852b513c",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_de61555e940d43": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "51a5b810-473c-4e24-9eef-31f2656e16e4",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
