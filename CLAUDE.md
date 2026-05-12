@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Rentals data pipeline. Application code lives in `src/` (src-layout), tests mirror that structure in `tests/`, notebooks in `notebooks/`, operational shell scripts in `commands/`, all linter/formatter configs in `.code_quality/`.
+Rentals data pipeline. Application code lives in `src/` (src-layout), tests mirror that structure in `tests/`, notebooks in `notebooks/`, operational scripts in `scripts/`, all linter/formatter configs in `.code_quality/`.
 
 ## Stack & version pins
 
@@ -76,7 +76,7 @@ user-invocable: true                      # Show in / menu
   - Detects the required Python version from `pyproject.toml` automatically
   - Checks prerequisites and enforces **Poetry `1.8.3` exactly** (offers `poetry self update 1.8.3` if mismatched)
   - Runs `pyenv install`, then creates `.venv` manually with `$(pyenv which python) -m venv .venv` to bypass a Poetry 1.8.3 system-Python validation bug
-  - Clears Poetry caches, runs `poetry install` inside the activated venv, installs and refreshes `pre-commit` hooks, then runs `commands/setup_local.sh`
+  - Clears Poetry caches, runs `poetry install` inside the activated venv, installs and refreshes `pre-commit` hooks, then runs `scripts/setup_local.sh`
   - Validates each step before proceeding; blocking failures stop the flow, non-blocking ones (e.g. `setup_local.sh`) are surfaced but don't abort
 
 - **`/commit`** — Stage, commit, and push the current branch end-to-end with project safety rails

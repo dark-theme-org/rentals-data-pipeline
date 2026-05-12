@@ -7,18 +7,21 @@ from pytest_mock import MockerFixture
 
 import app.entrypoints.scraper_data_to_bucket as entry
 from app.entrypoints.scraper_data_to_bucket import ScraperMapping, scraper_data_to_bucket
+from app.utils.validations import ScraperParameters
 
 _STORAGE_CLIENT = "app.entrypoints.scraper_data_to_bucket.storage.Client"
+_GET_CREDENTIALS = "app.entrypoints.scraper_data_to_bucket.get_credentials"
 
 
 def test_scraper_data_to_bucket_uploads_each_pair(
     mocker: MockerFixture,
     monkeypatch: pytest.MonkeyPatch,
     item_list_payload: dict,
+    scraper_params: ScraperParameters,
 ) -> None:
     """Test the entrypoint scrapes each (site, property_type) pair and uploads JSON to GCS."""
-    monkeypatch.setattr(entry, "sites", ["vivareal"])
-    monkeypatch.setattr(entry, "property_types", ["apartment"])
+    monkeypatch.setattr(entry, "params", scraper_params)
+    mocker.patch(_GET_CREDENTIALS)
 
     scraper_instance = mocker.MagicMock()
     scraper_instance.set_url.return_value = scraper_instance

@@ -22,7 +22,7 @@ Interact with the user in the same language they used to invoke the skill.
 5. Clear Poetry caches
 6. Install dependencies via `poetry install`
 7. Set up pre-commit hooks
-8. Run `commands/setup_local.sh`
+8. Run `scripts/setup_local.sh`
 
 ---
 
@@ -194,7 +194,7 @@ successfully; fix that before retrying.
 ### Step 7 — Run setup_local.sh
 
 ```bash
-bash commands/setup_local.sh
+bash scripts/setup_local.sh
 ```
 
 This script installs the `local` optional dependency group and the Claude CLI. Failures here are non-blocking (the script already handles them with fallback messages). Show the output to the contributor and highlight any [ERROR] lines if present.

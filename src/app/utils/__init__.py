@@ -9,12 +9,14 @@ from app.utils.utils import (
     configure_logging,
     get_credentials,
 )
+from app.utils.validations import ScraperParameters
 
 __all__ = [
     "PROJECT_ID",
     "Environment",
     "FileExtensions",
     "ServiceAccountNames",
+    "ScraperParameters",
     "configure_logging",
     "get_credentials",
     "task",

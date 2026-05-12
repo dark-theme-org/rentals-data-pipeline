@@ -1,0 +1,17 @@
+# Registry of all DAGs in the project.
+# Each DAG defines an ordered sequence of operations, each referencing a task from tasks.yml.
+# Placeholder syntax {VAR} is resolved at trigger time from Workflow execution inputs.
+
+etl_rentals_data:
+  description: ETL to scrape rentals listings and perform data engineering steps.
+  operations:
+    python_scraper_data_to_bucket:
+      description: Scrape property listings for a given city and upload raw JSON to GCS.
+      version: "0.0.0-test"
+      task: scraper_data_to_bucket
+      inputs:
+        parameters:
+          environment: "{ENVIRONMENT}"
+          city: "{CITY}"
+          sites: "{SITES}"
+          property_types: "{PROPERTY_TYPES}"
