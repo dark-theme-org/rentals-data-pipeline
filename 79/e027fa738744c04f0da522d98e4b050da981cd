@@ -1,0 +1,72 @@
+.claude/skills/terraform/SKILL.md
+  s_de61555e940d43::t_7a778cae3619ef 169-186,193,196
+CLAUDE.md
+  s_de61555e940d43::t_bf3f23929dd917 125-133
+  s_de61555e940d43::t_89d773695d9a74 9,11-12,14
+.google-project-id
+  s_de61555e940d43::t_4914970889eab3 1
+scripts/setup_docker.py
+  s_de61555e940d43::t_0fa549815f8500 12
+  s_de61555e940d43::t_641fb10b510783 62-67
+CHANGELOG.md
+  h_334e5c58273adb 19
+src/app/utils/utils.py
+  s_de61555e940d43::t_ba69116d75136c 6,12
+cloud/workflows/etl_rentals_data.yml
+  s_de61555e940d43::t_f87dd1bd26f305 1-5,7-30
+  s_de61555e940d43::t_d22c0b001b1ad3 6
+cloud/tasks/scraper_data_to_bucket.yml
+  s_de61555e940d43::t_dbc5d1890922ae 1-7,10-12,14,16,18,20
+  s_de61555e940d43::t_63f05d705224bf 8-9
+  s_de61555e940d43::t_0a40d59f0c1046 13,15,17,19
+terraform/iam.tf
+  s_de61555e940d43::t_124edb12e2166e 13,17,23
+  s_de61555e940d43::t_49e5c244073963 24-25
+  s_de61555e940d43::t_d53b0cc25d8377 14-16,21-22
+  h_334e5c58273adb 2-4
+  s_de61555e940d43::t_be3abfc8f93852 20
+terraform/README.md
+  s_de61555e940d43::t_3f808f04bfb634 10-12
+terraform/variables.tf
+  h_334e5c58273adb 3,9
+terraform/locals.tf
+  s_de61555e940d43::t_a9bc4e97816faf 1,5-7
+  s_de61555e940d43::t_965e8ecb08b52e 2
+  h_334e5c58273adb 4
+  s_de61555e940d43::t_8c4f8e8754a09f 3
+terraform/registry.tf
+  h_334e5c58273adb 1-4,7-13,15
+terraform/gcs.tf
+  s_de61555e940d43::t_9436ba632f98e5 5
+  h_334e5c58273adb 22
+terraform/terraform.tf
+  s_de61555e940d43::t_3ca96b53c372e1 6
+  s_de61555e940d43::t_9436ba632f98e5 18
+.claude/skills/run-local/SKILL.md
+  s_de61555e940d43::t_f811fb6a3daf64 108-109,112-119
+  s_de61555e940d43::t_20eb9f36786111 16-34
+  s_de61555e940d43::t_ec7048926b7d53 1-15,35-107,110-111,120-144,146-158,160,167
+  s_de61555e940d43::t_6e77fc9fd8fba4 159,161-166,168-169
+  s_de61555e940d43::t_9dcaaf3f5f58e2 145
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "79e027fa738744c04f0da522d98e4b050da981cd",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_de61555e940d43": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "51a5b810-473c-4e24-9eef-31f2656e16e4",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
