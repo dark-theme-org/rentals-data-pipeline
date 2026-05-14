@@ -23,7 +23,7 @@ Land an append-only history of rental listings for every configured `(site, city
 
 For each configured combination of listing site, city, and property type, the pipeline automatically collects all available rental listings and stores a timestamped snapshot in cloud storage. Data is partitioned by environment, site, city, and property type so that downstream models can consume it directly without further cleanup.
 
-Collection runs automatically on Google Cloud through a managed workflow layer. Each pipeline step is containerised and executed on demand, with configuration centrally managed through two YAML files — one defining what tasks exist and how they run, and another defining the order in which they execute. Adding a new listing site or city requires only a small configuration change with no infrastructure work.
+Collection runs automatically on Google Cloud through a managed workflow layer. Each pipeline step is containerised and executed on demand, with configuration centrally managed in `cloud/` — one YAML file per task defining how it runs, and one YAML file per workflow defining the execution order. Adding a new listing site or city requires only a small configuration change with no infrastructure work.
 
 ### *Code Structure*
 
@@ -32,9 +32,12 @@ Collection runs automatically on Google Cloud through a managed workflow layer. 
 ├── .code_quality/              # Config files to ensure clean code;
 ├── .github/                    # GitHub automations;
 ├── .vscode/                    # VSCode configurations for development;
+├── cloud/                      # Cloud execution configuration;
+│   ├── tasks/                  # One YAML per task — operator type, machine config, parameters;
+│   └── workflows/              # One YAML per workflow — Cloud Workflows native execution graph;
 ├── docs/                       # Documentation files;
 ├── notebooks/                  # Jupyter notebooks for exploration and prototyping;
-├── scripts/                    # Operational scripts (setup, Docker entrypoint);
+├── scripts/                    # Operational scripts (setup, Docker entrypoint, deploy);
 ├── src/                        # Source code;
 │   └── app/                    # Main application code;
 ├── terraform/                  # GCP infrastructure managed by Terraform;
@@ -42,16 +45,15 @@ Collection runs automatically on Google Cloud through a managed workflow layer. 
 ├── .dockerignore               # Files excluded from the Docker build context;
 ├── .gitattributes              # Define attributes for pathnames;
 ├── .gitignore                  # Files that Git should ignore when committing;
+├── .google-project-id          # Single source of truth for the GCP project ID;
 ├── AUTHORS.md                  # List of individuals who contributed to the project;
 ├── CHANGELOG.md                # Annotate notable changes for each version;
 ├── CLAUDE.md                   # Instructions, standards and context to Claude Code AI agent;
 ├── CODING_GUIDELINES.md        # Standards and best practices for the codebase;
-├── dags.yml                    # DAG registry — sequences tasks into Cloud Workflows;
 ├── Dockerfile                  # Container definition, one image per task;
 ├── poetry.lock                 # Ensure reproducible builds across envs;
 ├── pyproject.toml              # Centralized configurations for Python project;
-├── README.md                   # YOU ARE HERE!
-└── tasks.yml                   # Task registry — source of truth for Cloud Run Jobs and Docker builds;
+└── README.md                   # YOU ARE HERE!
 ```
 
 ### *Workflow*
