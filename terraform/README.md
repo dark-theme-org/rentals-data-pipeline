@@ -7,8 +7,9 @@ GCP infrastructure for the **Rentals Data Pipeline** project. Manages the GCS bu
 | Resource | What it is |
 | --- | --- |
 | `google_storage_bucket.scraper-bucket` | `scraper-rentals-data` bucket. Regional in `us-central1`, UBLA on, public access blocked, versioning on, soft-delete 7 days, lifecycle deletes live objects after 30 days, caps noncurrent versions at 5 |
-| `google_service_account.sa` | `${project_id}-sa` — the runner identity used by the pipeline at runtime |
-| `google_storage_bucket_iam_member.sa` | Bucket-scoped binding granting the SA `roles/storage.objectAdmin` on the data bucket only |
+| `google_service_account.gcs_sa` | `${project_id}-gcs-sa` — the runner identity used by Cloud Run Jobs to read and write to GCS |
+| `google_service_account.workflows_sa` | `${project_id}-workflows-sa` — the identity used by Cloud Workflows to trigger Cloud Run Jobs |
+| `google_storage_bucket_iam_member.gcs_sa` | Bucket-scoped binding granting `gcs_sa` `roles/storage.objectAdmin` on the data bucket only |
 
 ## Files
 

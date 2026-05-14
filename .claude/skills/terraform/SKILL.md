@@ -166,16 +166,34 @@ Record the choice as `<action>`. If **Cancel**, exit cleanly.
 
 ---
 
+### Step 5b — Collect variable values
+
+Before planning, parse `terraform/variables.tf` to discover **every** declared variable and its default (if any). Ask the contributor for the value of each variable, regardless of whether it has a default.
+
+Use `AskUserQuestion` (one question per variable, up to 4 per call; make multiple calls if needed):
+
+- **question**: `"Value for <variable_name>?"`
+- **header**: `<variable_name>`
+- **options**:
+  - If the variable **has a default**: first option is `label: "<default>"`, `description: "Default value"`. Include a second meaningful option where applicable (e.g. `"prod"` for an environment variable).
+  - If the variable **has no default**: offer a contextual suggestion as the first option (e.g. `"dev"` for a version tag), clearly labelled as a suggestion. Include a second option where applicable.
+  - The automatic **Other** option always appears, letting the contributor type any custom value.
+- **multiSelect**: `false`
+
+Collect all answers. Pass every variable to the plan command as `-var="<name>=<value>"` flags. Never silently use a default or fill in a value without asking.
+
+---
+
 ### Step 6 — Plan
 
 Generate a plan and save it to `tfplan.out`. The plan file is the exact artifact that will be applied at gate 2 — no re-planning happens between approval and apply.
 
 ```bash
 # For "Apply pending changes" or "Plan only"
-terraform plan -input=false -out=tfplan.out
+terraform plan -input=false -out=tfplan.out -var="<name>=<value>" ...
 
 # For "Destroy infrastructure"
-terraform plan -destroy -input=false -out=tfplan.out
+terraform plan -destroy -input=false -out=tfplan.out -var="<name>=<value>" ...
 ```
 
 If `plan` fails (auth error, GCP API error, name conflict, missing project, etc.), surface the full error and **stop**. Common causes — note these in the error report:

@@ -1,12 +1,26 @@
 resource "google_service_account" "sa" {
-  account_id   = "${var.project_id}-sa"
-  display_name = format("%s service account", var.project_id)
+  account_id   = "${local.project_id}-sa"
+  display_name = format("%s Service Account", local.project_id)
+  description  = "Project SA to manage cloud resources"
 }
 
 resource "google_storage_bucket_iam_member" "sa" {
   bucket = google_storage_bucket.scraper-bucket.name
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${google_service_account.sa.email}"
+}
+
+resource "google_artifact_registry_repository_iam_member" "sa" {
+  location   = google_artifact_registry_repository.pipeline_images.location
+  repository = google_artifact_registry_repository.pipeline_images.name
+  role       = "roles/artifactregistry.reader"
+  member     = "serviceAccount:${google_service_account.sa.email}"
+}
+
+resource "google_project_iam_member" "sa_run_developer" {
+  project = local.project_id
+  role    = "roles/run.developer"
+  member  = "serviceAccount:${google_service_account.sa.email}"
 }
 
 resource "google_service_account_iam_member" "sa_token_creator" {

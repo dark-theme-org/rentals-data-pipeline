@@ -3,7 +3,7 @@ terraform {
 
   backend "gcs" {
     bucket = "dark-tfstates"
-    prefix = "rentals-data-pipeline"
+    prefix = "rentals-data-pipeline" # must match .google-project-id — backend blocks cannot use locals or file()
   }
 
   required_providers {
@@ -15,6 +15,6 @@ terraform {
 }
 
 provider "google" {
-  project = var.project_id
+  project = local.project_id
   region  = var.region
 }

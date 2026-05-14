@@ -6,12 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Rentals data pipeline. Application code lives in `src/` (src-layout), tests mirror that structure in `tests/`, notebooks in `notebooks/`, operational scripts in `scripts/`, all linter/formatter configs in `.code_quality/`.
 
-Cloud execution is driven by two YAML registries at the project root:
+Cloud execution is driven by YAML files under `cloud/`:
 
-- **`tasks.yml`** — defines every executable task: operator type, entrypoint, Cloud Run machine config, and input parameters with defaults. Terraform reads this to create Cloud Run Jobs; the Docker image reads it at container startup via `scripts/setup_docker.py`.
-- **`dags.yml`** — defines the DAGs that sequence tasks into Cloud Workflows. Each operation references a task by name and maps workflow-level `{VAR}` placeholders to task input parameters.
+- **`cloud/tasks/<name>.yml`** — one file per task; defines operator type, entrypoint, Cloud Run machine config, and input parameters with defaults. Terraform reads these to create Cloud Run Jobs; the Docker image reads the matching file at container startup via `scripts/setup_docker.py`.
+- **`cloud/workflows/<name>.yml`** — one file per DAG; Cloud Workflows native YAML that sequences tasks into an ordered execution graph. Terraform reads these to create Cloud Workflows.
 
-The `Dockerfile` builds one image per task (`--build-arg TASK_NAME=<name>`). `scripts/setup_docker.py` is the container entrypoint: it reads `tasks.yml`, validates and injects parameter defaults via `TASK_NAME`, then execs the task command.
+The `Dockerfile` builds one image per task (`--build-arg TASK_NAME=<name>`). `scripts/setup_docker.py` is the container entrypoint: it reads `cloud/tasks/<TASK_NAME>.yml`, injects parameter defaults, then execs the task command.
 
 ## Stack & version pins
 
@@ -121,6 +121,15 @@ user-invocable: true                      # Show in / menu
   - **Saved plan is the contract** — always runs `terraform plan -out=tfplan.out` (or `-destroy` flavor) and applies that exact saved plan after gate 2; never `terraform apply -auto-approve` against a fresh re-plan
   - **Refuses backend migration / reconfigure** — if `terraform init` would migrate or reconfigure state, the skill stops and tells the contributor to run `terraform init -migrate-state` or `-reconfigure` manually outside the skill
   - **Bootstrap is out of scope** — the skill never runs `gcloud projects create`, `gcloud billing projects link`, `gcloud services enable`, or creates the state bucket; redirects to [terraform/README.md](terraform/README.md) Prerequisites for one-time setup
+
+- **`/run-local`** — Run a pipeline task or workflow locally inside Docker, mirroring the Cloud Run environment
+  - **Authorization gate first** — asks the contributor to confirm before doing anything
+  - Discovers available targets by reading `cloud/tasks/*.yml` and `cloud/workflows/*.yml`; presents tasks and workflows as options
+  - For workflows, extracts the referenced tasks from the workflow YAML and collects parameters from each task file
+  - Asks for each input parameter individually, showing the default value and allowing a custom override via **Other**
+  - Resolves the SA email from `terraform/locals.tf` + `terraform/iam.tf`; checks Docker is installed and `~/.config/gcloud/darktheme_credentials.json` exists (creates it from the default ADC file if missing)
+  - Builds one image per task (`--build-arg TASK_NAME=<name>`) and runs it with `GCS_SA`, `GOOGLE_APPLICATION_CREDENTIALS`, and `GOOGLE_CLOUD_PROJECT` set; for workflows runs tasks sequentially and stops on first failure
+  - After the run, asks whether to keep or remove the local image before reporting the outcome
 
 ### Creating New Skills
 

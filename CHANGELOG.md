@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Define `/entrypoints` for main scripts during task execution;
 - Creating `/utils` python objects to be used in multiple modules;
 - Use `/terraform` as IaaC to manage cloud resources;
-- Add context for entrypoint execution in *Cloud* and locally with (`tasks.yml`, `dags.yml` and **Docker** files).
+- Add `/cloud` folder to manage `/tasks` (as *Cloud Run Jobs* interface) and `/workflows` (as *Cloud Workflows* interface) to properly config dags and pipelines.
 
 ### Changed
 

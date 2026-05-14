@@ -9,7 +9,7 @@ from typing import Any
 import yaml
 
 TASK_NAME_DOCKER_PARAM = "TASK_NAME"
-TASKS_FILE = Path(__file__).parent.parent / "tasks.yml"
+TASKS_DIR = Path(__file__).parent.parent / "cloud" / "tasks"
 
 
 class OperatorTypes(StrEnum):
@@ -59,11 +59,12 @@ def main() -> None:
     task_name = os.environ.get(TASK_NAME_DOCKER_PARAM)
     if not task_name:
         sys.exit(f"ERROR: Parameter '{TASK_NAME_DOCKER_PARAM}' is not set.")
-    with open(TASKS_FILE, encoding="utf-8") as f:
-        tasks = yaml.safe_load(f)
-    task = tasks.get(task_name)
-    if task is None:
-        sys.exit(f"ERROR: Task '{task_name}' not found in yml. Availables: {list(tasks.keys())}")
+    task_file = TASKS_DIR / f"{task_name}.yml"
+    if not task_file.exists():
+        available = [f.stem for f in TASKS_DIR.glob("*.yml")]
+        sys.exit(f"ERROR: Task '{task_name}' not found. Availables: {available}")
+    with open(task_file, encoding="utf-8") as f:
+        task = yaml.safe_load(f)
     for param in task.get("inputs", {}).get("parameters", []):
         os.environ.setdefault(param["name"].upper(), str(param["default"]))
     cmd = build_cmd(task)

@@ -1,0 +1,30 @@
+main:
+  params: [args]
+  steps:
+    - init:
+        assign:
+          - project_id: ${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}
+          - location: "us-central1"
+          - environment: ${default(map.get(args, "environment"), "dev")}
+          - city: ${default(map.get(args, "city"), "macae")}
+          - sites: ${default(map.get(args, "sites"), "vivareal,zapimoveis")}
+          - property_types: ${default(map.get(args, "property_types"), "apartment,house")}
+    - run_scraper_data_to_bucket:
+        call: googleapis.run.v2.projects.locations.jobs.run
+        args:
+          name: ${"projects/" + project_id + "/locations/" + location + "/jobs/scraper-data-to-bucket"}
+          body:
+            overrides:
+              containerOverrides:
+                - env:
+                    - name: ENVIRONMENT
+                      value: ${environment}
+                    - name: CITY
+                      value: ${city}
+                    - name: SITES
+                      value: ${sites}
+                    - name: PROPERTY_TYPES
+                      value: ${property_types}
+        result: operation
+    - done:
+        return: ${operation}

@@ -2,7 +2,7 @@ resource "google_storage_bucket" "scraper-bucket" {
   name          = "scraper-rentals-data"
   location      = var.region
   force_destroy = false
-  project       = var.project_id
+  project       = local.project_id
   storage_class = "STANDARD"
 
   lifecycle_rule {
@@ -19,9 +19,7 @@ resource "google_storage_bucket" "scraper-bucket" {
     enabled = true
   }
 
-  labels = {
-    managed_by = "terraform"
-  }
+  labels = local.labels
 
   uniform_bucket_level_access = true
   public_access_prevention    = "enforced"
