@@ -15,7 +15,6 @@ TASKS_DIR = Path(__file__).parent.parent / "cloud" / "tasks"
 class OperatorTypes(StrEnum):
     """Supported operator types for task execution."""
 
-    BASH = "bash"
     PYTHON = "python"
 
 
@@ -29,7 +28,7 @@ def build_cmd(task: dict[str, Any]) -> list[str]:
     task : dict[str, Any]
         Task configuration dict loaded from tasks.yml. Must contain
         ``type`` (one of :class:`OperatorTypes`) and ``entrypoint``
-        (module path or script path).
+        (Python module path, e.g. ``app.entrypoints.scraper_data_to_bucket``).
 
     ----------
     Returns
@@ -47,8 +46,6 @@ def build_cmd(task: dict[str, Any]) -> list[str]:
     op_type, entrypoint = task["type"], task["entrypoint"]
     if op_type == OperatorTypes.PYTHON:
         return [OperatorTypes.PYTHON, "-m", entrypoint]
-    if op_type == OperatorTypes.BASH:
-        return [OperatorTypes.BASH, entrypoint]
     sys.exit(
         f"ERROR: Unknown task type '{op_type}'. " f"Availables: {[e.value for e in OperatorTypes]}"
     )

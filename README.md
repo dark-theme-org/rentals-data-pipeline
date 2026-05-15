@@ -33,6 +33,7 @@ Collection runs automatically on Google Cloud through a managed workflow layer. 
 ├── .github/                    # GitHub automations;
 ├── .vscode/                    # VSCode configurations for development;
 ├── cloud/                      # Cloud execution configuration;
+│   ├── settings.yml            # Single source of truth for GCP project config (project_id, region);
 │   ├── tasks/                  # One YAML per task — operator type, machine config, parameters;
 │   └── workflows/              # One YAML per workflow — Cloud Workflows native execution graph;
 ├── docs/                       # Documentation files;
@@ -45,7 +46,6 @@ Collection runs automatically on Google Cloud through a managed workflow layer. 
 ├── .dockerignore               # Files excluded from the Docker build context;
 ├── .gitattributes              # Define attributes for pathnames;
 ├── .gitignore                  # Files that Git should ignore when committing;
-├── .google-project-id          # Single source of truth for the GCP project ID;
 ├── AUTHORS.md                  # List of individuals who contributed to the project;
 ├── CHANGELOG.md                # Annotate notable changes for each version;
 ├── CLAUDE.md                   # Instructions, standards and context to Claude Code AI agent;

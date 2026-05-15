@@ -1,4 +1,4 @@
-# scripts
+# scripts/
 
 Operational scripts that support onboarding, local development, and the
 cloud execution layer. This folder is intentionally separate from `src/`
@@ -7,12 +7,11 @@ project rather than inside it.
 
 ## When to put a script here
 
-- Onboarding flows that prepare a contributor's machine (install tools,
-  bootstrap dependencies).
-- One-off maintenance tasks invoked manually (cache cleanup, lockfile
-  refresh, environment reset).
+- Onboarding flows that prepare a contributor's machine (install tools, bootstrap dependencies).
+- One-off maintenance tasks invoked manually (cache cleanup, lockfile refresh, environment reset).
 - Glue scripts called by the `.claude/skills/` workflows.
 - Docker runtime scripts that support container execution.
+- Deployment scripts that push images and provision cloud resources.
 
 If a task is part of the application's runtime behavior, it belongs in
 `src/`. If it is a Python utility used by tests or notebooks, it belongs
@@ -46,10 +45,44 @@ in those folders, not here.
     the onboarding flow; can also be invoked directly with
     `bash scripts/setup_local.sh`.
 
-- **`setup_docker.py`** — Docker container entry point. Reads `tasks.yml`
-  at startup, injects parameter defaults for any env vars not already set,
-  then execs the task command (replacing itself so exit codes and signals
-  propagate cleanly to Cloud Run).
+- **`setup_docker.py`** — Docker container entry point. Reads
+  `cloud/tasks/<TASK_NAME>.yml` at startup, validates the task type,
+  injects parameter defaults for any env vars not already set, then execs
+  the task command (replacing itself so exit codes and signals propagate
+  cleanly to Cloud Run).
   - *Invocation*: called automatically by the Docker container via `CMD`;
     never invoked directly. Requires `TASK_NAME` to be set as an env var
     (baked in at image build time via `--build-arg TASK_NAME=<name>`).
+
+- **`deploy.py`** — Deploys Cloud Run Jobs and Cloud Workflows from
+  `cloud/tasks/` and `cloud/workflows/` YAML definitions. Reads project
+  config from `cloud/settings.yml`.
+  - *Invocation*: `poetry run python scripts/deploy.py --version <tag>`
+  - *Prerequisites (one-time setup per machine)*:
+
+    ```bash
+    # Authenticate gcloud
+    gcloud auth login
+
+    # Configure Docker to use gcloud credentials for Artifact Registry
+    gcloud auth configure-docker us-central1-docker.pkg.dev
+    ```
+
+  - *Common usage*:
+
+    ```bash
+    # Full deploy — build images, create Cloud Run Jobs, deploy Workflows
+    poetry run python scripts/deploy.py --version 0.0.1
+
+    # Build and push images only
+    poetry run python scripts/deploy.py --version 0.0.1 --skip-deploy --skip-run
+
+    # Deploy a specific task only
+    poetry run python scripts/deploy.py --version 0.0.1 --tasks scraper_data_to_bucket
+
+    # Override task parameters at deploy time
+    poetry run python scripts/deploy.py --version 0.0.1 --params ENVIRONMENT=prod CITY=rio
+
+    # Deploy a specific workflow only
+    poetry run python scripts/deploy.py --version 0.0.1 --skip-build --skip-deploy --workflow etl_rentals_data
+    ```

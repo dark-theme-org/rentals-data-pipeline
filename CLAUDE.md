@@ -8,10 +8,13 @@ Rentals data pipeline. Application code lives in `src/` (src-layout), tests mirr
 
 Cloud execution is driven by YAML files under `cloud/`:
 
+- **`cloud/settings.yml`** — single source of truth for GCP project config (`project_id`, `region`). Read by `terraform/locals.tf`, `src/app/utils/utils.py` (`CloudSettings`), and `scripts/deploy.py`.
 - **`cloud/tasks/<name>.yml`** — one file per task; defines operator type, entrypoint, Cloud Run machine config, and input parameters with defaults. Terraform reads these to create Cloud Run Jobs; the Docker image reads the matching file at container startup via `scripts/setup_docker.py`.
 - **`cloud/workflows/<name>.yml`** — one file per DAG; Cloud Workflows native YAML that sequences tasks into an ordered execution graph. Terraform reads these to create Cloud Workflows.
 
 The `Dockerfile` builds one image per task (`--build-arg TASK_NAME=<name>`). `scripts/setup_docker.py` is the container entrypoint: it reads `cloud/tasks/<TASK_NAME>.yml`, injects parameter defaults, then execs the task command.
+
+**`scripts/deploy.py`** is the deploy tool — it reads `cloud/tasks/` and `cloud/workflows/` and calls `docker build`, `gcloud run jobs create`, and `gcloud workflows deploy`. Terraform owns long-lived infrastructure (SA, GCS, Artifact Registry); the deploy script owns the application layer (images, jobs, workflows).
 
 ## Stack & version pins
 
@@ -115,7 +118,7 @@ user-invocable: true                      # Show in / menu
 
 - **`/terraform`** — Manage GCP infrastructure for the rentals data pipeline through the standard Terraform flow defined in [terraform/README.md](terraform/README.md)
   - Aborts if `terraform` CLI isn't installed, the `terraform/` directory is missing, or Application Default Credentials aren't set (`gcloud auth application-default print-access-token` fails); redirects to `gcloud auth application-default login` for the ADC case
-  - **Two confirmation gates** — asks (1) the action (apply pending / destroy infrastructure / plan-only), then (2) after seeing the plan summary, whether to apply the saved `tfplan.out`; everything else (preflight, init detection, fmt check, validate, plan generation, post-apply report) runs automatically
+  - **Two confirmation gates plus variable collection** — asks (1) the action (apply pending / destroy infrastructure / plan-only), then collects a value for every variable in `variables.tf` (showing defaults where they exist), then (2) after seeing the plan summary, whether to apply the saved `tfplan.out`; everything else runs automatically
   - **Halts on first failure** — every step (init, fmt, validate, plan, apply) is sequential; if any fails the skill surfaces the full error and stops without advancing
   - **Never authors `.tf` files** — the contributor edits infra manually beforehand; the skill is the executor. Auto-runs `terraform fmt` (whitespace-only) only after asking once if `fmt -check` reports drift
   - **Saved plan is the contract** — always runs `terraform plan -out=tfplan.out` (or `-destroy` flavor) and applies that exact saved plan after gate 2; never `terraform apply -auto-approve` against a fresh re-plan
