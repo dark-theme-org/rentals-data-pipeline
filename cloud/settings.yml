@@ -2,3 +2,5 @@
 
 project_id: rentals-data-pipeline
 region: us-central1
+developers:
+  - user:darktheme.org@gmail.com

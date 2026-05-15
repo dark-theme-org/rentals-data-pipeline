@@ -26,7 +26,7 @@ resource "google_project_iam_member" "sa_run_developer" {
 }
 
 resource "google_service_account_iam_member" "sa_token_creator" {
-  for_each           = toset(var.developer_principals)
+  for_each           = toset(local.developers)
   service_account_id = google_service_account.sa.name
   role               = "roles/iam.serviceAccountTokenCreator"
   member             = each.value

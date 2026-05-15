@@ -8,4 +8,6 @@ locals {
   labels = {
     managed_by = "terraform"
   }
+
+  developers = local._settings.developers
 }
