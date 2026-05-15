@@ -1,0 +1,65 @@
+cloud/settings.yml
+  h_334e5c58273adb 1
+  s_de61555e940d43::t_5336264a52f8fb 2-4
+src/app/utils/utils.py
+  s_de61555e940d43::t_c5b2705dab768f 16-17,20
+  s_de61555e940d43::t_7b262809765f2e 9
+  s_de61555e940d43::t_2e4a34fc6587fd 13-15,18-19,21-22
+src/app/utils/__init__.py
+  s_de61555e940d43::t_d73f0e55beb1f1 5
+  s_de61555e940d43::t_0df5b99682dbac 15
+terraform/registry.tf
+  s_de61555e940d43::t_de41daa13c0f94 1-2
+  s_de61555e940d43::t_494012be56135b 8
+terraform/gcs.tf
+  h_334e5c58273adb 1
+  s_de61555e940d43::t_7e1528abf724c2 2
+  s_de61555e940d43::t_494012be56135b 5
+terraform/locals.tf
+  s_de61555e940d43::t_36dd76a3209403 4-6
+  s_de61555e940d43::t_8e9e88a50ca76b 1-2
+cloud/workflows/etl_rentals_data.yml
+  s_de61555e940d43::t_b00ac83839e2e9 8
+  h_334e5c58273adb 1
+terraform/iam.tf
+  s_de61555e940d43::t_66bd6f1a9516b7 1-2
+  s_cd893d24f7f9c8::t_9287a8aa92b3a9 9,15
+terraform/terraform.tf
+  s_de61555e940d43::t_1d135631313a26 8
+  s_de61555e940d43::t_c2c9a54ebdb91a 1-2
+  s_de61555e940d43::t_494012be56135b 21
+src/app/entrypoints/scraper_data_to_bucket.py
+  s_de61555e940d43::t_fc80b87d066aed 41
+  s_de61555e940d43::t_c527e48bc2c6d5 12
+terraform/variables.tf
+  s_de61555e940d43::t_9f5a4ca02d0d0b 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "967d6cdcf0db33fd40b8edd392c9eef05dbf695f",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_cd893d24f7f9c8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "743a6162-bfbc-447e-a762-bc281413dc08",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    },
+    "s_de61555e940d43": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "51a5b810-473c-4e24-9eef-31f2656e16e4",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
