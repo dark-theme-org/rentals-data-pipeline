@@ -183,8 +183,7 @@ def run_workflow(name: str, version: str, params: dict[str, str] | None = None) 
         [
             "gcloud",
             "workflows",
-            "executions",
-            "create",
+            "run",
             _versioned_name(name, version),
             "--location",
             REGION,
