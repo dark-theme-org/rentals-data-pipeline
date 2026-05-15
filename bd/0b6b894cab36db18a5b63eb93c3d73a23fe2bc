@@ -1,0 +1,41 @@
+scripts/deploy.py
+  s_de61555e940d43::t_ba7b2b479404b5 106,150,188
+  s_de61555e940d43::t_d1b02e2d7ec551 275,277
+  s_de61555e940d43::t_c7c72036a2e859 25-27
+  s_de61555e940d43::t_2f68d8a34ad3cd 181
+  s_de61555e940d43::t_dd6bf18cf83035 131,142-143
+  h_334e5c58273adb 215-216,228-233,268
+  s_de61555e940d43::t_b8610f99b61c55 4,133,161,166-173,176-179,211,222,227,236-241,252,258,260-267,269-274,276
+  s_de61555e940d43::t_ae73e256c96b95 165,174-175,180,182-187,189-196
+scripts/README.md
+  s_de61555e940d43::t_f7ec90cf2f8798 57-67,79-91,95-97,100-111
+terraform/README.md
+  s_de61555e940d43::t_a3b07fd55cc52e 17
+terraform/registry.tf
+  h_334e5c58273adb 14
+cloud/workflows/etl_rentals_data.yml
+  s_de61555e940d43::t_0dc862b03884cd 10-13
+  h_334e5c58273adb 17
+  s_de61555e940d43::t_5daf3dca834f6f 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "bd0b6b894cab36db18a5b63eb93c3d73a23fe2bc",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_de61555e940d43": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "51a5b810-473c-4e24-9eef-31f2656e16e4",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
