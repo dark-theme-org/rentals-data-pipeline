@@ -7,6 +7,7 @@ from pytest_mock import MockerFixture
 
 from app.utils import Environment, FileExtensions
 from app.utils.gcs import ScraperBucket
+from app.utils.validations import ScraperParameters
 
 
 @pytest.fixture(name="env")
@@ -135,3 +136,27 @@ def html_with_bad_json_() -> str:
 def fast_retry_(mocker: MockerFixture) -> None:
     """No-op `tenacity` sleep so retry-decorated calls don't actually wait."""
     mocker.patch("tenacity.nap.time.sleep")
+
+
+@pytest.fixture(name="valid_scraper_env")
+def valid_scraper_env_() -> dict:
+    """Raw env var dict for instantiating ScraperParameters via model_validate."""
+    return {
+        "environment": "dev",
+        "city": "macae",
+        "sites": "vivareal,zapimoveis",
+        "property_types": "apartment,house",
+    }
+
+
+@pytest.fixture(name="scraper_params")
+def scraper_params_() -> ScraperParameters:
+    """ScraperParameters scoped to a single (site, property_type) pair for entrypoint tests."""
+    return ScraperParameters.model_validate(
+        {
+            "environment": "dev",
+            "city": "macae",
+            "sites": "vivareal",
+            "property_types": "apartment",
+        }
+    )

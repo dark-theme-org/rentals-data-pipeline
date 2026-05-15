@@ -4,7 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Rentals data pipeline. Application code lives in `src/` (src-layout), tests mirror that structure in `tests/`, notebooks in `notebooks/`, operational shell scripts in `commands/`, all linter/formatter configs in `.code_quality/`.
+Rentals data pipeline. Application code lives in `src/` (src-layout), tests mirror that structure in `tests/`, notebooks in `notebooks/`, operational scripts in `scripts/`, all linter/formatter configs in `.code_quality/`.
+
+Cloud execution is driven by YAML files under `cloud/`:
+
+- **`cloud/settings.yml`** — single source of truth for GCP project config (`project_id`, `region`). Read by `terraform/locals.tf`, `src/app/utils/utils.py` (`CloudSettings`), and `scripts/deploy.py`.
+- **`cloud/tasks/<name>.yml`** — one file per task; defines operator type, entrypoint, Cloud Run machine config, and input parameters with defaults. Terraform reads these to create Cloud Run Jobs; the Docker image reads the matching file at container startup via `scripts/setup_docker.py`.
+- **`cloud/workflows/<name>.yml`** — one file per DAG; Cloud Workflows native YAML that sequences tasks into an ordered execution graph. Terraform reads these to create Cloud Workflows.
+
+The `Dockerfile` builds one image per task (`--build-arg TASK_NAME=<name>`). `scripts/setup_docker.py` is the container entrypoint: it reads `cloud/tasks/<TASK_NAME>.yml`, injects parameter defaults, then execs the task command.
+
+**`scripts/deploy.py`** is the deploy tool — it reads `cloud/tasks/` and `cloud/workflows/` and calls `docker build`, `gcloud run jobs create`, and `gcloud workflows deploy`. Terraform owns long-lived infrastructure (SA, GCS, Artifact Registry); the deploy script owns the application layer (images, jobs, workflows).
 
 ## Stack & version pins
 
@@ -76,7 +86,7 @@ user-invocable: true                      # Show in / menu
   - Detects the required Python version from `pyproject.toml` automatically
   - Checks prerequisites and enforces **Poetry `1.8.3` exactly** (offers `poetry self update 1.8.3` if mismatched)
   - Runs `pyenv install`, then creates `.venv` manually with `$(pyenv which python) -m venv .venv` to bypass a Poetry 1.8.3 system-Python validation bug
-  - Clears Poetry caches, runs `poetry install` inside the activated venv, installs and refreshes `pre-commit` hooks, then runs `commands/setup_local.sh`
+  - Clears Poetry caches, runs `poetry install` inside the activated venv, installs and refreshes `pre-commit` hooks, then runs `scripts/setup_local.sh`
   - Validates each step before proceeding; blocking failures stop the flow, non-blocking ones (e.g. `setup_local.sh`) are surfaced but don't abort
 
 - **`/commit`** — Stage, commit, and push the current branch end-to-end with project safety rails
@@ -108,12 +118,28 @@ user-invocable: true                      # Show in / menu
 
 - **`/terraform`** — Manage GCP infrastructure for the rentals data pipeline through the standard Terraform flow defined in [terraform/README.md](terraform/README.md)
   - Aborts if `terraform` CLI isn't installed, the `terraform/` directory is missing, or Application Default Credentials aren't set (`gcloud auth application-default print-access-token` fails); redirects to `gcloud auth application-default login` for the ADC case
-  - **Two confirmation gates** — asks (1) the action (apply pending / destroy infrastructure / plan-only), then (2) after seeing the plan summary, whether to apply the saved `tfplan.out`; everything else (preflight, init detection, fmt check, validate, plan generation, post-apply report) runs automatically
+  - **Two confirmation gates plus variable collection** — asks (1) the action (apply pending / destroy infrastructure / plan-only), then collects a value for every variable in `variables.tf` (showing defaults where they exist), then (2) after seeing the plan summary, whether to apply the saved `tfplan.out`; everything else runs automatically
   - **Halts on first failure** — every step (init, fmt, validate, plan, apply) is sequential; if any fails the skill surfaces the full error and stops without advancing
   - **Never authors `.tf` files** — the contributor edits infra manually beforehand; the skill is the executor. Auto-runs `terraform fmt` (whitespace-only) only after asking once if `fmt -check` reports drift
   - **Saved plan is the contract** — always runs `terraform plan -out=tfplan.out` (or `-destroy` flavor) and applies that exact saved plan after gate 2; never `terraform apply -auto-approve` against a fresh re-plan
   - **Refuses backend migration / reconfigure** — if `terraform init` would migrate or reconfigure state, the skill stops and tells the contributor to run `terraform init -migrate-state` or `-reconfigure` manually outside the skill
   - **Bootstrap is out of scope** — the skill never runs `gcloud projects create`, `gcloud billing projects link`, `gcloud services enable`, or creates the state bucket; redirects to [terraform/README.md](terraform/README.md) Prerequisites for one-time setup
+
+- **`/cloud-deploy`** — Deploy Cloud Run Jobs and Cloud Workflows from `cloud/` YAML definitions via `scripts/deploy.py`
+  - **Authorization gate first**, then immediately checks prerequisites (Docker + `docker buildx`)
+  - Discovers available tasks and workflows from `cloud/tasks/` and `cloud/workflows/`
+  - Asks for version tag, target tasks, skip flags, parameter overrides, target workflow, and workflow skip flags
+  - Shows the exact `scripts/deploy.py` command before executing — contributor must confirm
+  - Reports success with a summary of what was deployed, or surfaces the exact error step and message on failure
+
+- **`/run-local`** — Run a pipeline task or workflow locally inside Docker, mirroring the Cloud Run environment
+  - **Authorization gate first** — asks the contributor to confirm before doing anything
+  - Discovers available targets by reading `cloud/tasks/*.yml` and `cloud/workflows/*.yml`; presents tasks and workflows as options
+  - For workflows, extracts the referenced tasks from the workflow YAML and collects parameters from each task file
+  - Asks for each input parameter individually, showing the default value and allowing a custom override via **Other**
+  - Resolves the SA email from `terraform/locals.tf` + `terraform/iam.tf`; checks Docker is installed and `~/.config/gcloud/darktheme_credentials.json` exists (creates it from the default ADC file if missing)
+  - Builds one image per task (`--build-arg TASK_NAME=<name>`) and runs it with `GCS_SA`, `GOOGLE_APPLICATION_CREDENTIALS`, and `GOOGLE_CLOUD_PROJECT` set; for workflows runs tasks sequentially and stops on first failure
+  - After the run, asks whether to keep or remove the local image before reporting the outcome
 
 ### Creating New Skills
 

@@ -2,19 +2,21 @@
 
 from app.utils.decorators import task
 from app.utils.utils import (
-    PROJECT_ID,
+    CloudSettings,
     Environment,
     FileExtensions,
     ServiceAccountNames,
     configure_logging,
     get_credentials,
 )
+from app.utils.validations import ScraperParameters
 
 __all__ = [
-    "PROJECT_ID",
+    "CloudSettings",
     "Environment",
     "FileExtensions",
     "ServiceAccountNames",
+    "ScraperParameters",
     "configure_logging",
     "get_credentials",
     "task",

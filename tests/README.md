@@ -15,7 +15,44 @@ poetry run pytest -c .code_quality/pytest.ini tests/app/utils/test_gcs.py
 poetry run pytest -c .code_quality/pytest.ini tests/app/utils/test_gcs.py::test_scraper_bucket_name
 ```
 
-Config lives in [.code_quality/pytest.ini](../.code_quality/pytest.ini) — sets `pythonpath = src` for the src-layout, scopes discovery to `tests/`, and enables `--strict-markers --strict-config`. Pytest also runs as the final pre-commit hook (see [.pre-commit-config.yaml](../.pre-commit-config.yaml)).
+Config lives in [.code_quality/pytest.ini](../.code_quality/pytest.ini) — sets `pythonpath = src` for
+the src-layout, scopes discovery to `tests/`, enables `--strict-markers --strict-config`, and requires
+**90 % coverage** as a hard gate. Pytest also runs as the final pre-commit hook (see [.pre-commit-config.yaml](../.pre-commit-config.yaml)).
+
+## Environment variables
+
+`pytest.ini` pre-sets the GCP runtime variables via `pytest-env`:
+
+```ini
+env =
+    ENVIRONMENT=dev
+    CITY=macae
+    SITES=vivareal,zapimoveis
+    PROPERTY_TYPES=apartment,house
+```
+
+These allow `ScraperParameters.from_env()` — called at module level in
+`scraper_data_to_bucket.py` — to succeed during test collection without real
+GCP credentials. Individual tests that need to override or remove a variable
+use `monkeypatch.setenv` / `monkeypatch.delenv`.
+
+## Shared fixtures (`tests/conftest.py`)
+
+| Fixture | Type | Description |
+| --- | --- | --- |
+| `env` | `Environment` | `Environment.DEV` |
+| `file_extension` | `FileExtensions` | `FileExtensions.JSON` |
+| `expected_city` | `str` | `"macae"` |
+| `expected_uf` | `str` | `"rj"` |
+| `sa_email` | `str` | Throwaway SA email for credential tests |
+| `scraper_bucket` | `ScraperBucket` | Bound to `(dev, vivareal, macae, apartment)` |
+| `valid_scraper_env` | `dict` | Raw env-var dict for `ScraperParameters.model_validate(...)` |
+| `scraper_params` | `ScraperParameters` | Single-site/type instance for entrypoint tests |
+| `item_list_payload` | `dict` | JSON-LD `ItemList` with two listings |
+| `html_with_item_list` | `str` | HTML page embedding `item_list_payload` |
+| `html_without_item_list` | `str` | HTML page with no `ItemList` block |
+| `html_with_bad_json` | `str` | HTML page with malformed JSON-LD |
+| `fast_retry` | `None` (side-effect) | Patches `tenacity.nap.time.sleep` — apply with `@pytest.mark.usefixtures` |
 
 ## Conventions
 

@@ -1,0 +1,32 @@
+# Workflow definition for the etl_rentals_data Cloud Workflow.
+main:
+  params: [args]
+  steps:
+    - init:
+        assign:
+          - project_id: ${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}
+          - location: ${sys.get_env("GOOGLE_CLOUD_LOCATION")}
+          - version: ${map.get(args, "version")}
+          - environment: ${map.get(args, "environment")}
+          - city: ${map.get(args, "city")}
+          - sites: ${map.get(args, "sites")}
+          - property_types: ${map.get(args, "property_types")}
+    - run_scraper_data_to_bucket:
+        call: googleapis.run.v2.projects.locations.jobs.run
+        args:
+          name: ${"projects/" + project_id + "/locations/" + location + "/jobs/scraper-data-to-bucket" + "-" + version}
+          body:
+            overrides:
+              containerOverrides:
+                - env:
+                    - name: ENVIRONMENT
+                      value: ${environment}
+                    - name: CITY
+                      value: ${city}
+                    - name: SITES
+                      value: ${sites}
+                    - name: PROPERTY_TYPES
+                      value: ${property_types}
+        result: operation
+    - done:
+        return: ${operation}

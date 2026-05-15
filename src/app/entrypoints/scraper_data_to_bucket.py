@@ -3,22 +3,19 @@
 import json
 import logging
 from collections import namedtuple
-from datetime import datetime, timezone
 from typing import Dict
 
 from google.cloud import storage
 
-from app.data.scrapers import City, VivaRealScraper, ZapImoveisScraper
+from app.data.scrapers import VivaRealScraper, ZapImoveisScraper
 from app.utils import (
-    PROJECT_ID,
-    Environment,
-    FileExtensions,
-    ServiceAccountNames,
+    CloudSettings,
     configure_logging,
     get_credentials,
     task,
 )
 from app.utils.gcs import ScraperBucket
+from app.utils.validations import ScraperParameters
 
 logger = logging.getLogger(__name__)
 configure_logging()
@@ -29,17 +26,7 @@ SCRAPER_MAPPING: Dict[str, ScraperMapping] = {
     ZapImoveisScraper.get_site_name(): ScraperMapping(ZapImoveisScraper),
 }
 
-# -> TODO: Create a RuntimeParameters class to manage parameters. Add validations also.
-
-env = Environment.DEV  # -> TODO: Should be input
-city = City.MACAE  # -> TODO: Should be input
-sites = ["vivareal", "zapimoveis"]  # -> TODO: Should be input
-property_types = ["apartment", "house"]  # -> TODO: Should be input
-executed_at = datetime.now(timezone.utc).strftime(
-    "%Y-%m-%dT%H-%M-%SZ"
-)  # -> TODO: Should be auto-filled
-file_extension = FileExtensions.JSON  # -> TODO: Should be auto-filled
-sa_name = ServiceAccountNames.GCS  # -> TODO: Should be auto-filled
+params = ScraperParameters.from_env()
 
 
 @task(label="scraper_data_to_bucket")
@@ -50,23 +37,25 @@ def scraper_data_to_bucket() -> None:
     the matching :class:`ScraperBucket` location.
     """
     gcs_client = storage.Client(
-        credentials=get_credentials(sa_name),
-        project=PROJECT_ID,  # -> TODO: Should be auto-filled
+        credentials=get_credentials(params.sa_name),
+        project=CloudSettings.PROJECT_ID,
     )
-    for site in sites:
+    for site in params.sites:
         scraper_class = SCRAPER_MAPPING[site].scraper_class
-        for property_type in property_types:
+        for property_type in params.property_types:
             logger.info(f"Scrapping for site '{site}' and property_type '{property_type}'...")
-            scraper = scraper_class(city).set_url(property_type).fetch_and_parse_html()
+            scraper = scraper_class(params.city).set_url(property_type).fetch_and_parse_html()
             properties_dict = scraper.extract_properties()
             scraper_bucket = ScraperBucket(
-                env=env,
+                env=params.environment,
                 site=scraper.get_site_name(),
-                city=city,
+                city=params.city,
                 property_type=property_type,
             )
-            blob_name = scraper_bucket.blob_name(filename=executed_at, extension=file_extension)
-            logger.info(f"Uploading '{file_extension}' files to '{scraper_bucket.prefix}'.")
+            blob_name = scraper_bucket.blob_name(
+                filename=params.executed_at, extension=params.file_extension
+            )
+            logger.info(f"Uploading '{params.file_extension}' files to '{scraper_bucket.prefix}'.")
             gcs_client.bucket(scraper_bucket.name).blob(blob_name).upload_from_string(
                 json.dumps(properties_dict, ensure_ascii=False, indent=2),
                 content_type="application/json",

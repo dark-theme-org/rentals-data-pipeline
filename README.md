@@ -21,7 +21,9 @@ Land an append-only history of rental listings for every configured `(site, city
 
 ### *Solution*
 
-A Python entrypoint (`app.entrypoints.scraper_data_to_bucket`) orchestrates one `SiteScraper` subclass per supported site (`VivaRealScraper`, `ZapImoveisScraper`). Each scraper builds its site-specific URL from the `(city, property_type)` pair, fetches the HTML with retries + exponential backoff (tenacity), parses it (BeautifulSoup), and extracts the embedded `ItemList` JSON-LD block as a `{listing @id → payload}` dict. The entrypoint then uploads that payload as a single timestamped JSON blob to `gs://scraper-rentals-data/<env>/<site>/<city>/<property_type>/<executed_at>.json`. The bucket itself and the runtime service account are managed by Terraform under [terraform/](terraform/README.md). Adding a new listing site is a ~10-line subclass; adding a new city is a one-line addition to `CITIES_UF` in `app/data/scrapers/settings.py`.
+For each configured combination of listing site, city, and property type, the pipeline automatically collects all available rental listings and stores a timestamped snapshot in cloud storage. Data is partitioned by environment, site, city, and property type so that downstream models can consume it directly without further cleanup.
+
+Collection runs automatically on Google Cloud through a managed workflow layer. Each pipeline step is containerised and executed on demand, with configuration centrally managed in `cloud/` — one YAML file per task defining how it runs, and one YAML file per workflow defining the execution order. Adding a new listing site or city requires only a small configuration change with no infrastructure work.
 
 ### *Code Structure*
 
@@ -30,21 +32,28 @@ A Python entrypoint (`app.entrypoints.scraper_data_to_bucket`) orchestrates one 
 ├── .code_quality/              # Config files to ensure clean code;
 ├── .github/                    # GitHub automations;
 ├── .vscode/                    # VSCode configurations for development;
-├── commands/                   # Shell commands;
+├── cloud/                      # Cloud execution configuration;
+│   ├── settings.yml            # Single source of truth for GCP project config (project_id, region);
+│   ├── tasks/                  # One YAML per task — operator type, machine config, parameters;
+│   └── workflows/              # One YAML per workflow — Cloud Workflows native execution graph;
 ├── docs/                       # Documentation files;
 ├── notebooks/                  # Jupyter notebooks for exploration and prototyping;
+├── scripts/                    # Operational scripts (setup, Docker entrypoint, deploy);
 ├── src/                        # Source code;
 │   └── app/                    # Main application code;
+├── terraform/                  # GCP infrastructure managed by Terraform;
 ├── tests/                      # Pytests for quality assurance;
+├── .dockerignore               # Files excluded from the Docker build context;
 ├── .gitattributes              # Define attributes for pathnames;
 ├── .gitignore                  # Files that Git should ignore when committing;
 ├── AUTHORS.md                  # List of individuals who contributed to the project;
 ├── CHANGELOG.md                # Annotate notable changes for each version;
 ├── CLAUDE.md                   # Instructions, standards and context to Claude Code AI agent;
 ├── CODING_GUIDELINES.md        # Standards and best practices for the codebase;
+├── Dockerfile                  # Container definition, one image per task;
 ├── poetry.lock                 # Ensure reproducible builds across envs;
 ├── pyproject.toml              # Centralized configurations for Python project;
-├── README.md                   # YOU ARE HERE!
+└── README.md                   # YOU ARE HERE!
 ```
 
 ### *Workflow*

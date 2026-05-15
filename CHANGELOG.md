@@ -12,10 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 
 - Set repository architecture with **core folders/files**;
-- Create `/scrapers` features to fetch and extract **properties** data;
-- Use `/terraform` as IaaC to manage cloud resources;
+- Create `/data/scrapers` features to fetch and extract **properties** data;
 - Define `/entrypoints` for main scripts during task execution;
-- Creating `/utils` python objects to be used in multiple modules.
+- Creating `/utils` python objects to be used in multiple modules;
+- Use `/terraform` as IaaC to manage cloud resources;
+- Add `/cloud` folder to manage `/tasks` (as *Cloud Run Jobs* interface) and `/workflows` (as *Cloud Workflows* interface) to properly config dags and pipelines.
 
 ### Changed
 

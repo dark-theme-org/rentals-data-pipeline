@@ -4,8 +4,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import PurePosixPath
 
-from app.utils import Environment, FileExtensions
-
 
 @dataclass(frozen=True, kw_only=True)
 class Bucket(ABC):
@@ -16,11 +14,11 @@ class Bucket(ABC):
     ----------
     Parameters
     ----------
-    env : Environment
+    env : str
         Deployment environment that scopes the object-key prefix.
     """
 
-    env: Environment
+    env: str
 
     @property
     @abstractmethod
@@ -32,7 +30,7 @@ class Bucket(ABC):
     def prefix(self) -> str:
         """Object-key prefix under :attr:`name`."""
 
-    def blob_name(self, *, filename: str, extension: FileExtensions) -> str:
+    def blob_name(self, *, filename: str, extension: str) -> str:
         """
         Build a fully-qualified blob name by joining :attr:`prefix` with
         ``filename.extension``.
@@ -42,7 +40,7 @@ class Bucket(ABC):
         ----------
         filename : str
             Base filename without extension.
-        extension : FileExtensions
+        extension : str
             File extension to append.
 
         ----------
