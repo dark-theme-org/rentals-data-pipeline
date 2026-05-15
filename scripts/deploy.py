@@ -27,7 +27,7 @@ def _versioned_name(name: str, version: str) -> str:
     return f"{name.replace('_', '-')}-{version.replace('.', '-')}"
 
 
-def run_cmd(cmd: list[str], step: str) -> None:
+def run_cmd(cmd: list[str], step: str, env: dict | None = None) -> None:
     """
     Run a subprocess command and exit with a named step error on failure.
 
@@ -38,6 +38,9 @@ def run_cmd(cmd: list[str], step: str) -> None:
         Command and arguments to execute.
     step : str
         Step label shown in the error message.
+    env : dict | None
+        Optional environment variables for the subprocess. Defaults to the
+        current process environment when ``None``.
 
     ----------
     Raises
@@ -45,7 +48,9 @@ def run_cmd(cmd: list[str], step: str) -> None:
     SystemExit
         If the command exits with a non-zero return code.
     """
-    result = subprocess.run(cmd, capture_output=True, text=True)  # pylint: disable=W1510  # nosec
+    result = subprocess.run(  # pylint: disable=W1510  # nosec
+        cmd, capture_output=True, text=True, env=env
+    )
     if result.returncode != 0:
         print(f"ERROR [{step}]:\n{result.stderr.strip()}", file=sys.stderr)
         sys.exit(1)
@@ -67,6 +72,7 @@ def build_and_push_images(task_name: str, version: str) -> None:
     run_cmd(
         [
             "docker",
+            "buildx",
             "build",
             "--platform",
             "linux/amd64",
@@ -74,11 +80,11 @@ def build_and_push_images(task_name: str, version: str) -> None:
             f"TASK_NAME={task_name}",
             "-t",
             url,
+            "--push",
             ".",
         ],
         f"build:{task_name}",
     )
-    run_cmd(["docker", "push", url], f"push:{task_name}")
 
 
 def deploy_task(
