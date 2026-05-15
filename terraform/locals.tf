@@ -1,5 +1,9 @@
+# Computed locals shared across all Terraform resources.
+
 locals {
-  project_id = trimspace(file("${path.module}/../.google-project-id"))
+  _settings  = yamldecode(file("${path.module}/../cloud/settings.yml"))
+  project_id = local._settings.project_id
+  region     = local._settings.region
 
   labels = {
     managed_by = "terraform"

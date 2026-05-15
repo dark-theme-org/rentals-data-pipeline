@@ -1,10 +1,11 @@
+# Workflow definition for the etl_rentals_data Cloud Workflow.
 main:
   params: [args]
   steps:
     - init:
         assign:
           - project_id: ${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}
-          - location: "us-central1"
+          - location: ${sys.get_env("GOOGLE_CLOUD_LOCATION")}
           - environment: ${default(map.get(args, "environment"), "dev")}
           - city: ${default(map.get(args, "city"), "macae")}
           - sites: ${default(map.get(args, "sites"), "vivareal,zapimoveis")}

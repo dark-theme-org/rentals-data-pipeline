@@ -6,10 +6,20 @@ from enum import StrEnum
 from pathlib import Path
 
 import google.auth
+import yaml
 from google.auth import impersonated_credentials
 from google.auth.credentials import Credentials
 
-PROJECT_ID: str = (Path(__file__).parents[3] / ".google-project-id").read_text().strip()
+_SETTINGS: dict = yaml.safe_load(
+    (Path(__file__).parents[3] / "cloud" / "settings.yml").read_text(encoding="utf-8")
+)
+
+
+class CloudSettings(StrEnum):
+    """GCP project settings loaded from cloud/settings.yml."""
+
+    PROJECT_ID = _SETTINGS["project_id"]
+    REGION = _SETTINGS["region"]
 
 
 class Environment(StrEnum):

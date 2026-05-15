@@ -1,8 +1,4 @@
-variable "region" {
-  type        = string
-  description = "Region for GCP resources."
-  default     = "us-central1"
-}
+# Input variables for the Terraform stack.
 
 variable "developer_principals" {
   type        = list(string)

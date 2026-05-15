@@ -1,6 +1,8 @@
+# GCS buckets for rentals data pipeline .
+
 resource "google_storage_bucket" "scraper-bucket" {
   name          = "scraper-rentals-data"
-  location      = var.region
+  location      = local.region
   force_destroy = false
   project       = local.project_id
   storage_class = "STANDARD"

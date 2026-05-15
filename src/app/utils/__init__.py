@@ -2,7 +2,7 @@
 
 from app.utils.decorators import task
 from app.utils.utils import (
-    PROJECT_ID,
+    CloudSettings,
     Environment,
     FileExtensions,
     ServiceAccountNames,
@@ -12,7 +12,7 @@ from app.utils.utils import (
 from app.utils.validations import ScraperParameters
 
 __all__ = [
-    "PROJECT_ID",
+    "CloudSettings",
     "Environment",
     "FileExtensions",
     "ServiceAccountNames",
