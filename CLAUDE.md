@@ -125,6 +125,13 @@ user-invocable: true                      # Show in / menu
   - **Refuses backend migration / reconfigure** — if `terraform init` would migrate or reconfigure state, the skill stops and tells the contributor to run `terraform init -migrate-state` or `-reconfigure` manually outside the skill
   - **Bootstrap is out of scope** — the skill never runs `gcloud projects create`, `gcloud billing projects link`, `gcloud services enable`, or creates the state bucket; redirects to [terraform/README.md](terraform/README.md) Prerequisites for one-time setup
 
+- **`/cloud-deploy`** — Deploy Cloud Run Jobs and Cloud Workflows from `cloud/` YAML definitions via `scripts/deploy.py`
+  - **Authorization gate first**, then immediately checks prerequisites (Docker + `docker buildx`)
+  - Discovers available tasks and workflows from `cloud/tasks/` and `cloud/workflows/`
+  - Asks for version tag, target tasks, skip flags, parameter overrides, target workflow, and workflow skip flags
+  - Shows the exact `scripts/deploy.py` command before executing — contributor must confirm
+  - Reports success with a summary of what was deployed, or surfaces the exact error step and message on failure
+
 - **`/run-local`** — Run a pipeline task or workflow locally inside Docker, mirroring the Cloud Run environment
   - **Authorization gate first** — asks the contributor to confirm before doing anything
   - Discovers available targets by reading `cloud/tasks/*.yml` and `cloud/workflows/*.yml`; presents tasks and workflows as options
