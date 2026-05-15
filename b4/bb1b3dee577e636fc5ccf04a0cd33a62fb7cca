@@ -1,0 +1,14 @@
+scripts/deploy.py
+  h_334e5c58273adb 186
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "b4bb1b3dee577e636fc5ccf04a0cd33a62fb7cca",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
