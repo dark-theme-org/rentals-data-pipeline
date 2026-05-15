@@ -65,7 +65,17 @@ def build_and_push_images(task_name: str, version: str) -> None:
     """
     url = IMAGE_URL.format(task_name=task_name, version=version)
     run_cmd(
-        ["docker", "build", "--build-arg", f"TASK_NAME={task_name}", "-t", url, "."],
+        [
+            "docker",
+            "build",
+            "--platform",
+            "linux/amd64",
+            "--build-arg",
+            f"TASK_NAME={task_name}",
+            "-t",
+            url,
+            ".",
+        ],
         f"build:{task_name}",
     )
     run_cmd(["docker", "push", url], f"push:{task_name}")
