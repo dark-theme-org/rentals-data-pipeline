@@ -54,9 +54,17 @@ in those folders, not here.
     never invoked directly. Requires `TASK_NAME` to be set as an env var
     (baked in at image build time via `--build-arg TASK_NAME=<name>`).
 
-- **`deploy.py`** — Deploys Cloud Run Jobs and Cloud Workflows from
-  `cloud/tasks/` and `cloud/workflows/` YAML definitions. Reads project
-  config from `cloud/settings.yml`.
+- **`deploy.py`** — Manages the full deployment cycle: builds and pushes
+  Docker images, creates versioned Cloud Run Jobs, deploys Cloud Workflow
+  definitions, and triggers workflow executions. Reads project config from
+  `cloud/settings.yml`.
+
+  The `--version` tag is appended to all GCP resource names so multiple
+  versions can coexist:
+  - Image: `scraper_data_to_bucket:0.0.1`
+  - Cloud Run Job: `scraper-data-to-bucket-0-0-1`
+  - Cloud Workflow: `etl-rentals-data-0-0-1`
+
   - *Invocation*: `poetry run python scripts/deploy.py --version <tag>`
   - *Prerequisites (one-time setup per machine)*:
 
@@ -68,21 +76,37 @@ in those folders, not here.
     gcloud auth configure-docker us-central1-docker.pkg.dev
     ```
 
+  - *Flags*:
+
+    | Flag | Effect |
+    | --- | --- |
+    | `--version` | *(required)* Docker image tag; appended to all GCP resource names |
+    | `--tasks` | Build/deploy only the named task(s). All if omitted |
+    | `--workflow` | Deploy/run only the named workflow. All if omitted |
+    | `--params` | Override parameter values, e.g. `ENVIRONMENT=prod CITY=rio` |
+    | `--skip-build` | Skip `docker build` and `docker push` |
+    | `--skip-task-deploy` | Skip Cloud Run Job creation |
+    | `--skip-workflow-deploy` | Skip Cloud Workflow definition upload |
+    | `--skip-workflow-run` | Skip Cloud Workflow execution trigger |
+
   - *Common usage*:
 
     ```bash
-    # Full deploy — build images, create Cloud Run Jobs, deploy Workflows
-    poetry run python scripts/deploy.py --version 0.0.1
+    # Full cycle — build, deploy job, deploy workflow, trigger execution
+    poetry run python scripts/deploy.py --version 0.0.1 \
+      --params ENVIRONMENT=dev CITY=macae SITES=vivareal PROPERTY_TYPES=apartment,house
 
     # Build and push images only
-    poetry run python scripts/deploy.py --version 0.0.1 --skip-deploy --skip-run
+    poetry run python scripts/deploy.py --version 0.0.1 \
+      --skip-task-deploy --skip-workflow-deploy --skip-workflow-run
 
-    # Deploy a specific task only
-    poetry run python scripts/deploy.py --version 0.0.1 --tasks scraper_data_to_bucket
+    # Trigger workflow execution only (job and workflow already deployed)
+    poetry run python scripts/deploy.py --version 0.0.1 \
+      --skip-build --skip-task-deploy --skip-workflow-deploy \
+      --params ENVIRONMENT=prod CITY=macae SITES=vivareal PROPERTY_TYPES=apartment,house
 
-    # Override task parameters at deploy time
-    poetry run python scripts/deploy.py --version 0.0.1 --params ENVIRONMENT=prod CITY=rio
-
-    # Deploy a specific workflow only
-    poetry run python scripts/deploy.py --version 0.0.1 --skip-build --skip-deploy --workflow etl_rentals_data
+    # Deploy and run a specific workflow
+    poetry run python scripts/deploy.py --version 0.0.1 \
+      --skip-build --skip-task-deploy --workflow etl_rentals_data \
+      --params ENVIRONMENT=dev CITY=macae SITES=vivareal PROPERTY_TYPES=apartment,house
     ```

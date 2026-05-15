@@ -1,6 +1,7 @@
 """Deploy Cloud Run Jobs and Cloud Workflows from cloud/ YAML definitions."""
 
 import argparse
+import json
 import subprocess  # nosec
 import sys
 from pathlib import Path
@@ -19,6 +20,11 @@ REGION: str = _settings["region"]
 AR_REPO: str = f"{PROJECT_ID}-docker"
 IMAGE_URL: str = f"{REGION}-docker.pkg.dev/{PROJECT_ID}/{AR_REPO}/{{task_name}}:{{version}}"
 SA_EMAIL: str = f"{PROJECT_ID}-sa@{PROJECT_ID}.iam.gserviceaccount.com"
+
+
+def _versioned_name(name: str, version: str) -> str:
+    """Return a GCP-safe resource name with the version appended."""
+    return f"{name.replace('_', '-')}-{version.replace('.', '-')}"
 
 
 def run_cmd(cmd: list[str], step: str) -> None:
@@ -97,7 +103,7 @@ def deploy_task(
             "run",
             "jobs",
             "create",
-            name.replace("_", "-"),
+            _versioned_name(name, version),
             "--image",
             url,
             "--region",
@@ -122,9 +128,9 @@ def deploy_task(
     )
 
 
-def run_workflow(name: str, file: Path) -> None:
+def deploy_workflow(name: str, file: Path, version: str) -> None:
     """
-    Run a Cloud Workflow from its YAML definition.
+    Upload a Cloud Workflow definition to GCP from its YAML source.
 
     ----------
     Parameters
@@ -133,13 +139,15 @@ def run_workflow(name: str, file: Path) -> None:
         Workflow name; used to derive the Cloud Workflows resource name (``_`` → ``-``).
     file : Path
         Path to the Cloud Workflows YAML source file.
+    version : str
+        Version tag appended to the workflow resource name.
     """
     run_cmd(
         [
             "gcloud",
             "workflows",
             "deploy",
-            name.replace("_", "-"),
+            _versioned_name(name, version),
             "--location",
             REGION,
             "--source",
@@ -150,13 +158,47 @@ def run_workflow(name: str, file: Path) -> None:
             PROJECT_ID,
             "--quiet",
         ],
-        f"run:{name}",
+        f"deploy-workflow:{name}",
+    )
+
+
+def run_workflow(name: str, version: str, params: dict[str, str] | None = None) -> None:
+    """
+    Trigger a Cloud Workflow execution.
+
+    ----------
+    Parameters
+    ----------
+    name : str
+        Workflow name; used to derive the Cloud Workflows resource name (``_`` → ``-``).
+    version : str
+        Version tag used to resolve the versioned workflow and job names.
+    params : dict[str, str] | None
+        Optional input parameters passed as workflow arguments. Keys are
+        lowercased before being serialised to JSON.
+    """
+    data: dict[str, str] = {k.lower(): v for k, v in (params or {}).items()}
+    data["version"] = version.replace(".", "-")
+    run_cmd(
+        [
+            "gcloud",
+            "workflows",
+            "executions",
+            "create",
+            _versioned_name(name, version),
+            "--location",
+            REGION,
+            "--project",
+            PROJECT_ID,
+            "--data",
+            json.dumps(data),
+        ],
+        f"run-workflow:{name}",
     )
 
 
 def main() -> None:
     """Parse arguments and execute the requested deploy steps."""
-    # 1. Parse declared arguments during script invoke
     parser = argparse.ArgumentParser(
         description="Deploy Cloud Run Jobs and Cloud Workflows from cloud/ YAML definitions."
     )
@@ -166,26 +208,37 @@ def main() -> None:
         nargs="+",
         default=None,
         metavar="TASK_NAME",
-        help="Named task(s) for build/push process. All if omitted.",
+        help="Named task(s) for build/deploy process. All if omitted.",
     )
     parser.add_argument("--skip-build", action="store_true", help="Skip docker build and push.")
-    parser.add_argument("--skip-deploy", action="store_true", help="Skip Cloud Run Job creation.")
+    parser.add_argument(
+        "--skip-task-deploy", action="store_true", help="Skip Cloud Run Job creation."
+    )
     parser.add_argument(
         "--params",
         nargs="+",
         default=None,
         metavar="KEY=VALUE",
-        help="Override task parameter values.",
+        help="Override task parameter values and workflow execution inputs.",
     )
-    parser.add_argument("--skip-run", action="store_true", help="Skip Cloud Workflow deployment.")
     parser.add_argument(
         "--workflow",
         default=None,
-        help="Named workflow to run. Will run all if omitted.",
+        help="Named workflow to deploy/run. All if omitted.",
+    )
+    parser.add_argument(
+        "--skip-workflow-deploy", action="store_true", help="Skip Cloud Workflow definition upload."
+    )
+    parser.add_argument(
+        "--skip-workflow-run", action="store_true", help="Skip Cloud Workflow execution trigger."
     )
     args = parser.parse_args()
-    # 2. Execute each mandatory step sequentially:
-    # 2.1. Build/Push task images -> deploy tasks
+
+    params_override: dict[str, str] | None = (
+        {k: v for kv in args.params for k, _, v in [kv.partition("=")]} if args.params else None
+    )
+
+    # Step 1: Build/push images and deploy Cloud Run Jobs
     task_files = sorted(TASKS_DIR.glob("*.yml"))
     if args.tasks:
         available_tasks = [f.stem for f in task_files]
@@ -196,32 +249,32 @@ def main() -> None:
             )
             sys.exit(1)
         task_files = [f for f in task_files if f.stem in args.tasks]
+
     for task_file in task_files:
         task_name = task_file.stem
         task_configs = yaml.safe_load(task_file.read_text(encoding="utf-8"))
         if not args.skip_build:
             build_and_push_images(task_name, args.version)
-        if not args.skip_deploy:
-            params_override: dict[str, str] | None = (
-                {k: v for kv in args.params for k, _, v in [kv.partition("=")]}
-                if args.params
-                else None
-            )
+        if not args.skip_task_deploy:
             deploy_task(task_name, task_configs, args.version, params_override)
-    # 2.2. Run workflow
-    if not args.skip_run:
-        workflow_files = sorted(WORKFLOWS_DIR.glob("*.yml"))
-        if args.workflow:
-            available_workflows = [f.stem for f in workflow_files]
-            if args.workflow not in available_workflows:
-                print(
-                    f"ERROR: Unknown workflow '{args.workflow}'. Availables: {available_workflows}",
-                    file=sys.stderr,
-                )
-                sys.exit(1)
-            workflow_files = [f for f in workflow_files if f.stem == args.workflow]
-        for workflow_file in workflow_files:
-            run_workflow(workflow_file.stem, workflow_file)
+
+    # Step 2: Deploy and run Cloud Workflows
+    workflow_files = sorted(WORKFLOWS_DIR.glob("*.yml"))
+    if args.workflow:
+        available_workflows = [f.stem for f in workflow_files]
+        if args.workflow not in available_workflows:
+            print(
+                f"ERROR: Unknown workflow '{args.workflow}'. Availables: {available_workflows}",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        workflow_files = [f for f in workflow_files if f.stem == args.workflow]
+
+    for workflow_file in workflow_files:
+        if not args.skip_workflow_deploy:
+            deploy_workflow(workflow_file.stem, workflow_file, args.version)
+        if not args.skip_workflow_run:
+            run_workflow(workflow_file.stem, args.version, params_override)
 
 
 if __name__ == "__main__":

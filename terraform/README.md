@@ -14,7 +14,7 @@ hosted in the `darktheme-ops` project.
 | Resource | What it is |
 | --- | --- |
 | `google_storage_bucket.scraper-bucket` | `scraper-rentals-data` — regional in `us-central1`, versioning on, lifecycle deletes live objects after 30 days, public access blocked |
-| `google_artifact_registry_repository.pipeline_images` | `${project_id}-docker` — Docker image repository for Cloud Run Job images |
+| `google_artifact_registry_repository.pipeline_images` | `${project_id}-docker` — Docker image repository for Cloud Run Job images. `immutable_tags = false` allows the same tag to be overwritten across deploys. |
 | `google_service_account.sa` | `${project_id}-sa` — single runtime identity used by Cloud Run Jobs, Cloud Workflows, and local dev via ADC impersonation |
 | `google_storage_bucket_iam_member.sa_bucket` | `storage.objectAdmin` on the data bucket |
 | `google_artifact_registry_repository_iam_member.sa_registry` | `artifactregistry.reader` on the image repository |
