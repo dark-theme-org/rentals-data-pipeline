@@ -1,0 +1,12 @@
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "c00368811492a59d9b6df317db4781bc16327e57",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
