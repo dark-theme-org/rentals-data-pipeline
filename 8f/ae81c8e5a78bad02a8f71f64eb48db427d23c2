@@ -1,0 +1,58 @@
+tests/conftest.py
+  s_06ab656168a421::t_9b52c2b809bc1b 27-30
+  s_06ab656168a421::t_aa45550e2b0dcd 152-153,168-169,185-203
+tests/app/data/scrapers/sites/test_base.py
+  s_06ab656168a421::t_4df79020a43a3e 79-103
+tests/app/entrypoints/test_scraper_data_to_bucket.py
+  s_06ab656168a421::t_5d33b749cbfde5 28,62,79-138
+src/app/utils/gcs.py
+  s_06ab656168a421::t_d41d9542fd3216 76,85-88
+src/app/entrypoints/scraper_data_to_bucket.py
+  s_06ab656168a421::t_dfb5a6ee841b7c 74,77
+  h_334e5c58273adb 56-57,62
+  s_06ab656168a421::t_95f0a3333b054d 48,50-55
+  s_06ab656168a421::t_9edd621308fb2f 47,49,58-61,63-73,75-76,78-87
+cloud/tasks/scraper_data_to_bucket.yml
+  s_06ab656168a421::t_9234f04681a688 23-25
+  h_334e5c58273adb 26
+tests/app/utils/test_gcs.py
+  s_06ab656168a421::t_55500bbeb7a03b 15-16
+.code_quality/pytest.ini
+  s_06ab656168a421::t_52412cc00be637 24-26
+src/app/utils/validations.py
+  h_334e5c58273adb 56-57
+  s_06ab656168a421::t_be150fb3065969 37-38
+cloud/workflows/etl_rentals_data.yml
+  s_06ab656168a421::t_54044f968e14bc 35-38
+  s_06ab656168a421::t_522c337be1ab52 15-16
+tests/app/utils/test_validations.py
+  s_06ab656168a421::t_2eb9768f916dc8 92-123
+  s_06ab656168a421::t_03509b2587ce65 19-20
+src/app/data/scrapers/sites/base.py
+  s_06ab656168a421::t_68d448bbf10a5c 113,118-124,139-141,149-150
+  s_06ab656168a421::t_4e78c4ffb463f0 162-166
+  s_06ab656168a421::t_e3d7cb4e056048 168,172-173
+  h_334e5c58273adb 159,169-171,176-177,181,185
+  s_06ab656168a421::t_4b31edf8f24fc6 129-130
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "8fae81c8e5a78bad02a8f71f64eb48db427d23c2",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_06ab656168a421": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d7dbc0d0-792c-4f0e-889f-4f303176b945",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
