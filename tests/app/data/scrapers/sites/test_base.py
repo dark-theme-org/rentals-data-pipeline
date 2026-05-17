@@ -129,7 +129,7 @@ def test_fetch_and_parse_html_raises_http_error_after_retries(
     with pytest.raises(requests.exceptions.HTTPError):
         stub_scraper.set_url("apartment").fetch_and_parse_html()
 
-    assert get.call_count == 3
+    assert get.call_count == 6
 
 
 def test_extract_properties_raises_when_soup_not_parsed(stub_scraper: SiteScraper) -> None:

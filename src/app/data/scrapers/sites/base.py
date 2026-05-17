@@ -13,7 +13,7 @@ from tenacity import (
     retry,
     retry_if_exception_type,
     stop_after_attempt,
-    wait_exponential,
+    wait_random_exponential,
 )
 
 from app.data.scrapers.settings import CITIES_UF, UF, City, PropertyTypes
@@ -105,8 +105,8 @@ class SiteScraper:
 
     @retry(
         retry=retry_if_exception_type(requests.exceptions.RequestException),
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=1, max=10),
+        stop=stop_after_attempt(6),
+        wait=wait_random_exponential(multiplier=1, min=2, max=30),
         before_sleep=before_sleep_log(logger, logging.WARNING),  # type: ignore[arg-type]
         reraise=True,
     )
