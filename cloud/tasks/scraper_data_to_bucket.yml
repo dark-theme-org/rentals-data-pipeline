@@ -20,3 +20,7 @@ inputs:
       default: apartment,house
     - name: UPLOAD_TO_GCS
       default: true
+    - name: START_PAGE
+      default: 1
+    - name: MAX_PAGE
+      default: -1

@@ -12,6 +12,8 @@ main:
           - sites: ${map.get(args, "SITES")}
           - property_types: ${map.get(args, "PROPERTY_TYPES")}
           - upload_to_gcs: ${map.get(args, "UPLOAD_TO_GCS")}
+          - start_page: ${map.get(args, "START_PAGE")}
+          - max_page: ${map.get(args, "MAX_PAGE")}
     - run_scraper_data_to_bucket:
         call: googleapis.run.v2.projects.locations.jobs.run
         args:
@@ -30,6 +32,10 @@ main:
                       value: ${property_types}
                     - name: UPLOAD_TO_GCS
                       value: ${upload_to_gcs}
+                    - name: START_PAGE
+                      value: ${start_page}
+                    - name: MAX_PAGE
+                      value: ${max_page}
         result: operation
     - done:
         return: ${operation}

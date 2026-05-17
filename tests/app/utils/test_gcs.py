@@ -12,8 +12,8 @@ def test_scraper_bucket_name(scraper_bucket: ScraperBucket) -> None:
 def test_scraper_bucket_prefix(
     scraper_bucket: ScraperBucket, env: Environment, expected_city: str
 ) -> None:
-    """Test ScraperBucket.prefix joins env/site/city/property_type in order."""
-    assert scraper_bucket.prefix == f"{env}/vivareal/{expected_city}/apartment"
+    """Test ScraperBucket.prefix joins env/site/city/property_type/page in order."""
+    assert scraper_bucket.prefix == f"{env}/vivareal/{expected_city}/apartment/1"
 
 
 def test_blob_name_joins_prefix_filename_and_extension(

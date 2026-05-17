@@ -16,6 +16,8 @@ def test_from_env_success(monkeypatch: pytest.MonkeyPatch, valid_scraper_env: di
     assert params.sites == ["vivareal", "zapimoveis"]
     assert params.property_types == ["apartment", "house"]
     assert params.upload_to_gcs is True
+    assert params.start_page == 1
+    assert params.max_page is None
 
 
 def test_from_env_raises_on_missing_env_var(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -85,6 +87,38 @@ def test_from_env_upload_to_gcs_capital_true_parsed_as_bool(
     monkeypatch.setenv("UPLOAD_TO_GCS", "True")
     params = ScraperParameters.from_env()
     assert params.upload_to_gcs is True
+
+
+def test_from_env_start_page_parsed_as_int(
+    monkeypatch: pytest.MonkeyPatch, valid_scraper_env: dict
+) -> None:
+    """Test from_env coerces START_PAGE env var string to int."""
+    for key, value in valid_scraper_env.items():
+        monkeypatch.setenv(key.upper(), value)
+    monkeypatch.setenv("START_PAGE", "3")
+    params = ScraperParameters.from_env()
+    assert params.start_page == 3
+
+
+def test_from_env_max_page_negative_one_parsed_as_none(
+    monkeypatch: pytest.MonkeyPatch, valid_scraper_env: dict
+) -> None:
+    """Test from_env converts MAX_PAGE=-1 sentinel to None."""
+    for key, value in valid_scraper_env.items():
+        monkeypatch.setenv(key.upper(), value)
+    params = ScraperParameters.from_env()
+    assert params.max_page is None
+
+
+def test_from_env_max_page_positive_parsed_as_int(
+    monkeypatch: pytest.MonkeyPatch, valid_scraper_env: dict
+) -> None:
+    """Test from_env coerces a positive MAX_PAGE env var string to int."""
+    for key, value in valid_scraper_env.items():
+        monkeypatch.setenv(key.upper(), value)
+    monkeypatch.setenv("MAX_PAGE", "5")
+    params = ScraperParameters.from_env()
+    assert params.max_page == 5
 
 
 def test_executed_at_is_auto_filled(valid_scraper_env: dict) -> None:

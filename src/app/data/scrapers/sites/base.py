@@ -110,20 +110,24 @@ class SiteScraper:
         before_sleep=before_sleep_log(logger, logging.WARNING),  # type: ignore[arg-type]
         reraise=True,
     )
-    def fetch_and_parse_html(self, timeout: int = 5) -> Self:
+    def fetch_and_parse_html(self, page: int = 1, timeout: int = 5) -> Self | None:
         """
         Fetch :attr:`url` and store the parsed ``BeautifulSoup`` document on
         :attr:`soup`.
 
-        Only HTTP ``200 OK`` is treated as success — any other status code
-        raises :class:`requests.HTTPError`. Retries up to three times with
-        exponential backoff on :class:`requests.RequestException`
-        (connection errors, timeouts, the ``HTTPError`` raised here for
-        non-200 responses); other exceptions propagate immediately.
+        Only HTTP ``200 OK`` is treated as success. ``404 Not Found`` returns
+        ``None`` and signals the caller that no more pages are available.
+        Any other non-200 status raises :class:`requests.HTTPError`. Retries
+        up to three times with exponential backoff on
+        :class:`requests.RequestException` (connection errors, timeouts, the
+        ``HTTPError`` raised here for non-200/non-404 responses); other
+        exceptions propagate immediately.
 
         ----------
         Parameters
         ----------
+        page : int, default 1
+            Page number passed to the site as the ``pagina`` query parameter.
         timeout : int, default 5
             Per-attempt timeout in seconds passed to :func:`requests.get`.
 
@@ -132,6 +136,9 @@ class SiteScraper:
         ----------
         Self
             The same scraper instance, with :attr:`soup` populated.
+        None
+            If the response status code is ``404 Not Found``, indicating
+            there are no more pages to scrape.
 
         ----------
         Raises
@@ -139,8 +146,8 @@ class SiteScraper:
         ValueError
             If :attr:`url` has not been set. Call :meth:`set_url` first.
         requests.HTTPError
-            If the response status code is anything other than ``200 OK``,
-            after the configured retries are exhausted.
+            If the response status code is anything other than ``200 OK`` or
+            ``404 Not Found``, after the configured retries are exhausted.
         requests.RequestException
             If the request keeps failing after the configured retries.
         """
@@ -149,21 +156,34 @@ class SiteScraper:
                 "URL is not set. Call `set_url(property_type)` before `fetch_and_parse_html()`."
             )
         try:
-            logger.info(f"[{self.__class__.__name__}] Fetching '{self.url}' ...")
+            logger.info(f"[{self.__class__.__name__}] Fetching '{self.url}' for page={page} ...")
             headers = {"Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8"}
             response = requests.get(
-                self.url, headers=headers, timeout=timeout, impersonate="chrome120"
+                self.url,
+                params={"pagina": page},
+                headers=headers,
+                timeout=timeout,
+                impersonate="chrome120",
             )
+            if response.status_code == HTTPStatus.NOT_FOUND:
+                logger.warning(
+                    f"[{self.__class__.__name__}] URL '{self.url}' for page={page} result in "
+                    f"status_code={response.status_code}. Returning None..."
+                )
+                return None
             if response.status_code != HTTPStatus.OK:
                 raise requests.exceptions.HTTPError(
-                    f"Expected {HTTPStatus.OK}, got {response.status_code} from '{self.url}'.",
+                    f"Expected {HTTPStatus.OK}, got {response.status_code} from '{self.url}' "
+                    f"(page={page}).",
                     response=response,
                 )
             logger.info(
-                f"[{self.__class__.__name__}] Request to '{self.url}' successfully executed!"
+                f"[{self.__class__.__name__}] Succesfull request to '{self.url}' for page={page}!"
             )
         except requests.exceptions.RequestException:
-            logger.exception(f"[{self.__class__.__name__}] Failed to fetch '{self.url}'.")
+            logger.exception(
+                f"[{self.__class__.__name__}] Failed to fetch '{self.url}' for page={page}."
+            )
             raise
         logger.info(f"[{self.__class__.__name__}] Parsing HTML ...")
         self.soup = BeautifulSoup(response.text, "html.parser")

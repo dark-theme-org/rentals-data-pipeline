@@ -34,6 +34,8 @@ class ScraperParameters(InputParameters):
     sites: list[str] = Field(strict=True)
     property_types: list[str] = Field(strict=True)
     upload_to_gcs: bool
+    start_page: int
+    max_page: int | None
     version: str
     executed_at: str = Field(
         default_factory=lambda: datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%SZ")
@@ -51,6 +53,8 @@ class ScraperParameters(InputParameters):
                 "sites": os.environ["SITES"],
                 "property_types": os.environ["PROPERTY_TYPES"],
                 "upload_to_gcs": os.environ["UPLOAD_TO_GCS"],
+                "start_page": os.environ["START_PAGE"],
+                "max_page": os.environ["MAX_PAGE"] if int(os.environ["MAX_PAGE"]) > 0 else None,
                 "version": os.environ.get("VERSION", "unknown"),
             }
         )

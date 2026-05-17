@@ -44,27 +44,47 @@ def scraper_data_to_bucket() -> None:
         scraper_class = SCRAPER_MAPPING[site].scraper_class
         for property_type in params.property_types:
             logger.info(f"Scrapping for site '{site}' and property_type '{property_type}'...")
-            scraper = scraper_class(params.city).set_url(property_type).fetch_and_parse_html()
-            properties_dict = scraper.extract_properties()
-            if not params.upload_to_gcs:
-                logger.info(f"GCS upload skipped! Parameter was set as {params.upload_to_gcs}).")
-                continue
-            scraper_bucket = ScraperBucket(
-                env=params.environment,
-                site=scraper.get_site_name(),
-                city=params.city,
-                property_type=property_type,
-            )
-            blob_name = scraper_bucket.blob_name(
-                filename=params.executed_at, extension=params.file_extension
-            )
-            logger.info(f"Uploading '{params.file_extension}' files to '{scraper_bucket.prefix}'.")
-            gcs_client.bucket(scraper_bucket.name).blob(blob_name).upload_from_string(
-                json.dumps(properties_dict, ensure_ascii=False, indent=2),
-                content_type="application/json",
-            )
-            logger.info(f"Upload completed! Full path: {blob_name}")
-            logger.info(f"Finished scrape for site '{site}' and property_type '{property_type}'.")
+            scraper = scraper_class(params.city).set_url(property_type)
+            page = params.start_page
+            while True:
+                if params.max_page is not None and page > params.max_page:
+                    logger.info(
+                        f"Reached max_page={params.max_page} for site '{site}' "
+                        f"and property_type '{property_type}'."
+                    )
+                    break
+                page_result = scraper.fetch_and_parse_html(page=page)
+                if page_result is None:
+                    logger.info(
+                        f"Finished scrape for site '{site}' and property_type '{property_type}'."
+                    )
+                    break
+                properties_dict = page_result.extract_properties()
+                if not params.upload_to_gcs:
+                    logger.info(
+                        f"GCS upload skipped! Parameter was set as {params.upload_to_gcs})."
+                    )
+                    page += 1
+                    continue
+                scraper_bucket = ScraperBucket(
+                    env=params.environment,
+                    site=scraper.get_site_name(),
+                    city=params.city,
+                    property_type=property_type,
+                    page=page,
+                )
+                blob_name = scraper_bucket.blob_name(
+                    filename=params.executed_at, extension=params.file_extension
+                )
+                logger.info(
+                    f"Uploading '{params.file_extension}' files to '{scraper_bucket.prefix}'."
+                )
+                gcs_client.bucket(scraper_bucket.name).blob(blob_name).upload_from_string(
+                    json.dumps(properties_dict, ensure_ascii=False, indent=2),
+                    content_type="application/json",
+                )
+                logger.info(f"Upload completed! Full path: {blob_name}")
+                page += 1
 
 
 if __name__ == "__main__":
