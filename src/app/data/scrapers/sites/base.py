@@ -157,7 +157,10 @@ class SiteScraper:
             )
         try:
             logger.info(f"[{self.__class__.__name__}] Fetching '{self.url}' for page={page} ...")
-            headers = {"Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8"}
+            headers = {
+                "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
+                "Referer": f"{self.url}?pagina={page - 1}" if page > 1 else self.url,
+            }
             response = requests.get(
                 self.url,
                 params={"pagina": page},
