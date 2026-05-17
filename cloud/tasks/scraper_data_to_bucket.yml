@@ -4,7 +4,7 @@ type: python
 machine:
   cpu: "1"
   memory: 512Mi
-  timeout: 600s
+  timeout: 3600s
 retry:
   repetitions: 0
 entrypoint: app.entrypoints.scraper_data_to_bucket

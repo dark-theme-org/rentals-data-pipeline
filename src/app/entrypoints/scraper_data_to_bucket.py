@@ -2,6 +2,8 @@
 
 import json
 import logging
+import random
+import time
 from collections import namedtuple
 from typing import Dict
 
@@ -46,6 +48,7 @@ def scraper_data_to_bucket() -> None:
             logger.info(f"Scrapping for site '{site}' and property_type '{property_type}'...")
             scraper = scraper_class(params.city).set_url(property_type)
             page = params.start_page
+            long_retry_count = 0
             while True:
                 if params.max_page is not None and page > params.max_page:
                     logger.info(
@@ -53,7 +56,26 @@ def scraper_data_to_bucket() -> None:
                         f"and property_type '{property_type}'."
                     )
                     break
-                page_result = scraper.fetch_and_parse_html(page=page)
+                try:
+                    page_result = scraper.fetch_and_parse_html(page=page)
+                except Exception:  # pylint: disable=W0718
+                    if long_retry_count >= 3:
+                        logger.error(
+                            f"Page {page} failed after 3 long retries for site '{site}' "
+                            f"and property_type '{property_type}'. Stopping."
+                        )
+                        break
+                    long_retry_count += 1
+                    sleep_secs = random.uniform(60.0, 120.0)
+                    logger.info(
+                        f"All fast retries exhausted for page={page} (site='{site}', "
+                        f"property_type='{property_type}'). "
+                        f"Long sleep {sleep_secs:.0f}s "
+                        f"(long retry {long_retry_count}/3)..."
+                    )
+                    time.sleep(sleep_secs)
+                    continue
+                long_retry_count = 0
                 if page_result is None:
                     logger.info(
                         f"Finished scrape for site '{site}' and property_type '{property_type}'."
