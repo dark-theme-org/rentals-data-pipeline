@@ -2,6 +2,8 @@
 
 import json
 import logging
+import random
+import time
 from collections import namedtuple
 from typing import Dict
 
@@ -64,6 +66,7 @@ def scraper_data_to_bucket() -> None:
                     logger.info(
                         f"GCS upload skipped! Parameter was set as {params.upload_to_gcs})."
                     )
+                    time.sleep(random.uniform(1.0, 3.0))  # Help avoiding HTTP Error 403!
                     page += 1
                     continue
                 scraper_bucket = ScraperBucket(
@@ -84,6 +87,7 @@ def scraper_data_to_bucket() -> None:
                     content_type="application/json",
                 )
                 logger.info(f"Upload completed! Full path: {blob_name}")
+                time.sleep(random.uniform(1.0, 3.0))  # Help avoiding HTTP Error 403!
                 page += 1
 
 
