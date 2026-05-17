@@ -45,3 +45,34 @@ def test_scraper_data_to_bucket_uploads_each_pair(
     payload_arg, kwargs = blob.upload_from_string.call_args
     assert json.loads(payload_arg[0]) == item_list_payload
     assert kwargs["content_type"] == "application/json"
+
+
+def test_scraper_data_to_bucket_skips_upload_when_flag_is_false(
+    mocker: MockerFixture,
+    monkeypatch: pytest.MonkeyPatch,
+    item_list_payload: dict,
+    scraper_params_no_upload: ScraperParameters,
+) -> None:
+    """Test the entrypoint scrapes each pair but skips GCS upload when upload_to_gcs is False."""
+    monkeypatch.setattr(entry, "params", scraper_params_no_upload)
+    mocker.patch(_GET_CREDENTIALS)
+
+    scraper_instance = mocker.MagicMock()
+    scraper_instance.set_url.return_value = scraper_instance
+    scraper_instance.fetch_and_parse_html.return_value = scraper_instance
+    scraper_instance.extract_properties.return_value = item_list_payload
+    scraper_instance.get_site_name.return_value = "vivareal"
+    scraper_class = mocker.MagicMock(return_value=scraper_instance)
+    monkeypatch.setitem(entry.SCRAPER_MAPPING, "vivareal", ScraperMapping(scraper_class))
+
+    blob = mocker.MagicMock()
+    bucket = mocker.MagicMock()
+    bucket.blob.return_value = blob
+    client = mocker.MagicMock()
+    client.bucket.return_value = bucket
+    mocker.patch(_STORAGE_CLIENT, return_value=client)
+
+    scraper_data_to_bucket()
+
+    scraper_instance.extract_properties.assert_called_once()
+    blob.upload_from_string.assert_not_called()

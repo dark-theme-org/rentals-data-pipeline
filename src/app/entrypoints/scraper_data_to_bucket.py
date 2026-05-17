@@ -46,6 +46,9 @@ def scraper_data_to_bucket() -> None:
             logger.info(f"Scrapping for site '{site}' and property_type '{property_type}'...")
             scraper = scraper_class(params.city).set_url(property_type).fetch_and_parse_html()
             properties_dict = scraper.extract_properties()
+            if not params.upload_to_gcs:
+                logger.info(f"GCS upload skipped! Parameter was set as {params.upload_to_gcs}).")
+                continue
             scraper_bucket = ScraperBucket(
                 env=params.environment,
                 site=scraper.get_site_name(),

@@ -146,6 +146,8 @@ def valid_scraper_env_() -> dict:
         "city": "macae",
         "sites": "vivareal,zapimoveis",
         "property_types": "apartment,house",
+        "upload_to_gcs": "true",
+        "version": "test",
     }
 
 
@@ -158,5 +160,22 @@ def scraper_params_() -> ScraperParameters:
             "city": "macae",
             "sites": "vivareal",
             "property_types": "apartment",
+            "upload_to_gcs": True,
+            "version": "test",
+        }
+    )
+
+
+@pytest.fixture(name="scraper_params_no_upload")
+def scraper_params_no_upload_() -> ScraperParameters:
+    """ScraperParameters with upload_to_gcs=False for GCS-skip-path tests."""
+    return ScraperParameters.model_validate(
+        {
+            "environment": "dev",
+            "city": "macae",
+            "sites": "vivareal",
+            "property_types": "apartment",
+            "upload_to_gcs": False,
+            "version": "test",
         }
     )

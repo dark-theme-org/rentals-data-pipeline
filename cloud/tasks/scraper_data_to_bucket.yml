@@ -18,3 +18,5 @@ inputs:
       default: vivareal,zapimoveis
     - name: PROPERTY_TYPES
       default: apartment,house
+    - name: UPLOAD_TO_GCS
+      default: true

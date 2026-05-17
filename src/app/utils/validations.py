@@ -33,6 +33,8 @@ class ScraperParameters(InputParameters):
     city: str = Field(strict=True)
     sites: list[str] = Field(strict=True)
     property_types: list[str] = Field(strict=True)
+    upload_to_gcs: bool
+    version: str
     executed_at: str = Field(
         default_factory=lambda: datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%SZ")
     )
@@ -48,6 +50,8 @@ class ScraperParameters(InputParameters):
                 "city": os.environ["CITY"],
                 "sites": os.environ["SITES"],
                 "property_types": os.environ["PROPERTY_TYPES"],
+                "upload_to_gcs": os.environ["UPLOAD_TO_GCS"],
+                "version": os.environ.get("VERSION", "unknown"),
             }
         )
 

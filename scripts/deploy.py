@@ -195,10 +195,10 @@ def run_workflow(name: str, version: str, params: dict[str, str] | None = None) 
         Version tag used to resolve the versioned workflow and job names.
     params : dict[str, str] | None
         Optional input parameters passed as workflow arguments. Keys are
-        lowercased before being serialised to JSON.
+        uppercased before being serialised to JSON.
     """
-    data: dict[str, str] = {k.lower(): v for k, v in (params or {}).items()}
-    data["version"] = version.replace(".", "-")
+    data: dict[str, str] = {k.upper(): v for k, v in (params or {}).items()}
+    data["VERSION"] = version.replace(".", "-")
     run_cmd(
         [
             "gcloud",
