@@ -1,0 +1,32 @@
+tests/app/data/scrapers/sites/test_base.py
+  s_06ab656168a421::t_151280a3715139 73-74,86-87,91,99-100,112,114,118,127-128,133
+  s_06ab656168a421::t_86dccb4708bfa4 4
+  s_06ab656168a421::t_18d436a5fb7b46 22,24,33-35
+src/app/data/scrapers/sites/base.py
+  s_06ab656168a421::t_1cbbf938b24981 39-44
+  s_06ab656168a421::t_3a52837f412047 167
+src/app/entrypoints/scraper_data_to_bucket.py
+  s_06ab656168a421::t_6d9312b609226b 64-67,70-71
+  h_334e5c58273adb 68-69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "03f016950bfb35513f6f2f457e07ff9f8bfc39a5",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_06ab656168a421": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d7dbc0d0-792c-4f0e-889f-4f303176b945",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
