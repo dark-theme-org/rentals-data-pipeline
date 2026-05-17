@@ -1,0 +1,48 @@
+tests/app/entrypoints/test_scraper_data_to_bucket.py
+  s_06ab656168a421::t_c3c9c4d4acd4f1 48-78
+src/app/utils/validations.py
+  s_06ab656168a421::t_089e292c56cb9b 36
+  h_334e5c58273adb 37,53-54
+src/app/entrypoints/scraper_data_to_bucket.py
+  s_06ab656168a421::t_47a166587ad589 49,51
+  h_334e5c58273adb 50
+.code_quality/pytest.ini
+  s_06ab656168a421::t_734f04a4e4b178 23-24
+cloud/tasks/scraper_data_to_bucket.yml
+  s_06ab656168a421::t_e1d0f8c98b96aa 21
+  s_06ab656168a421::t_1fa7e4fbcdf617 22
+scripts/deploy.py
+  s_06ab656168a421::t_e1bcb3ab9a8eed 198
+  s_06ab656168a421::t_81eff1b85e92a1 200-201
+tests/app/utils/test_validations.py
+  s_06ab656168a421::t_813d9ad2c03caf 68-81,83-89
+  s_06ab656168a421::t_76ae1de5f2696d 82
+  s_06ab656168a421::t_03070438b3f273 18
+cloud/workflows/etl_rentals_data.yml
+  s_06ab656168a421::t_84e493650a12f7 9-14
+  s_06ab656168a421::t_8953ff36cad94e 32
+  s_06ab656168a421::t_48f7d1f48e047d 31
+tests/conftest.py
+  s_06ab656168a421::t_72a1ab4904fb5e 149-150,163-179
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "f1032996139476fdf2ef47841d0443beaf3d4034",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_06ab656168a421": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d7dbc0d0-792c-4f0e-889f-4f303176b945",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
