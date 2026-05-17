@@ -293,7 +293,18 @@ def main() -> None:
         if not args.skip_workflow_deploy:
             deploy_workflow(workflow_file.stem, workflow_file, args.version)
         if not args.skip_workflow_run:
-            run_workflow(workflow_file.stem, args.version, params_override)
+            workflow_params: dict[str, str] = {}
+            for task_file in sorted(TASKS_DIR.glob("*.yml")):
+                task_configs = yaml.safe_load(task_file.read_text(encoding="utf-8"))
+                workflow_params.update(
+                    {
+                        p["name"]: str(p["default"])
+                        for p in task_configs.get("inputs", {}).get("parameters", [])
+                    }
+                )
+            if params_override:
+                workflow_params.update(params_override)
+            run_workflow(workflow_file.stem, args.version, workflow_params)
 
 
 if __name__ == "__main__":
