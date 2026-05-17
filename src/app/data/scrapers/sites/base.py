@@ -36,6 +36,12 @@ class SiteScraper:
     """
 
     city: City
+    session: requests.Session = field(
+        default_factory=lambda: requests.Session(impersonate="chrome120"),
+        init=False,
+        repr=False,
+        compare=False,
+    )
     soup: BeautifulSoup | None = field(default=None, init=False)
     url: str | None = field(default=None, init=False)
 
@@ -158,12 +164,11 @@ class SiteScraper:
         try:
             logger.info(f"[{self.__class__.__name__}] Fetching '{self.url}' for page={page} ...")
             headers = {"Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8"}
-            response = requests.get(
+            response = self.session.get(
                 self.url,
                 params={"pagina": page},
                 headers=headers,
                 timeout=timeout,
-                impersonate="chrome120",
             )
             if response.status_code == HTTPStatus.NOT_FOUND:
                 logger.warning(

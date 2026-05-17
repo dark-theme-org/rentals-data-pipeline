@@ -1,6 +1,7 @@
 """Test the base `SiteScraper` URL composition, fetch retry policy and JSON-LD extraction."""
 
 import json
+from typing import Any
 
 import pytest
 from bs4 import BeautifulSoup
@@ -11,7 +12,6 @@ from app.data.scrapers.settings import City, PropertyTypes
 from app.data.scrapers.sites.base import SiteScraper
 
 _STUB_URL_TEMPLATE = "https://example.com/{uf}/{city}/{property_type}/"
-_REQUESTS_GET = "app.data.scrapers.sites.base.requests.get"
 
 
 @pytest.fixture(name="stub_scraper")
@@ -19,8 +19,9 @@ def stub_scraper_(
     property_apartment: str,
     property_house: str,
     monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
 ) -> SiteScraper:
-    """A `SiteScraper` instance with stub class-level templates patched in."""
+    """A `SiteScraper` instance with stub class-level templates and a mocked session."""
     monkeypatch.setattr(
         SiteScraper,
         "_PROPERTY_TYPES",
@@ -29,7 +30,9 @@ def stub_scraper_(
     )
     monkeypatch.setattr(SiteScraper, "_SITE_NAME", "stub", raising=False)
     monkeypatch.setattr(SiteScraper, "_URL_TEMPLATE", _STUB_URL_TEMPLATE, raising=False)
-    return SiteScraper(city=City.MACAE)
+    scraper = SiteScraper(city=City.MACAE)
+    scraper.session = mocker.MagicMock()
+    return scraper
 
 
 def test_uf_resolves_registered_city(stub_scraper: SiteScraper, expected_uf: str) -> None:
@@ -67,8 +70,8 @@ def test_fetch_and_parse_html_success(
     stub_scraper: SiteScraper, mocker: MockerFixture, html_with_item_list: str
 ) -> None:
     """Test `fetch_and_parse_html` populates `soup` on a 200 response and returns self."""
-    response = mocker.MagicMock(status_code=200, text=html_with_item_list)
-    mocker.patch(_REQUESTS_GET, return_value=response)
+    session: Any = stub_scraper.session
+    session.get.return_value = mocker.MagicMock(status_code=200, text=html_with_item_list)
 
     result = stub_scraper.set_url("apartment").fetch_and_parse_html()
 
@@ -80,12 +83,12 @@ def test_fetch_and_parse_html_passes_page_as_pagina_query_param(
     stub_scraper: SiteScraper, mocker: MockerFixture, html_with_item_list: str
 ) -> None:
     """Test `fetch_and_parse_html` passes the page number as the `pagina` query parameter."""
-    response = mocker.MagicMock(status_code=200, text=html_with_item_list)
-    get = mocker.patch(_REQUESTS_GET, return_value=response)
+    session: Any = stub_scraper.session
+    session.get.return_value = mocker.MagicMock(status_code=200, text=html_with_item_list)
 
     stub_scraper.set_url("apartment").fetch_and_parse_html(page=3)
 
-    _, kwargs = get.call_args
+    _, kwargs = session.get.call_args
     assert kwargs["params"] == {"pagina": 3}
 
 
@@ -93,8 +96,8 @@ def test_fetch_and_parse_html_returns_none_on_404(
     stub_scraper: SiteScraper, mocker: MockerFixture
 ) -> None:
     """Test `fetch_and_parse_html` returns None when the server responds with 404."""
-    response = mocker.MagicMock(status_code=404)
-    mocker.patch(_REQUESTS_GET, return_value=response)
+    session: Any = stub_scraper.session
+    session.get.return_value = mocker.MagicMock(status_code=404)
 
     result = stub_scraper.set_url("apartment").fetch_and_parse_html()
 
@@ -106,15 +109,13 @@ def test_fetch_and_parse_html_retries_then_succeeds(
     stub_scraper: SiteScraper, mocker: MockerFixture, html_with_item_list: str
 ) -> None:
     """Test `fetch_and_parse_html` retries on transient `RequestException` then succeeds."""
+    session: Any = stub_scraper.session
     ok_response = mocker.MagicMock(status_code=200, text=html_with_item_list)
-    get = mocker.patch(
-        _REQUESTS_GET,
-        side_effect=[requests.exceptions.ConnectionError("flaky"), ok_response],
-    )
+    session.get.side_effect = [requests.exceptions.ConnectionError("flaky"), ok_response]
 
     stub_scraper.set_url("apartment").fetch_and_parse_html()
 
-    assert get.call_count == 2
+    assert session.get.call_count == 2
     assert isinstance(stub_scraper.soup, BeautifulSoup)
 
 
@@ -123,13 +124,13 @@ def test_fetch_and_parse_html_raises_http_error_after_retries(
     stub_scraper: SiteScraper, mocker: MockerFixture
 ) -> None:
     """Test `fetch_and_parse_html` retries three times then raises `HTTPError` on non-200."""
-    response = mocker.MagicMock(status_code=503, text="boom")
-    get = mocker.patch(_REQUESTS_GET, return_value=response)
+    session: Any = stub_scraper.session
+    session.get.return_value = mocker.MagicMock(status_code=503, text="boom")
 
     with pytest.raises(requests.exceptions.HTTPError):
         stub_scraper.set_url("apartment").fetch_and_parse_html()
 
-    assert get.call_count == 6
+    assert session.get.call_count == 6
 
 
 def test_extract_properties_raises_when_soup_not_parsed(stub_scraper: SiteScraper) -> None:

@@ -61,7 +61,14 @@ def scraper_data_to_bucket() -> None:
                         f"Finished scrape for site '{site}' and property_type '{property_type}'."
                     )
                     break
-                properties_dict = page_result.extract_properties()
+                try:
+                    properties_dict = page_result.extract_properties()
+                except ValueError:
+                    logger.info(
+                        f"Page {page} exist for site '{site}' and property_type '{property_type}, "
+                        "but probably don't have any more items. Will finish scrape for them."
+                    )
+                    break
                 if not params.upload_to_gcs:
                     logger.info(
                         f"GCS upload skipped! Parameter was set as {params.upload_to_gcs})."
