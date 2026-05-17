@@ -140,12 +140,6 @@ def fast_retry_(mocker: MockerFixture) -> None:
     mocker.patch("tenacity.nap.time.sleep")
 
 
-@pytest.fixture(name="fast_sleep")
-def fast_sleep_(mocker: MockerFixture) -> None:
-    """No-op `time.sleep` so inter-page delays in the entrypoint don't actually wait."""
-    mocker.patch("app.entrypoints.scraper_data_to_bucket.time.sleep")
-
-
 @pytest.fixture(name="valid_scraper_env")
 def valid_scraper_env_() -> dict:
     """Raw env var dict for instantiating ScraperParameters via model_validate."""

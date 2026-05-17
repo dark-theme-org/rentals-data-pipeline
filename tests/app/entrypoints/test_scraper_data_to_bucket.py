@@ -13,7 +13,6 @@ _STORAGE_CLIENT = "app.entrypoints.scraper_data_to_bucket.storage.Client"
 _GET_CREDENTIALS = "app.entrypoints.scraper_data_to_bucket.get_credentials"
 
 
-@pytest.mark.usefixtures("fast_sleep")
 def test_scraper_data_to_bucket_uploads_each_pair(
     mocker: MockerFixture,
     monkeypatch: pytest.MonkeyPatch,
@@ -48,7 +47,6 @@ def test_scraper_data_to_bucket_uploads_each_pair(
     assert kwargs["content_type"] == "application/json"
 
 
-@pytest.mark.usefixtures("fast_sleep")
 def test_scraper_data_to_bucket_skips_upload_when_flag_is_false(
     mocker: MockerFixture,
     monkeypatch: pytest.MonkeyPatch,
@@ -80,7 +78,6 @@ def test_scraper_data_to_bucket_skips_upload_when_flag_is_false(
     blob.upload_from_string.assert_not_called()
 
 
-@pytest.mark.usefixtures("fast_sleep")
 def test_scraper_data_to_bucket_stops_at_max_page(
     mocker: MockerFixture,
     monkeypatch: pytest.MonkeyPatch,
@@ -112,7 +109,6 @@ def test_scraper_data_to_bucket_stops_at_max_page(
     blob.upload_from_string.assert_called_once()
 
 
-@pytest.mark.usefixtures("fast_sleep")
 def test_scraper_data_to_bucket_stops_on_404(
     mocker: MockerFixture,
     monkeypatch: pytest.MonkeyPatch,

@@ -2,8 +2,6 @@
 
 import json
 import logging
-import random
-import time
 from collections import namedtuple
 from typing import Dict
 
@@ -65,15 +63,14 @@ def scraper_data_to_bucket() -> None:
                     properties_dict = page_result.extract_properties()
                 except ValueError:
                     logger.info(
-                        f"Page {page} exist for site '{site}' and property_type '{property_type}, "
-                        "but probably don't have any more items. Will finish scrape for them."
+                        f"Page {page} returned no items for site '{site}' and "
+                        f"property_type '{property_type}'. Finishing scrape."
                     )
                     break
                 if not params.upload_to_gcs:
                     logger.info(
                         f"GCS upload skipped! Parameter was set as {params.upload_to_gcs})."
                     )
-                    time.sleep(random.uniform(1.0, 3.0))  # Help avoiding HTTP Error 403!
                     page += 1
                     continue
                 scraper_bucket = ScraperBucket(
@@ -94,7 +91,6 @@ def scraper_data_to_bucket() -> None:
                     content_type="application/json",
                 )
                 logger.info(f"Upload completed! Full path: {blob_name}")
-                time.sleep(random.uniform(1.0, 3.0))  # Help avoiding HTTP Error 403!
                 page += 1
 
 
