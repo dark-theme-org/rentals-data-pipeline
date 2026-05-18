@@ -121,6 +121,12 @@ def test_from_env_max_page_positive_parsed_as_int(
     assert params.max_page == 5
 
 
+def test_max_long_retries_defaults_to_three(valid_scraper_env: dict) -> None:
+    """Test max_long_retries defaults to 3 when not explicitly supplied."""
+    params = ScraperParameters.model_validate(valid_scraper_env)
+    assert params.max_long_retries == 3
+
+
 def test_executed_at_is_auto_filled(valid_scraper_env: dict) -> None:
     """Test executed_at is populated automatically when not supplied."""
     params = ScraperParameters.model_validate(valid_scraper_env)

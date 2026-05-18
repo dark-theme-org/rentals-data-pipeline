@@ -7,6 +7,7 @@ import time
 from collections import namedtuple
 from typing import Dict
 
+from curl_cffi.requests.exceptions import RequestException
 from google.cloud import storage
 
 from app.data.scrapers import VivaRealScraper, ZapImoveisScraper
@@ -58,20 +59,19 @@ def scraper_data_to_bucket() -> None:
                     break
                 try:
                     page_result = scraper.fetch_and_parse_html(page=page)
-                except Exception:  # pylint: disable=W0718
-                    if long_retry_count >= 3:
+                except RequestException:
+                    if long_retry_count >= params.max_long_retries:
                         logger.error(
-                            f"Page {page} failed after 3 long retries for site '{site}' "
-                            f"and property_type '{property_type}'. Stopping."
+                            f"Page {page} failed after {params.max_long_retries} long retries "
+                            f"for site '{site}' and property_type '{property_type}'. Stopping."
                         )
                         break
                     long_retry_count += 1
-                    sleep_secs = random.uniform(60.0, 120.0)
+                    sleep_secs = random.uniform(30.0, 90.0)
                     logger.info(
                         f"All fast retries exhausted for page={page} (site='{site}', "
-                        f"property_type='{property_type}'). "
-                        f"Long sleep {sleep_secs:.0f}s "
-                        f"(long retry {long_retry_count}/3)..."
+                        f"property_type='{property_type}'). Long sleep {sleep_secs:.0f}s "
+                        f"(long retry {long_retry_count}/{params.max_long_retries})..."
                     )
                     time.sleep(sleep_secs)
                     continue

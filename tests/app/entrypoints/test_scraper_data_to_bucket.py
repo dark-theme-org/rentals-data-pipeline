@@ -3,6 +3,7 @@
 import json
 
 import pytest
+from curl_cffi.requests.exceptions import RequestException
 from pytest_mock import MockerFixture
 
 import app.entrypoints.scraper_data_to_bucket as entry
@@ -136,4 +137,100 @@ def test_scraper_data_to_bucket_stops_on_404(
 
     scraper_instance.fetch_and_parse_html.assert_called_once()
     scraper_instance.extract_properties.assert_not_called()
+    blob.upload_from_string.assert_not_called()
+
+
+@pytest.mark.usefixtures("fast_long_sleep")
+def test_scraper_data_to_bucket_long_retry_recovers_after_request_error(
+    mocker: MockerFixture,
+    monkeypatch: pytest.MonkeyPatch,
+    item_list_payload: dict,
+    scraper_params: ScraperParameters,
+) -> None:
+    """Test the entrypoint retries the same page after a RequestException then succeeds."""
+    monkeypatch.setattr(entry, "params", scraper_params)
+    mocker.patch(_GET_CREDENTIALS)
+
+    scraper_instance = mocker.MagicMock()
+    scraper_instance.set_url.return_value = scraper_instance
+    scraper_instance.fetch_and_parse_html.side_effect = [
+        RequestException("blocked"),
+        scraper_instance,
+        None,
+    ]
+    scraper_instance.extract_properties.return_value = item_list_payload
+    scraper_instance.get_site_name.return_value = "vivareal"
+    scraper_class = mocker.MagicMock(return_value=scraper_instance)
+    monkeypatch.setitem(entry.SCRAPER_MAPPING, "vivareal", ScraperMapping(scraper_class))
+
+    blob = mocker.MagicMock()
+    bucket = mocker.MagicMock()
+    bucket.blob.return_value = blob
+    client = mocker.MagicMock()
+    client.bucket.return_value = bucket
+    mocker.patch(_STORAGE_CLIENT, return_value=client)
+
+    scraper_data_to_bucket()
+
+    assert scraper_instance.fetch_and_parse_html.call_count == 3
+    blob.upload_from_string.assert_called_once()
+
+
+@pytest.mark.usefixtures("fast_long_sleep")
+def test_scraper_data_to_bucket_stops_after_max_long_retries(
+    mocker: MockerFixture,
+    monkeypatch: pytest.MonkeyPatch,
+    scraper_params: ScraperParameters,
+) -> None:
+    """Test the entrypoint stops after exhausting all long retries on a persistent error."""
+    monkeypatch.setattr(entry, "params", scraper_params)
+    mocker.patch(_GET_CREDENTIALS)
+
+    scraper_instance = mocker.MagicMock()
+    scraper_instance.set_url.return_value = scraper_instance
+    scraper_instance.fetch_and_parse_html.side_effect = RequestException("blocked")
+    scraper_instance.get_site_name.return_value = "vivareal"
+    scraper_class = mocker.MagicMock(return_value=scraper_instance)
+    monkeypatch.setitem(entry.SCRAPER_MAPPING, "vivareal", ScraperMapping(scraper_class))
+
+    blob = mocker.MagicMock()
+    bucket = mocker.MagicMock()
+    bucket.blob.return_value = blob
+    client = mocker.MagicMock()
+    client.bucket.return_value = bucket
+    mocker.patch(_STORAGE_CLIENT, return_value=client)
+
+    scraper_data_to_bucket()
+
+    assert scraper_instance.fetch_and_parse_html.call_count == scraper_params.max_long_retries + 1
+    blob.upload_from_string.assert_not_called()
+
+
+def test_scraper_data_to_bucket_stops_on_empty_page(
+    mocker: MockerFixture,
+    monkeypatch: pytest.MonkeyPatch,
+    scraper_params: ScraperParameters,
+) -> None:
+    """Test the entrypoint stops cleanly when extract_properties raises ValueError."""
+    monkeypatch.setattr(entry, "params", scraper_params)
+    mocker.patch(_GET_CREDENTIALS)
+
+    scraper_instance = mocker.MagicMock()
+    scraper_instance.set_url.return_value = scraper_instance
+    scraper_instance.fetch_and_parse_html.return_value = scraper_instance
+    scraper_instance.extract_properties.side_effect = ValueError("no ItemList")
+    scraper_instance.get_site_name.return_value = "vivareal"
+    scraper_class = mocker.MagicMock(return_value=scraper_instance)
+    monkeypatch.setitem(entry.SCRAPER_MAPPING, "vivareal", ScraperMapping(scraper_class))
+
+    blob = mocker.MagicMock()
+    bucket = mocker.MagicMock()
+    bucket.blob.return_value = blob
+    client = mocker.MagicMock()
+    client.bucket.return_value = bucket
+    mocker.patch(_STORAGE_CLIENT, return_value=client)
+
+    scraper_data_to_bucket()
+
+    scraper_instance.extract_properties.assert_called_once()
     blob.upload_from_string.assert_not_called()

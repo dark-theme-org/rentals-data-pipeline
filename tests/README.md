@@ -29,6 +29,9 @@ env =
     CITY=macae
     SITES=vivareal,zapimoveis
     PROPERTY_TYPES=apartment,house
+    UPLOAD_TO_GCS=true
+    START_PAGE=1
+    MAX_PAGE=-1
 ```
 
 These allow `ScraperParameters.from_env()` — called at module level in
@@ -48,11 +51,14 @@ use `monkeypatch.setenv` / `monkeypatch.delenv`.
 | `scraper_bucket` | `ScraperBucket` | Bound to `(dev, vivareal, macae, apartment)` |
 | `valid_scraper_env` | `dict` | Raw env-var dict for `ScraperParameters.model_validate(...)` |
 | `scraper_params` | `ScraperParameters` | Single-site/type instance for entrypoint tests |
+| `scraper_params_no_upload` | `ScraperParameters` | Same but `upload_to_gcs=False` |
+| `scraper_params_with_max_page` | `ScraperParameters` | Same but `max_page=1` for loop-termination tests |
 | `item_list_payload` | `dict` | JSON-LD `ItemList` with two listings |
 | `html_with_item_list` | `str` | HTML page embedding `item_list_payload` |
 | `html_without_item_list` | `str` | HTML page with no `ItemList` block |
 | `html_with_bad_json` | `str` | HTML page with malformed JSON-LD |
 | `fast_retry` | `None` (side-effect) | Patches `tenacity.nap.time.sleep` — apply with `@pytest.mark.usefixtures` |
+| `fast_long_sleep` | `None` (side-effect) | Patches `time.sleep` in the entrypoint — apply with `@pytest.mark.usefixtures` |
 
 ## Conventions
 

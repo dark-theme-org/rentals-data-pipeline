@@ -21,7 +21,7 @@ Land an append-only history of rental listings for every configured `(site, city
 
 ### *Solution*
 
-For each configured combination of listing site, city, and property type, the pipeline automatically collects all available rental listings and stores a timestamped snapshot in cloud storage. Data is partitioned by environment, site, city, and property type so that downstream models can consume it directly without further cleanup.
+For each configured combination of listing site, city, and property type, the pipeline automatically collects all available rental listings across all pages and stores a per-page timestamped snapshot in cloud storage. Data is partitioned by environment, site, city, property type, and page so that downstream models can consume it directly without further cleanup.
 
 Collection runs automatically on Google Cloud through a managed workflow layer. Each pipeline step is containerised and executed on demand, with configuration centrally managed in `cloud/` — one YAML file per task defining how it runs, and one YAML file per workflow defining the execution order. Adding a new listing site or city requires only a small configuration change with no infrastructure work.
 
@@ -62,12 +62,34 @@ Collection runs automatically on Google Cloud through a managed workflow layer. 
 
 ```mermaid
 flowchart TD
-   subgraph scraper_data_to_bucket
-   A[(city + property_type)] --> |build URL| B[SiteScraper]
-   B --> |GET + parse HTML| C[BeautifulSoup]
-   C --> |extract JSON-LD ItemList| D[listings dict]
-   D --> |upload JSON| E@{shape: cyl, label: "GCS scraper-rentals-data"}
-   end
+    Trigger["☁️ Cloud Workflows\netl_rentals_data\n(VERSION, ENVIRONMENT, CITY,\nSITES, PROPERTY_TYPES,\nUPLOAD_TO_GCS, START_PAGE, MAX_PAGE)"]
+    Trigger -->|"googleapis.run.v2\n.jobs.run"| CR["📦 Cloud Run Job\nscraper-data-to-bucket"]
+
+    subgraph Entrypoint["scraper_data_to_bucket entrypoint"]
+        CR --> Pairs["for each (site, property_type)"]
+        Pairs --> Init["set_url · page = start_page\nlong_retry_count = 0"]
+
+        Init --> MaxCheck{"page > max_page?"}
+        MaxCheck -->|yes| PairDone(["pair done"])
+
+        MaxCheck -->|no| Fetch["fetch_and_parse_html\npage=N · Accept-Language · Referer"]
+
+        Fetch -->|"RequestException\n(5 fast retries exhausted)"| LongCheck{"long_retry_count\n≥ max_long_retries?"}
+        LongCheck -->|yes| PairDone
+        LongCheck -->|"no · sleep 30–90 s"| Fetch
+
+        Fetch -->|"None — HTTP 404"| PairDone
+        Fetch -->|"200 OK"| Extract["extract_properties\nJSON-LD ItemList"]
+        Extract -->|"ValueError — empty page"| PairDone
+        Extract -->|success| UpFlag{"upload_to_gcs?"}
+
+        UpFlag -->|false| Inc["page++"]
+        UpFlag -->|true| GCS[("GCS scraper-rentals-data\nenv/site/city/type/page/\nexecuted_at.json")]
+        GCS --> Inc
+        Inc --> MaxCheck
+    end
+
+    PairDone --> Pairs
 ```
 
 ### *Documentations*

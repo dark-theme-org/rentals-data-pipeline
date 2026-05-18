@@ -40,6 +40,7 @@ class ScraperParameters(InputParameters):
     executed_at: str = Field(
         default_factory=lambda: datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%SZ")
     )
+    max_long_retries: int = 3
     file_extension: str = FileExtensions.JSON.value
     sa_name: str = ServiceAccountNames.GCS.value
 

@@ -26,13 +26,13 @@ app/
 
 ### [`app/data/scrapers/`](app/data/scrapers/)
 
-Site-agnostic scraping. [`SiteScraper`](app/data/scrapers/sites/base.py) is the abstract base — subclasses bind `_SITE_NAME`, `_URL_TEMPLATE`, and a `_PROPERTY_TYPES: PropertyTypes` ClassVar. The fluent chain is `Scraper(city).set_url(property_type).fetch_and_parse_html().extract_properties()`. Fetches retry up to 3× on `requests.RequestException` with exponential backoff (tenacity); only HTTP 200 is treated as success. `extract_properties()` parses every `<script type="application/ld+json">` block and returns the listings inside the `ItemList` block indexed by `@id`. Adding a new site = a ~10-line subclass alongside [`viva_real.py`](app/data/scrapers/sites/viva_real.py).
+Site-agnostic scraping. [`SiteScraper`](app/data/scrapers/sites/base.py) is the abstract base — subclasses bind `_SITE_NAME`, `_URL_TEMPLATE`, and a `_PROPERTY_TYPES: PropertyTypes` ClassVar. The fluent chain is `Scraper(city).set_url(property_type).fetch_and_parse_html(page=N).extract_properties()`. Fetches retry up to 5× on `requests.RequestException` with randomised exponential backoff (tenacity, 2–30 s); HTTP 200 is success, HTTP 404 returns `None` to signal end-of-pagination, any other status raises. `extract_properties()` parses every `<script type="application/ld+json">` block and returns the listings inside the `ItemList` block indexed by `@id`. Adding a new site = a ~10-line subclass alongside [`viva_real.py`](app/data/scrapers/sites/viva_real.py).
 
 ### [`app/entrypoints/`](app/entrypoints/)
 
 Runnable scripts. Each module exposes a single `@task(label=...)` function and a `if __name__ == "__main__":` guard.
 
-[`scraper_data_to_bucket.py`](app/entrypoints/scraper_data_to_bucket.py) iterates every `(site, property_type)` pair, scrapes, and uploads the JSON payload to the `ScraperBucket` location matching `<env>/<site>/<city>/<property_type>/<executed_at>.json`. Runtime parameters are validated and loaded at module level via `ScraperParameters.from_env()` — see [`app/utils/validations.py`](app/utils/validations.py).
+[`scraper_data_to_bucket.py`](app/entrypoints/scraper_data_to_bucket.py) iterates every `(site, property_type)` pair and paginates through all pages from `START_PAGE` to `MAX_PAGE` (or until the site returns a 404 / empty page). Each page is uploaded individually to `<env>/<site>/<city>/<property_type>/<page>/<executed_at>.json`. When fast retries (tenacity) are exhausted, a two-level long-retry kicks in: sleep 30–90 s and retry the same page up to `MAX_LONG_RETRIES` times. Upload can be skipped entirely via `UPLOAD_TO_GCS=false`. Runtime parameters are validated and loaded at module level via `ScraperParameters.from_env()` — see [`app/utils/validations.py`](app/utils/validations.py).
 
 ### [`app/utils/`](app/utils/)
 
@@ -41,8 +41,8 @@ Cross-cutting helpers re-exported from [`app/utils/__init__.py`](app/utils/__ini
 - **`CloudSettings`** — `StrEnum` loaded from `cloud/settings.yml` at import time. Exposes `CloudSettings.PROJECT_ID` and `CloudSettings.REGION` as typed constants shared across all app code.
 - **`Environment`** (`dev`/`test`/`prod`), **`FileExtensions`** (`json`), **`ServiceAccountNames`** (`GCS_SA`) — `StrEnum`s used wherever env scopes a path, a payload format is named, or a credential env var is referenced.
 - **`@task(label)`** — wraps an entrypoint callable to log start/end and total runtime, and `sys.exit(1)` on any raised exception. Use it on every entrypoint.
-- **`Bucket` / `ScraperBucket`** ([`gcs.py`](app/utils/gcs.py)) — frozen dataclasses that own the GCS bucket name and key-prefix layout. `ScraperBucket` is `kw_only` and partitions by `env/site/city/property_type`; `blob_name(filename=..., extension=...)` joins prefix + filename + extension as a POSIX path.
-- **`ScraperParameters`** ([`validations.py`](app/utils/validations.py)) — Pydantic model that reads and validates all runtime inputs from environment variables via `ScraperParameters.from_env()`. Validates `ENVIRONMENT`, `CITY`, `SITES`, and `PROPERTY_TYPES` against known valid values; auto-populates `executed_at`, `file_extension`, and `sa_name`.
+- **`Bucket` / `ScraperBucket`** ([`gcs.py`](app/utils/gcs.py)) — frozen dataclasses that own the GCS bucket name and key-prefix layout. `ScraperBucket` is `kw_only` and partitions by `env/site/city/property_type/page`; `blob_name(filename=..., extension=...)` joins prefix + filename + extension as a POSIX path.
+- **`ScraperParameters`** ([`validations.py`](app/utils/validations.py)) — Pydantic model that reads and validates all runtime inputs from environment variables via `ScraperParameters.from_env()`. Validates `ENVIRONMENT`, `CITY`, `SITES`, and `PROPERTY_TYPES` against known valid values; parses `UPLOAD_TO_GCS` (bool), `START_PAGE` / `MAX_PAGE` (pagination bounds), and `VERSION`; auto-populates `executed_at`, `file_extension`, `sa_name`, and `max_long_retries`.
 
 ## Conventions
 
