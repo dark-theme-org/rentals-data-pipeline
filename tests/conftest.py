@@ -24,8 +24,10 @@ def file_extension_() -> FileExtensions:
 
 @pytest.fixture(name="scraper_bucket")
 def scraper_bucket_(env: Environment, expected_city: str) -> ScraperBucket:
-    """ScraperBucket bound to a canonical (env, site, city, property_type) tuple."""
-    return ScraperBucket(env=env, site="vivareal", city=expected_city, property_type="apartment")
+    """ScraperBucket bound to a canonical (env, site, city, property_type, page) tuple."""
+    return ScraperBucket(
+        env=env, site="vivareal", city=expected_city, property_type="apartment", page=1
+    )
 
 
 @pytest.fixture(name="expected_city")
@@ -138,6 +140,12 @@ def fast_retry_(mocker: MockerFixture) -> None:
     mocker.patch("tenacity.nap.time.sleep")
 
 
+@pytest.fixture(name="fast_long_sleep")
+def fast_long_sleep_(mocker: MockerFixture) -> None:
+    """No-op `time.sleep` so long-retry sleeps in the entrypoint don't actually wait."""
+    mocker.patch("app.entrypoints.scraper_data_to_bucket.time.sleep")
+
+
 @pytest.fixture(name="valid_scraper_env")
 def valid_scraper_env_() -> dict:
     """Raw env var dict for instantiating ScraperParameters via model_validate."""
@@ -146,6 +154,10 @@ def valid_scraper_env_() -> dict:
         "city": "macae",
         "sites": "vivareal,zapimoveis",
         "property_types": "apartment,house",
+        "upload_to_gcs": "true",
+        "start_page": "1",
+        "max_page": "-1",
+        "version": "test",
     }
 
 
@@ -158,5 +170,43 @@ def scraper_params_() -> ScraperParameters:
             "city": "macae",
             "sites": "vivareal",
             "property_types": "apartment",
+            "upload_to_gcs": True,
+            "start_page": 1,
+            "max_page": None,
+            "version": "test",
+        }
+    )
+
+
+@pytest.fixture(name="scraper_params_no_upload")
+def scraper_params_no_upload_() -> ScraperParameters:
+    """ScraperParameters with upload_to_gcs=False for GCS-skip-path tests."""
+    return ScraperParameters.model_validate(
+        {
+            "environment": "dev",
+            "city": "macae",
+            "sites": "vivareal",
+            "property_types": "apartment",
+            "upload_to_gcs": False,
+            "start_page": 1,
+            "max_page": None,
+            "version": "test",
+        }
+    )
+
+
+@pytest.fixture(name="scraper_params_with_max_page")
+def scraper_params_with_max_page_() -> ScraperParameters:
+    """ScraperParameters with max_page=1 for loop-termination tests."""
+    return ScraperParameters.model_validate(
+        {
+            "environment": "dev",
+            "city": "macae",
+            "sites": "vivareal",
+            "property_types": "apartment",
+            "upload_to_gcs": True,
+            "start_page": 1,
+            "max_page": 1,
+            "version": "test",
         }
     )

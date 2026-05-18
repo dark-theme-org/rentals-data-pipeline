@@ -195,10 +195,10 @@ def run_workflow(name: str, version: str, params: dict[str, str] | None = None) 
         Version tag used to resolve the versioned workflow and job names.
     params : dict[str, str] | None
         Optional input parameters passed as workflow arguments. Keys are
-        lowercased before being serialised to JSON.
+        uppercased before being serialised to JSON.
     """
-    data: dict[str, str] = {k.lower(): v for k, v in (params or {}).items()}
-    data["version"] = version.replace(".", "-")
+    data: dict[str, str] = {k.upper(): v for k, v in (params or {}).items()}
+    data["VERSION"] = version.replace(".", "-")
     run_cmd(
         [
             "gcloud",
@@ -293,7 +293,18 @@ def main() -> None:
         if not args.skip_workflow_deploy:
             deploy_workflow(workflow_file.stem, workflow_file, args.version)
         if not args.skip_workflow_run:
-            run_workflow(workflow_file.stem, args.version, params_override)
+            workflow_params: dict[str, str] = {}
+            for task_file in sorted(TASKS_DIR.glob("*.yml")):
+                task_configs = yaml.safe_load(task_file.read_text(encoding="utf-8"))
+                workflow_params.update(
+                    {
+                        p["name"]: str(p["default"])
+                        for p in task_configs.get("inputs", {}).get("parameters", [])
+                    }
+                )
+            if params_override:
+                workflow_params.update(params_override)
+            run_workflow(workflow_file.stem, args.version, workflow_params)
 
 
 if __name__ == "__main__":

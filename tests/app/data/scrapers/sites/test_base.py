@@ -76,6 +76,31 @@ def test_fetch_and_parse_html_success(
     assert isinstance(stub_scraper.soup, BeautifulSoup)
 
 
+def test_fetch_and_parse_html_passes_page_as_pagina_query_param(
+    stub_scraper: SiteScraper, mocker: MockerFixture, html_with_item_list: str
+) -> None:
+    """Test `fetch_and_parse_html` passes the page number as the `pagina` query parameter."""
+    response = mocker.MagicMock(status_code=200, text=html_with_item_list)
+    get = mocker.patch(_REQUESTS_GET, return_value=response)
+
+    stub_scraper.set_url("apartment").fetch_and_parse_html(page=3)
+
+    _, kwargs = get.call_args
+    assert kwargs["params"] == {"pagina": 3}
+
+
+def test_fetch_and_parse_html_returns_none_on_404(
+    stub_scraper: SiteScraper, mocker: MockerFixture
+) -> None:
+    """Test `fetch_and_parse_html` returns None when the server responds with 404."""
+    response = mocker.MagicMock(status_code=404)
+    mocker.patch(_REQUESTS_GET, return_value=response)
+
+    result = stub_scraper.set_url("apartment").fetch_and_parse_html()
+
+    assert result is None
+
+
 @pytest.mark.usefixtures("fast_retry")
 def test_fetch_and_parse_html_retries_then_succeeds(
     stub_scraper: SiteScraper, mocker: MockerFixture, html_with_item_list: str
@@ -104,7 +129,7 @@ def test_fetch_and_parse_html_raises_http_error_after_retries(
     with pytest.raises(requests.exceptions.HTTPError):
         stub_scraper.set_url("apartment").fetch_and_parse_html()
 
-    assert get.call_count == 3
+    assert get.call_count == 5
 
 
 def test_extract_properties_raises_when_soup_not_parsed(stub_scraper: SiteScraper) -> None:

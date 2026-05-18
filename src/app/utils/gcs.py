@@ -73,6 +73,7 @@ class ScraperBucket(Bucket):
     site: str
     city: str
     property_type: str
+    page: int
 
     @property
     def name(self) -> str:
@@ -81,5 +82,7 @@ class ScraperBucket(Bucket):
 
     @property
     def prefix(self) -> str:
-        """Object-key prefix ``<env>/<site>/<city>/<property_type>``."""
-        return str(PurePosixPath(self.env) / self.site / self.city / self.property_type)
+        """Object-key prefix ``<env>/<site>/<city>/<property_type>/<page>``."""
+        return str(
+            PurePosixPath(self.env) / self.site / self.city / self.property_type / str(self.page)
+        )

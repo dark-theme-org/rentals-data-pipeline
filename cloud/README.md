@@ -115,8 +115,9 @@ Cloud Workflows syntax. The deploy script picks it up automatically.
 gcloud workflows run etl-rentals-data \
   --location us-central1 \
   --project rentals-data-pipeline \
-  --data='{"environment":"dev","city":"macae","sites":"vivareal","property_types":"apartment"}'
+  --data='{"VERSION":"0-0-1","ENVIRONMENT":"dev","CITY":"macae","SITES":"vivareal","PROPERTY_TYPES":"apartment","UPLOAD_TO_GCS":"true","START_PAGE":"1","MAX_PAGE":"-1"}'
 ```
 
 All parameters are optional — the workflow defaults to the values defined in
-its `init` step.
+its `init` step. Note: argument keys must be **uppercase** to match the Cloud Run
+env var convention.
