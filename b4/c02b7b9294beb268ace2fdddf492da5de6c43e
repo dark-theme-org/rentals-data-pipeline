@@ -1,0 +1,26 @@
+.github/dependabot.yml
+  h_334e5c58273adb 21,37
+  s_1139ccd06442fd::t_436fb4a306c0e4 35
+  s_1139ccd06442fd::t_38336e7d023d9d 19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "b4c02b7b9294beb268ace2fdddf492da5de6c43e",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_1139ccd06442fd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eabfe9ae-3fd5-411e-89f9-b50de01f80a5",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
