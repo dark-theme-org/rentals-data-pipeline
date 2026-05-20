@@ -16,14 +16,9 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
-      - "python"
-    # COMMIT MESSAGE: Must match the prefix regex enforced by
-    # .pre-commit-config.yaml: ^(analysis|change|feature|fix|refactor|test): .*$
-    # 'fix' fits semantically since security patches and version bumps are
-    # corrective changes. Note: scope (e.g. 'fix(deps): ...') is intentionally
-    # omitted because the regex does not allow scope syntax.
+    rebase-strategy: "auto"
     commit-message:
-      prefix: "fix"
+      prefix: "fix"  # COMMIT MESSAGE: Must match the prefix regex enforced by .pre-commit-config.yaml
 
   # GITHUB ACTIONS: Keeps action versions used in any workflows under
   # .github/workflows/ current. Included pre-emptively so action versions
@@ -37,6 +32,6 @@ updates:
     open-pull-requests-limit: 3
     labels:
       - "dependencies"
-      - "github-actions"
+    rebase-strategy: "auto"
     commit-message:
-      prefix: "fix"
+      prefix: "fix"  # COMMIT MESSAGE: Must match the prefix regex enforced by .pre-commit-config.yaml
