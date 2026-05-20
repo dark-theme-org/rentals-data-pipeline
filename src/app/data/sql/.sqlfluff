@@ -1,0 +1,10 @@
+[sqlfluff]
+# Override the global 'dbt' templater for DDL scripts in this directory.
+# These files are not dbt models — they use Jinja syntax for runtime
+# variable substitution (e.g. {{ destination }}) handled by the entrypoint.
+templater = jinja
+
+[sqlfluff:templater:jinja:context]
+# Dummy value used by SQLFluff at lint time only.
+# At runtime this is replaced by BronzeListingsTable.destination.
+destination = my-project.dev_bronze.listings

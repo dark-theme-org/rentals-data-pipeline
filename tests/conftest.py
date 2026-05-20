@@ -5,8 +5,8 @@ import json
 import pytest
 from pytest_mock import MockerFixture
 
+from app.data.gcs import ScraperBucket
 from app.utils import Environment, FileExtensions
-from app.utils.gcs import ScraperBucket
 from app.utils.validations import ScraperParameters
 
 

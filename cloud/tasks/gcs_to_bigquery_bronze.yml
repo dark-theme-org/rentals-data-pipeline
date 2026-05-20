@@ -1,0 +1,24 @@
+# Task definition for the gcs_to_bigquery_bronze Cloud Run Job.
+description: Download scraped data from GCS and load into BigQuery to create bronze layer.
+type: python
+machine:
+  cpu: "1"
+  memory: 512Mi
+  timeout: 1800s
+retry:
+  repetitions: 0
+entrypoint: app.entrypoints.gcs_to_bigquery_bronze
+inputs:
+  parameters:
+    - name: ENVIRONMENT
+      default: dev
+    - name: CITY
+      default: macae
+    - name: SITES
+      default: vivareal,zapimoveis
+    - name: PROPERTY_TYPES
+      default: apartment,house
+    - name: RAISE_DATA_EXISTS
+      default: true
+    - name: UPLOAD_TO_BQ
+      default: true

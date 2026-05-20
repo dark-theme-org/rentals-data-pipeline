@@ -7,12 +7,6 @@ dialect = bigquery
 # EXTENSIONS: Standardizes which files the linter will scan.
 sql_file_exts = .sql
 
-# TEMPLATER: Essential for dbt users. This allows SQLFluff to compile dbt macros 
-# like ref(), source(), and config() before linting the resulting SQL.
-# Switched to dbt to match your [sqlfluff:templater:dbt] section
-# Change back to 'jinja' if not using dbt
-templater = dbt
-
 # EXCLUDED RULES: Comma separated list of rules to exclude, or None
 # See https://docs.sqlfluff.com/en/stable/perma/rule_disabling.html
 # AM04 (ambiguous.column_count) and ST06 (structure.column_order) are
@@ -25,12 +19,12 @@ exclude_rules = ambiguous.column_count, structure.column_order
 max_line_length = 100
 
 # PERFORMANCE: CPU processes to use while linting. The default is "single threaded"
-# to allow easy debugging, but this is often undesirable at scale. If positive, 
+# to allow easy debugging, but this is often undesirable at scale. If positive,
 # just implies number of processes. If negative or zero, implies number_of_cpus
 # - specified_number. e.g. -1 means use all processors but one. 0 means all cpus.
 processes = -1
 
-# JOIN LOGIC: Setting 'indented_joins = False' keeps the JOIN keyword flush with FROM, 
+# JOIN LOGIC: Setting 'indented_joins = False' keeps the JOIN keyword flush with FROM,
 # while 'indented_using_on = True' pushes the join condition inward for better visual hierarchy.
 [sqlfluff:indentation]
 implicit_indents = allow
@@ -39,15 +33,15 @@ indented_using_on = True
 tab_width = 4
 template_blocks_indent = False
 
-# ALIASING: '2' is a "Goldilocks" setting. It bans lazy 1-letter aliases (u, o) 
+# ALIASING: '2' is a "Goldilocks" setting. It bans lazy 1-letter aliases (u, o)
 # but allows clear 2 or 3 letter abbreviations (st, dim, fct) without being too restrictive.
 [sqlfluff:rules:aliasing.length]
 min_alias_length = 2
 
 # CAPITALIZATION: The default configuration for capitalisation rules is "consistent"
-# which will auto-detect the setting from the rest of the file. This is less desirable 
+# which will auto-detect the setting from the rest of the file. This is less desirable
 # in a new project and you may find this (slightly more strict) setting more useful.
-# Typically we find users rely on syntax highlighting rather than capitalisation to 
+# Typically we find users rely on syntax highlighting rather than capitalisation to
 # distinguish between keywords and identifiers. If your organisation has already settled
 # on uppercase formatting for any of these syntax elements then set them to "upper".
 # See https://stackoverflow.com/questions/608196/why-should-i-capitalize-my-sql-keywords-is-there-a-good-reason
@@ -73,12 +67,12 @@ preferred_not_equal_style = c_style
 [sqlfluff:templater]
 unwrap_wrapped_queries = True
 
-# PROJECT DIR: Tells SQLFluff where to find your 'dbt_project.yml'. 
+# PROJECT DIR: Tells SQLFluff where to find your 'dbt_project.yml'.
 # './' assumes you are running the command from the project root.
 [sqlfluff:templater:dbt]
 project_dir = ./
 
-# JINJA BUILTINS: Ensures that standard dbt-Jinja functions are recognized 
+# JINJA BUILTINS: Ensures that standard dbt-Jinja functions are recognized
 # even if they aren't explicitly defined in your local macros.
 [sqlfluff:templater:jinja]
 apply_dbt_builtins = True

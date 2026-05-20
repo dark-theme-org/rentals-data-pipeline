@@ -1,6 +1,6 @@
 """Test the ScraperBucket descriptor for GCS-backed scraper output."""
 
-from app.utils.gcs import ScraperBucket
+from app.data.gcs import ScraperBucket
 from app.utils.utils import Environment, FileExtensions
 
 
