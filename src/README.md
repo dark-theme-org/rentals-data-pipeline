@@ -7,18 +7,25 @@ Application code for the rentals data pipeline. Single top-level package — [`a
 ```text
 app/
 ├── data/
-│   ├── bigquery.py                # Table ABC, BronzeListingsTable, AuditMetadata, SourceMetadata
-│   ├── gcs.py                     # Bucket ABC + ScraperBucket descriptor (glob_pattern, latest_blob)
-│   ├── scrapers/                  # Real-estate listing scrapers
-│   │   ├── settings.py            # City / UF enums, CITIES_UF map, PropertyTypes
-│   │   └── sites/
-│   │       ├── base.py            # SiteScraper — URL build, fetch+parse, JSON-LD extract
-│   │       ├── viva_real.py       # VivaRealScraper
-│   │       └── zap_imoveis.py     # ZapImoveisScraper
-│   └── sql/                       # DDL and query files (Jinja-templated, executed at runtime)
-│       ├── create_bronze_listings_table.sql
-│       ├── check_table_exists.sql
-│       └── check_bronze_listings_exists.sql
+│   ├── bigquery/                  # BigQuery table descriptors and metadata
+│   │   ├── settings.py            # AuditMetadata dataclass, SQL_PATH
+│   │   ├── sql/                   # DDL and query files (Jinja-templated, executed at runtime)
+│   │   │   ├── create_bronze_listings_table.sql
+│   │   │   ├── check_table_exists.sql
+│   │   │   └── check_bronze_listings_exists.sql
+│   │   └── tables/
+│   │       ├── base.py            # Table ABC — exists, create, read_and_replace_params, destination
+│   │       └── bronze_listings.py # BronzeListingsTable — blob_already_loaded, load_job_config, row_schema
+│   ├── gcs/                       # GCS bucket descriptors
+│   │   └── buckets/
+│   │       ├── base.py            # Bucket ABC — blob_name, latest_blob(**kwargs)
+│   │       └── scraper.py         # ScraperBucket — name, prefix, glob_pattern
+│   └── scrapers/                  # Real-estate listing scrapers
+│       ├── settings.py            # City / UF enums, CITIES_UF map, PropertyTypes
+│       └── sites/
+│           ├── base.py            # SiteScraper — URL build, fetch+parse, JSON-LD extract
+│           ├── viva_real.py       # VivaRealScraper
+│           └── zap_imoveis.py     # ZapImoveisScraper
 ├── entrypoints/
 │   ├── scraper_data_to_bucket.py  # Scrape every (site, property_type) pair → GCS
 │   └── gcs_to_bigquery_bronze.py  # GCS scraped blobs → BigQuery Bronze layer
@@ -34,13 +41,13 @@ app/
 
 Site-agnostic scraping. [`SiteScraper`](app/data/scrapers/sites/base.py) is the abstract base — subclasses bind `_SITE_NAME`, `_URL_TEMPLATE`, and a `_PROPERTY_TYPES: PropertyTypes` ClassVar. The fluent chain is `Scraper(city).set_url(property_type).fetch_and_parse_html(page=N).extract_properties()`. Fetches retry up to 5× on `requests.RequestException` with randomised exponential backoff (tenacity, 2–30 s); HTTP 200 is success, HTTP 404 returns `None` to signal end-of-pagination, any other status raises. `extract_properties()` parses every `<script type="application/ld+json">` block and returns the listings inside the `ItemList` block indexed by `@id`. Adding a new site = a ~10-line subclass alongside [`viva_real.py`](app/data/scrapers/sites/viva_real.py).
 
-### [`app/data/gcs.py`](app/data/gcs.py)
+### [`app/data/gcs/`](app/data/gcs/)
 
-Frozen dataclasses that own the GCS bucket name and key-prefix layout. `Bucket` is the abstract base; `ScraperBucket` partitions blobs by `env/site/city/property_type/page`. Key methods: `blob_name(filename, extension)` joins prefix + filename + extension; `glob_pattern` returns a Jinja-style template string used for server-side `match_glob` filtering; `latest_blob(gcs_client, file_date, extension)` returns the most recently updated blob matching the pattern, or `None`.
+GCS bucket descriptors structured as a package mirroring the `scrapers/` pattern. `Bucket` (in [`buckets/base.py`](app/data/gcs/buckets/base.py)) is the abstract base; `ScraperBucket` (in [`buckets/scraper.py`](app/data/gcs/buckets/scraper.py)) partitions blobs by `env/site/city/property_type/page`. Key methods: `blob_name(filename, extension)` joins prefix + filename + extension; `glob_pattern` returns a template string used for server-side filtering (prefix is passed separately to `list_blobs`); `latest_blob(gcs_client, **kwargs)` formats the pattern with the caller-supplied kwargs and returns the most recently updated matching blob, or `None`.
 
-### [`app/data/bigquery.py`](app/data/bigquery.py)
+### [`app/data/bigquery/`](app/data/bigquery/)
 
-BigQuery table descriptors and metadata dataclasses. `Table` is the abstract base providing `exists`, `create`, `read_and_replace_params`, and `destination`. `BronzeListingsTable` adds `blob_already_loaded`, `load_job_config`, `row_schema`, and the inner `SourceMetadata` dataclass. `AuditMetadata` carries load-time audit fields. SQL files live in [`app/data/sql/`](app/data/sql/) and are rendered at runtime via `read_and_replace_params`.
+BigQuery table descriptors and metadata, structured as a package mirroring the `scrapers/` pattern. [`settings.py`](app/data/bigquery/settings.py) holds the `AuditMetadata` dataclass and `SQL_PATH` (an absolute `Path` pointing to [`bigquery/sql/`](app/data/bigquery/sql/)). `Table` (in [`tables/base.py`](app/data/bigquery/tables/base.py)) is the abstract base providing `exists`, `create`, `read_and_replace_params`, and `destination`. `BronzeListingsTable` (in [`tables/bronze_listings.py`](app/data/bigquery/tables/bronze_listings.py)) adds `blob_already_loaded`, `load_job_config`, `row_schema`, and the inner `SourceMetadata` dataclass. SQL files live in [`bigquery/sql/`](app/data/bigquery/sql/) and are resolved via `SQL_PATH` from `settings.py`.
 
 ### [`app/entrypoints/`](app/entrypoints/)
 
