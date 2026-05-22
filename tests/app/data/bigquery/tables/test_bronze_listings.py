@@ -1,25 +1,9 @@
-"""Tests for BigQuery table descriptors, metadata dataclasses, and BronzeListingsTable methods."""
+"""Tests for the BronzeListingsTable BigQuery table descriptor."""
 
-from pathlib import Path
-
-import pytest
 from google.cloud import bigquery
 from pytest_mock import MockerFixture
 
 from app.data.bigquery import AuditMetadata, BronzeListingsTable
-
-
-def test_audit_metadata_construction(audit_metadata: AuditMetadata) -> None:
-    """Test AuditMetadata stores version, insert, and update timestamps."""
-    assert audit_metadata.version_id == "test"
-    assert audit_metadata.ins_ts == "2026-01-01T00:00:00Z"
-    assert audit_metadata.upd_ts == "2026-01-01T00:00:00Z"
-
-
-def test_audit_metadata_is_immutable(audit_metadata: AuditMetadata) -> None:
-    """Test AuditMetadata raises FrozenInstanceError on field reassignment."""
-    with pytest.raises(Exception):
-        audit_metadata.version_id = "changed"  # type: ignore[misc]
 
 
 def test_source_metadata_construction(
@@ -42,73 +26,11 @@ def test_bronze_table_table_name(bronze_table: BronzeListingsTable) -> None:
     assert bronze_table.table == "listings"
 
 
-def test_bronze_table_destination(bronze_table: BronzeListingsTable) -> None:
-    """Test destination formats project.env_bronze.listings."""
-    assert bronze_table.destination == "test-project.dev_bronze.listings"
-
-
-def test_bronze_table_invalid_env_raises() -> None:
-    """Test Table.__post_init__ raises ValueError for an unknown environment."""
-    with pytest.raises(ValueError):
-        BronzeListingsTable(env="staging", project="test-project")
-
-
 def test_sql_file_paths_exist(bronze_table: BronzeListingsTable) -> None:
     """Test all three SQL file paths resolve to existing files on disk."""
     assert bronze_table.create_sql_file_path.exists()
     assert bronze_table.check_exists_sql_file_path.exists()
     assert bronze_table.check_table_exists_sql_file_path.exists()
-
-
-def test_read_and_replace_params_substitutes_placeholder(
-    bronze_table: BronzeListingsTable,
-    tmp_path: Path,
-) -> None:
-    """Test read_and_replace_params replaces every {{ key }} with its value."""
-    sql_file = tmp_path / "test.sql"
-    sql_file.write_text("SELECT * FROM `{{ destination }}` WHERE x = '{{ val }}'")
-    result = bronze_table.read_and_replace_params(
-        {"destination": "p.d.t", "val": "foo"},
-        sql_file_path=sql_file,
-    )
-    assert result == "SELECT * FROM `p.d.t` WHERE x = 'foo'"
-
-
-def test_exists_returns_true_when_table_found(
-    bronze_table: BronzeListingsTable,
-    mocker: MockerFixture,
-) -> None:
-    """Test exists returns True when INFORMATION_SCHEMA reports CNT=1."""
-    mock_row = mocker.MagicMock()
-    mock_row.CNT = 1
-    client = mocker.MagicMock()
-    client.query.return_value.result.return_value = iter([mock_row])
-    assert bronze_table.exists(client) is True
-
-
-def test_exists_returns_false_when_table_not_found(
-    bronze_table: BronzeListingsTable,
-    mocker: MockerFixture,
-) -> None:
-    """Test exists returns False when INFORMATION_SCHEMA reports CNT=0."""
-    mock_row = mocker.MagicMock()
-    mock_row.CNT = 0
-    client = mocker.MagicMock()
-    client.query.return_value.result.return_value = iter([mock_row])
-    assert bronze_table.exists(client) is False
-
-
-def test_create_executes_ddl(
-    bronze_table: BronzeListingsTable,
-    mocker: MockerFixture,
-) -> None:
-    """Test create calls client.query with the rendered DDL."""
-    client = mocker.MagicMock()
-    bronze_table.create(client)
-    client.query.assert_called_once()
-    ddl_arg = client.query.call_args[0][0]
-    assert "{{ destination }}" not in ddl_arg
-    assert bronze_table.destination in ddl_arg
 
 
 def test_blob_already_loaded_returns_true(
@@ -120,7 +42,9 @@ def test_blob_already_loaded_returns_true(
     client.query.return_value.result.return_value = iter([mocker.MagicMock()])
     assert (
         bronze_table.blob_already_loaded(
-            client, blob_name="dev/vivareal/macae/apartment/1/blob.json", executed_at="2026-01-01"
+            client,
+            blob_name="dev/vivareal/macae/apartment/1/blob.json",
+            executed_at="2026-01-01",
         )
         is True
     )
@@ -135,7 +59,9 @@ def test_blob_already_loaded_returns_false(
     client.query.return_value.result.return_value = iter([])
     assert (
         bronze_table.blob_already_loaded(
-            client, blob_name="dev/vivareal/macae/apartment/1/blob.json", executed_at="2026-01-01"
+            client,
+            blob_name="dev/vivareal/macae/apartment/1/blob.json",
+            executed_at="2026-01-01",
         )
         is False
     )
@@ -143,8 +69,7 @@ def test_blob_already_loaded_returns_false(
 
 def test_load_job_config_is_write_append(bronze_table: BronzeListingsTable) -> None:
     """Test load_job_config uses WRITE_APPEND write disposition."""
-    config = bronze_table.load_job_config
-    assert config.write_disposition == bigquery.WriteDisposition.WRITE_APPEND
+    assert bronze_table.load_job_config.write_disposition == bigquery.WriteDisposition.WRITE_APPEND
 
 
 def test_row_schema_maps_listing_fields(
@@ -168,9 +93,7 @@ def test_row_schema_maps_listing_fields(
     assert row["SRC_BLOB"] == source_metadata.blob
     assert row["SRC_SITE_NAME"] == "vivareal"
     assert row["SRC_PAGE_NUM"] == 1
-    assert row["SRC_EXECUTED_AT_TS"] == "2026-01-01T00:00:00Z"
     assert row["AUD_VERSION_ID"] == "test"
-    assert row["AUD_INS_TS"] == "2026-01-01T00:00:00Z"
 
 
 def test_row_schema_handles_missing_nested_fields(

@@ -92,6 +92,41 @@ flowchart TD
     PairDone --> Pairs
 ```
 
+#### *2. gcs_to_bigquery_bronze*
+
+```mermaid
+flowchart TD
+    Trigger["☁️ Cloud Workflows\netl_rentals_data\n(VERSION, ENVIRONMENT, CITY,\nSITES, PROPERTY_TYPES,\nFILE_DATE, UPLOAD_TO_BQ)"]
+    Trigger -->|"googleapis.run.v2\n.jobs.run"| CR["📦 Cloud Run Job\ngcs-to-bigquery-bronze"]
+
+    subgraph Entrypoint["gcs_to_bigquery_bronze entrypoint"]
+        CR --> DDL{"table\nexists?"}
+        DDL -->|no| Create["CREATE TABLE\nenv_bronze.listings"]
+        DDL -->|yes| Pairs
+        Create --> Pairs["for each (site, property_type)"]
+
+        Pairs --> PageLoop["page = start_page"]
+        PageLoop --> MaxCheck{"page > max_page?"}
+        MaxCheck -->|yes| PairDone(["pair done"])
+
+        MaxCheck -->|no| Glob["ScraperBucket.latest_blob\nmatch_glob · most recently updated"]
+        Glob -->|"None — no blob for date/page"| PairDone
+
+        Glob -->|blob found| DupCheck{"blob already\nloaded?"}
+        DupCheck -->|yes · skip| Inc["page++"]
+        DupCheck -->|no| Download["blob.download_as_text\njson.loads"]
+
+        Download --> Transform["row_schema\nLISTING_* · SRC_* · AUD_*"]
+        Transform --> UpFlag{"upload_to_bq?"}
+        UpFlag -->|false| Inc
+        UpFlag -->|true| BQ[("BigQuery\nenv_bronze.listings\nPARTITION BY DATE(SRC_EXECUTED_AT_TS)")]
+        BQ --> Inc
+        Inc --> MaxCheck
+    end
+
+    PairDone --> Pairs
+```
+
 ### *Documentations*
 
 Follow our [CODING_GUIDELINES.md](CODING_GUIDELINES.md) to check our way of code.
