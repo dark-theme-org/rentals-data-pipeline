@@ -7,17 +7,20 @@ from app.utils.utils import (
     FileExtensions,
     ServiceAccountNames,
     configure_logging,
+    datetime_now_utc,
     get_credentials,
 )
-from app.utils.validations import ScraperParameters
+from app.utils.validations import BronzeParameters, ScraperParameters
 
 __all__ = [
+    "BronzeParameters",
     "CloudSettings",
     "Environment",
     "FileExtensions",
     "ServiceAccountNames",
     "ScraperParameters",
     "configure_logging",
+    "datetime_now_utc",
     "get_credentials",
     "task",
 ]

@@ -3,13 +3,13 @@
 import dataclasses
 import logging
 import os
-from datetime import datetime, timezone
+from datetime import datetime
 
 from pydantic import BaseModel, Field, field_validator
 
 from app.data.scrapers import City, VivaRealScraper, ZapImoveisScraper
 from app.data.scrapers.settings import PropertyTypes
-from app.utils.utils import Environment, FileExtensions, ServiceAccountNames
+from app.utils.utils import Environment, FileExtensions, ServiceAccountNames, datetime_now_utc
 
 logger = logging.getLogger(__name__)
 
@@ -23,42 +23,36 @@ _VALID_SITES: list[str] = [
 
 
 class InputParameters(BaseModel):
-    """Base class for runtime task input parameter validation."""
+    """
+    Base model with shared fields and validation logic for all pipeline tasks.
 
-
-class ScraperParameters(InputParameters):
-    """Validates and parses input parameters for the scraper_data_to_bucket task."""
+    Subclasses inherit ``environment``, ``city``, ``sites``, ``property_types``,
+    and ``version`` together with their validators. Task-specific fields and
+    ``from_env`` are defined in each subclass.
+    """
 
     environment: str = Field(strict=True)
     city: str = Field(strict=True)
     sites: list[str] = Field(strict=True)
     property_types: list[str] = Field(strict=True)
-    upload_to_gcs: bool
+    version: str
     start_page: int
     max_page: int | None
-    version: str
-    executed_at: str = Field(
-        default_factory=lambda: datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%SZ")
-    )
-    max_long_retries: int = 3
+    executed_at: str = datetime_now_utc()
     file_extension: str = FileExtensions.JSON.value
-    sa_name: str = ServiceAccountNames.GCS.value
 
     @classmethod
-    def from_env(cls) -> "ScraperParameters":
-        """Instantiate by reading the required environment variables."""
-        return cls.model_validate(
-            {
-                "environment": os.environ["ENVIRONMENT"],
-                "city": os.environ["CITY"],
-                "sites": os.environ["SITES"],
-                "property_types": os.environ["PROPERTY_TYPES"],
-                "upload_to_gcs": os.environ["UPLOAD_TO_GCS"],
-                "start_page": os.environ["START_PAGE"],
-                "max_page": os.environ["MAX_PAGE"] if int(os.environ["MAX_PAGE"]) > 0 else None,
-                "version": os.environ.get("VERSION", "unknown"),
-            }
-        )
+    def _base_env(cls) -> dict:
+        """Read the env vars shared across all pipeline tasks."""
+        return {
+            "environment": os.environ["ENVIRONMENT"],
+            "city": os.environ["CITY"],
+            "sites": os.environ["SITES"],
+            "property_types": os.environ["PROPERTY_TYPES"],
+            "version": os.environ.get("VERSION", "unknown"),
+            "start_page": os.environ["START_PAGE"],
+            "max_page": os.environ["MAX_PAGE"] if int(os.environ["MAX_PAGE"]) > 0 else None,
+        }
 
     @field_validator("environment")
     @classmethod
@@ -78,10 +72,10 @@ class ScraperParameters(InputParameters):
         str
             Value as-expected if valid. Else, raises ValueError with available options.
         """
-        env_value = input_value.strip().lower()
-        if env_value not in _VALID_ENVIRONMENTS:
+        v = input_value.strip().lower()
+        if v not in _VALID_ENVIRONMENTS:
             raise ValueError(f"must be one of the available environments: {_VALID_ENVIRONMENTS}.")
-        return env_value
+        return v
 
     @field_validator("city")
     @classmethod
@@ -101,10 +95,10 @@ class ScraperParameters(InputParameters):
         str
             Value as-expected if valid. Else, raises ValueError with available options.
         """
-        city_value = input_value.strip().lower()
-        if city_value not in _VALID_CITIES:
+        v = input_value.strip().lower()
+        if v not in _VALID_CITIES:
             raise ValueError(f"must be one of the available cities: {_VALID_CITIES}.")
-        return city_value
+        return v
 
     @field_validator("sites", mode="before")
     @classmethod
@@ -124,11 +118,11 @@ class ScraperParameters(InputParameters):
         list[str]
             List of site slugs if all are valid. Else, raises ValueError with available options.
         """
-        sites_list = [s.strip().lower() for s in input_value.split(",")]
-        for site in sites_list:
+        sites = [s.strip().lower() for s in input_value.split(",")]
+        for site in sites:
             if site not in _VALID_SITES:
                 raise ValueError(f"'{site}' is not valid. Available sites: {_VALID_SITES}.")
-        return sites_list
+        return sites
 
     @field_validator("property_types", mode="before")
     @classmethod
@@ -149,11 +143,69 @@ class ScraperParameters(InputParameters):
             List of property type slugs if all are valid.
             Else, raises ValueError with available options.
         """
-        property_types_list = [pt.strip().lower() for pt in input_value.split(",")]
-        for property_type in property_types_list:
-            if property_type not in _VALID_PROPERTY_TYPES:
+        types = [pt.strip().lower() for pt in input_value.split(",")]
+        for pt in types:
+            if pt not in _VALID_PROPERTY_TYPES:
                 raise ValueError(
-                    f"'{property_type}' is not valid. "
-                    f"Available property types: {_VALID_PROPERTY_TYPES}."
+                    f"'{pt}' is not valid. Available property types: {_VALID_PROPERTY_TYPES}."
                 )
-        return property_types_list
+        return types
+
+
+class ScraperParameters(InputParameters):
+    """Validates and parses input parameters for the scraper_data_to_bucket task."""
+
+    upload_to_gcs: bool
+    max_long_retries: int = 3
+    sa_name: str = ServiceAccountNames.GCS.value
+
+    @classmethod
+    def from_env(cls) -> "ScraperParameters":
+        """Instantiate by reading the required environment variables."""
+        return cls.model_validate({**cls._base_env(), "upload_to_gcs": os.environ["UPLOAD_TO_GCS"]})
+
+
+class BronzeParameters(InputParameters):
+    """Validates and parses input parameters for the gcs_to_bigquery_bronze task."""
+
+    upload_to_bq: bool
+    file_date: str = Field(strict=True)
+    bq_sa_name: str = ServiceAccountNames.BQ.value
+    gcs_sa_name: str = ServiceAccountNames.GCS.value
+
+    @classmethod
+    def from_env(cls) -> "BronzeParameters":
+        """Instantiate by reading the required environment variables."""
+        return cls.model_validate(
+            {
+                **cls._base_env(),
+                "upload_to_bq": os.environ["UPLOAD_TO_BQ"],
+                "file_date": os.environ.get("FILE_DATE") or datetime_now_utc(date_trunc=True),
+            }
+        )
+
+    @field_validator("file_date")
+    @classmethod
+    def validate_file_date(cls, input_value: str) -> str:
+        """
+        Validate that 'file_date' is a non-empty date string in YYYY-MM-DD format.
+
+        ----------
+        Parameters
+        ----------
+        input_value : str
+            Declared 'file_date' parameter.
+
+        ----------
+        Returns
+        ----------
+        str
+            Value as-expected if valid. Else, raises ValueError with expected format.
+        """
+        try:
+            datetime.strptime(input_value, "%Y-%m-%d")
+        except ValueError as exc:
+            raise ValueError(
+                f"'{input_value}' is not a valid `file_date`. Expected format: 'YYYY-MM-DD'."
+            ) from exc
+        return input_value

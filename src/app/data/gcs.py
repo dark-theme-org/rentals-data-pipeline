@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import PurePosixPath
 
+from google.cloud.storage import Blob, Client
+
 
 @dataclass(frozen=True, kw_only=True)
 class Bucket(ABC):
@@ -52,6 +54,11 @@ class Bucket(ABC):
         """
         return str(PurePosixPath(self.prefix) / f"{filename}.{extension}")
 
+    @property
+    @abstractmethod
+    def glob_pattern(self) -> str:
+        """Build a GCS glob pattern to match blobs for a given scraper run date."""
+
 
 @dataclass(frozen=True, kw_only=True)
 class ScraperBucket(Bucket):
@@ -85,4 +92,51 @@ class ScraperBucket(Bucket):
         """Object-key prefix ``<env>/<site>/<city>/<property_type>/<page>``."""
         return str(
             PurePosixPath(self.env) / self.site / self.city / self.property_type / str(self.page)
+        )
+
+    @property
+    def glob_pattern(self) -> str:
+        """Build a GCS glob pattern to match blobs for a given scraper run date."""
+        return "{prefix}/{file_date}T*.{extension}"
+
+    def latest_blob(
+        self,
+        gcs_client: Client,
+        *,
+        file_date: str,
+        extension: str,
+    ) -> Blob | None:
+        """
+        Return the most recently updated blob for the given scraper run date.
+
+        Lists all blobs under :attr:`prefix` that match the glob for
+        ``file_prefix`` and returns the one with the highest ``updated``
+        timestamp, or ``None`` if no matching blob is found.
+
+        ----------
+        Parameters
+        ----------
+        gcs_client : Client
+            Authenticated GCS client used to list blobs.
+        file_date : str
+            Scraper run date in ``YYYY-MM-DD`` format used as the blob
+            filename prefix (e.g. ``"2026-01-01"``).
+        extension : str
+            File extension to match (e.g. ``"json"``).
+
+        ----------
+        Returns
+        ----------
+        Blob | None
+            Most recently updated matching blob, or ``None`` if none found.
+        """
+        return max(
+            gcs_client.list_blobs(
+                self.name,
+                match_glob=self.glob_pattern.format(
+                    prefix=self.prefix, file_date=file_date, extension=extension
+                ),
+            ),
+            key=lambda b: b.updated,  # type: ignore
+            default=None,
         )

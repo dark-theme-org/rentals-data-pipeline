@@ -5,6 +5,11 @@
 templater = jinja
 
 [sqlfluff:templater:jinja:context]
-# Dummy value used by SQLFluff at lint time only.
-# At runtime this is replaced by BronzeListingsTable.destination.
+# Dummy values used by SQLFluff at lint time only.
+# At runtime these are replaced by BronzeListingsTable.read_and_replace_params.
 destination = my-project.dev_bronze.listings
+project = my-project
+dataset = dev_bronze
+table_name = listings
+executed_at = 2026-01-01
+blob_name = blob.json

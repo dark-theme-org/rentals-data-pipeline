@@ -2,6 +2,7 @@
 
 import logging
 import os
+from datetime import datetime, timezone
 from enum import StrEnum
 from pathlib import Path
 
@@ -39,6 +40,7 @@ class FileExtensions(StrEnum):
 class ServiceAccountNames(StrEnum):
     """Env var names `get_credentials` reads to pick which service account to impersonate."""
 
+    BQ = "BQ_SA"
     GCS = "GCS_SA"
 
 
@@ -64,6 +66,29 @@ def configure_logging(level: int = logging.INFO) -> None:
         level=level,
         format="%(asctime)s [%(levelname)s] - %(message)s",
     )
+
+
+def datetime_now_utc(date_trunc: bool = False) -> str:
+    """
+    Return the current UTC time as a formatted string.
+
+    ----------
+    Parameters
+    ----------
+    date_trunc : bool, default False
+        If True, return only the date portion (``YYYY-MM-DD``).
+        If False, return the full ISO-8601 datetime (``YYYY-MM-DDTHH:MM:SSZ``).
+
+    ----------
+    Returns
+    ----------
+    str
+        Formatted UTC datetime or date string.
+    """
+    now = datetime.now(timezone.utc)
+    if date_trunc:
+        return now.strftime("%Y-%m-%d")
+    return now.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def get_credentials(env_var: str) -> Credentials:

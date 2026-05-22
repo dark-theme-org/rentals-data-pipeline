@@ -1,19 +1,21 @@
 """Project-wide pytest fixtures shared across the test suite."""
 
 import json
+import os
 
 import pytest
 from pytest_mock import MockerFixture
 
+from app.data.bigquery import AuditMetadata, BronzeListingsTable
 from app.data.gcs import ScraperBucket
 from app.utils import Environment, FileExtensions
-from app.utils.validations import ScraperParameters
+from app.utils.validations import BronzeParameters, ScraperParameters
 
 
 @pytest.fixture(name="env")
 def env_() -> Environment:
-    """Default deployment environment used by GCS-target tests."""
-    return Environment.DEV
+    """Deployment environment read from the ENVIRONMENT pytest.ini variable."""
+    return Environment(os.environ["ENVIRONMENT"])
 
 
 @pytest.fixture(name="file_extension")
@@ -32,8 +34,8 @@ def scraper_bucket_(env: Environment, expected_city: str) -> ScraperBucket:
 
 @pytest.fixture(name="expected_city")
 def expected_city_() -> str:
-    """Canonical lowercase city slug expected for `City.MACAE`."""
-    return "macae"
+    """City slug read from the CITY pytest.ini variable."""
+    return os.environ["CITY"]
 
 
 @pytest.fixture(name="expected_uf")
@@ -148,26 +150,26 @@ def fast_long_sleep_(mocker: MockerFixture) -> None:
 
 @pytest.fixture(name="valid_scraper_env")
 def valid_scraper_env_() -> dict:
-    """Raw env var dict for instantiating ScraperParameters via model_validate."""
+    """Raw env-var string dict mirroring pytest.ini values for ScraperParameters tests."""
     return {
-        "environment": "dev",
-        "city": "macae",
-        "sites": "vivareal,zapimoveis",
-        "property_types": "apartment,house",
-        "upload_to_gcs": "true",
-        "start_page": "1",
-        "max_page": "-1",
-        "version": "test",
+        "environment": os.environ["ENVIRONMENT"],
+        "city": os.environ["CITY"],
+        "sites": os.environ["SITES"],
+        "property_types": os.environ["PROPERTY_TYPES"],
+        "upload_to_gcs": os.environ["UPLOAD_TO_GCS"],
+        "start_page": os.environ["START_PAGE"],
+        "max_page": os.environ["MAX_PAGE"],
+        "version": os.environ.get("VERSION", "test"),
     }
 
 
 @pytest.fixture(name="scraper_params")
-def scraper_params_() -> ScraperParameters:
+def scraper_params_(env: Environment, expected_city: str) -> ScraperParameters:
     """ScraperParameters scoped to a single (site, property_type) pair for entrypoint tests."""
     return ScraperParameters.model_validate(
         {
-            "environment": "dev",
-            "city": "macae",
+            "environment": env,
+            "city": expected_city,
             "sites": "vivareal",
             "property_types": "apartment",
             "upload_to_gcs": True,
@@ -179,12 +181,12 @@ def scraper_params_() -> ScraperParameters:
 
 
 @pytest.fixture(name="scraper_params_no_upload")
-def scraper_params_no_upload_() -> ScraperParameters:
+def scraper_params_no_upload_(env: Environment, expected_city: str) -> ScraperParameters:
     """ScraperParameters with upload_to_gcs=False for GCS-skip-path tests."""
     return ScraperParameters.model_validate(
         {
-            "environment": "dev",
-            "city": "macae",
+            "environment": env,
+            "city": expected_city,
             "sites": "vivareal",
             "property_types": "apartment",
             "upload_to_gcs": False,
@@ -196,12 +198,12 @@ def scraper_params_no_upload_() -> ScraperParameters:
 
 
 @pytest.fixture(name="scraper_params_with_max_page")
-def scraper_params_with_max_page_() -> ScraperParameters:
+def scraper_params_with_max_page_(env: Environment, expected_city: str) -> ScraperParameters:
     """ScraperParameters with max_page=1 for loop-termination tests."""
     return ScraperParameters.model_validate(
         {
-            "environment": "dev",
-            "city": "macae",
+            "environment": env,
+            "city": expected_city,
             "sites": "vivareal",
             "property_types": "apartment",
             "upload_to_gcs": True,
@@ -210,3 +212,90 @@ def scraper_params_with_max_page_() -> ScraperParameters:
             "version": "test",
         }
     )
+
+
+@pytest.fixture(name="valid_bronze_env")
+def valid_bronze_env_() -> dict:
+    """Field dict mirroring pytest.ini values for BronzeParameters tests."""
+    max_page_raw = int(os.environ["MAX_PAGE"])
+    return {
+        "environment": os.environ["ENVIRONMENT"],
+        "city": os.environ["CITY"],
+        "sites": os.environ["SITES"],
+        "property_types": os.environ["PROPERTY_TYPES"],
+        "upload_to_bq": os.environ["UPLOAD_TO_BQ"],
+        "file_date": "2026-01-01",
+        "version": os.environ.get("VERSION", "test"),
+        "start_page": int(os.environ["START_PAGE"]),
+        "max_page": max_page_raw if max_page_raw > 0 else None,
+    }
+
+
+@pytest.fixture(name="bronze_params")
+def bronze_params_(valid_bronze_env: dict) -> BronzeParameters:
+    """BronzeParameters scoped to a single-date load run."""
+    return BronzeParameters.model_validate(valid_bronze_env)
+
+
+@pytest.fixture(name="bronze_table")
+def bronze_table_(env: Environment) -> BronzeListingsTable:
+    """BronzeListingsTable descriptor bound to the dev environment."""
+    return BronzeListingsTable(env=env, project="test-project")
+
+
+@pytest.fixture(name="audit_metadata")
+def audit_metadata_() -> AuditMetadata:
+    """AuditMetadata with fixed test timestamps."""
+    return AuditMetadata(
+        version_id="test",
+        ins_ts="2026-01-01T00:00:00Z",
+        upd_ts="2026-01-01T00:00:00Z",
+    )
+
+
+@pytest.fixture(name="source_metadata")
+def source_metadata_(scraper_bucket: ScraperBucket) -> BronzeListingsTable.SourceMetadata:
+    """SourceMetadata derived from the canonical scraper_bucket fixture."""
+    return BronzeListingsTable.SourceMetadata(
+        blob=f"{scraper_bucket.prefix}/2026-01-01T00:00:00Z.json",
+        site_name=scraper_bucket.site,
+        city_name=scraper_bucket.city,
+        property_type_cat=scraper_bucket.property_type,
+        page_num=scraper_bucket.page,
+        executed_at_ts="2026-01-01T00:00:00Z",
+    )
+
+
+@pytest.fixture(name="raw_listing")
+def raw_listing_() -> dict:
+    """Minimal raw listing dict as scraped from the source site."""
+    return {
+        "@id": "12345",
+        "@type": "Apartment",
+        "name": "Test Apartment",
+        "url": "https://example.com/listing/12345",
+        "description": "A test listing.",
+        "petsAllowed": False,
+        "numberOfRooms": 2,
+        "numberOfBedrooms": 2,
+        "numberOfBathroomsTotal": 1,
+        "address": {
+            "streetAddress": "Rua Teste",
+            "addressLocality": "Macaé",
+            "addressRegion": "RJ",
+            "addressCountry": "BR",
+        },
+        "floorSize": {"value": 60, "unitCode": "M2"},
+        "image": ["https://example.com/img1.jpg"],
+        "amenityFeature": [{"name": "Amenity", "value": "Pool"}],
+        "offers": {
+            "price": 2000,
+            "priceCurrency": "BRL",
+            "availability": "https://schema.org/InStock",
+            "potentialAction": {
+                "target": "https://example.com/listing/12345",
+                "priceSpecification": {"price": 2000, "priceCurrency": "BRL"},
+            },
+            "propertyValue": {"name": "Condominium Fee", "value": 300, "unitText": "BRL/month"},
+        },
+    }

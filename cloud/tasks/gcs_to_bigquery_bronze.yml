@@ -18,7 +18,7 @@ inputs:
       default: vivareal,zapimoveis
     - name: PROPERTY_TYPES
       default: apartment,house
-    - name: RAISE_DATA_EXISTS
-      default: true
+    - name: FILE_DATE
+      default: ""
     - name: UPLOAD_TO_BQ
       default: true
