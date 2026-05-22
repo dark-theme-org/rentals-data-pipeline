@@ -1,0 +1,46 @@
+src/app/data/bigquery/tables/bronze_listings.py
+  s_416be50e3abbee::t_cea5ed6906939c 1,9-10
+  h_334e5c58273adb 51,56
+tests/app/data/bigquery/tables/test_bronze_listings.py
+  s_416be50e3abbee::t_5f6fe7a20e8b77 1,45-47,62-64,72
+src/app/data/bigquery/__init__.py
+  s_416be50e3abbee::t_e35afb99b92a83 1-2,5-7
+  s_416be50e3abbee::t_adb5d0ebe31723 3-4
+src/README.md
+  s_416be50e3abbee::t_3d562171b22aa6 44,46,48,50
+  s_416be50e3abbee::t_65ba463b775eb4 10-28
+src/app/data/bigquery/settings.py
+  h_334e5c58273adb 2-20
+  s_416be50e3abbee::t_444342eea2c1f3 1
+tests/app/data/bigquery/tables/test_base.py
+  s_416be50e3abbee::t_3dfac2084e7a45 1-70
+src/app/data/bigquery/tables/base.py
+  h_334e5c58273adb 10,53
+  s_416be50e3abbee::t_6088ef024f7977 1-9,11-52,54-154
+tests/app/data/bigquery/test_settings.py
+  s_416be50e3abbee::t_d1a7ba3cd8b823 1-24
+src/app/data/bigquery/tables/__init__.py
+  s_416be50e3abbee::t_c7245a4bee09bf 1-2,5-7
+  s_416be50e3abbee::t_1b6bf439acab3e 3-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.12",
+  "base_commit_sha": "2da17d57ba764e0c12b4dadf1810b631108ba438",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_416be50e3abbee": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6ec35a79-0054-460a-8b0c-8f6fa973cc61",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
