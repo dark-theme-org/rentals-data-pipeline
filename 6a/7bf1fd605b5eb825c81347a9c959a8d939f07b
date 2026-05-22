@@ -1,0 +1,151 @@
+src/app/data/sql/create_bronze_listings_table.sql
+  s_2e4959cfb1edb5::t_b78599aa052116 119
+  s_2e4959cfb1edb5::t_712722c9ed8b0a 105
+  s_2e4959cfb1edb5::t_76953c4b483b41 27
+  s_2e4959cfb1edb5::t_8ec611e8ad6fe8 122
+  s_2e4959cfb1edb5::t_b7b955f9dffcda 22
+  s_2e4959cfb1edb5::t_17625c552d1cbc 127
+  s_2e4959cfb1edb5::t_e42753ea8bc793 19,25
+  s_2e4959cfb1edb5::t_e35394bb8647f9 7-10
+  s_2e4959cfb1edb5::t_452a40d0f8b602 20,24,111,126
+  h_334e5c58273adb 39,42,45,48,51,59,65,68,74,99-100,102,108-109,112,114,123
+cloud/tasks/gcs_to_bigquery_bronze.yml
+  h_334e5c58273adb 21-22
+src/app/entrypoints/gcs_to_bigquery_bronze.py
+  s_2e4959cfb1edb5::t_e31b22963672d9 61,66,68
+  s_2e4959cfb1edb5::t_98e9621e7bfdd1 78
+  s_2e4959cfb1edb5::t_59e2c5b3a48dc0 94
+  s_2e4959cfb1edb5::t_6a2598618fef87 36
+  s_2e4959cfb1edb5::t_f1167efb92e59b 58-59
+  s_2e4959cfb1edb5::t_f74f569fde9b50 35
+  s_2e4959cfb1edb5::t_958127b536982a 73-74,76-77,79
+  s_2e4959cfb1edb5::t_273e3b63c9101b 5
+  s_2e4959cfb1edb5::t_44c6bf504ac948 44,52-57,62-65,67
+  s_2e4959cfb1edb5::t_55b6a10f3ce578 95
+  s_2e4959cfb1edb5::t_02caba94fb0031 85,93
+  h_334e5c58273adb 9-11,16-17,32,37-39,60,69,72,80,82,84,86-92,96,108,110
+  s_2e4959cfb1edb5::t_69a7c87d5c2107 111-112
+  s_2e4959cfb1edb5::t_e4dd7379bd0a6a 75,81,83,97-99
+  s_2e4959cfb1edb5::t_46aa4d131b3d9b 70-71
+  s_2e4959cfb1edb5::t_314639432471eb 1-4,6-8,12-15,18-31,33-34,40-42,100-107,109,113-115
+src/app/data/bigquery.py
+  s_2e4959cfb1edb5::t_b1efa302817f59 206-210
+  s_2e4959cfb1edb5::t_68f269aa9b4e99 3,12
+  s_2e4959cfb1edb5::t_47d577ae574521 18
+  s_2e4959cfb1edb5::t_a3f5119a1af372 125,131-137,146,148-165,167-168
+  s_2e4959cfb1edb5::t_caac81d44862f9 201-202,204-205
+  s_2e4959cfb1edb5::t_23e6e78e3c8520 70,73
+  s_2e4959cfb1edb5::t_af56c1a4b50768 109-110
+  s_2e4959cfb1edb5::t_f8cfa3efe31a56 190,355
+  s_2e4959cfb1edb5::t_bc0fb55a3136c1 74-78,99-100
+  s_2e4959cfb1edb5::t_706ab8bc4bc75c 6
+  s_2e4959cfb1edb5::t_8b1a669130dc63 98,101-107,111-117,119-122
+  s_2e4959cfb1edb5::t_8b92ecaedd48a7 20-21,23,25-26
+  s_2e4959cfb1edb5::t_909ea376ccad03 28,357
+  s_2e4959cfb1edb5::t_15e00090452137 147
+  s_2e4959cfb1edb5::t_e70098f41cd929 29,358
+  s_2e4959cfb1edb5::t_c469a49a08c73a 175,177-189
+  s_2e4959cfb1edb5::t_abaa3990acbabc 24
+  h_334e5c58273adb 8,19,22,27,30-31,71-72,97,108,118,123,130,173,176,203,211,246,253-254,256,258,267,269,278-354,356,359
+  s_2e4959cfb1edb5::t_2a4011d41ae949 212-245,247-252
+  s_2e4959cfb1edb5::t_33d92bf4db881a 124,126-129,138-145,166
+  s_2e4959cfb1edb5::t_c98147eed498b5 255,259-266,268,270-277
+  s_2e4959cfb1edb5::t_76e72b37f603b1 65-69
+  s_2e4959cfb1edb5::t_ea7ffdc2869e1a 257
+src/app/data/sql/.sqlfluff
+  s_2e4959cfb1edb5::t_ae9de3e6c97a8e 8-9
+  s_2e4959cfb1edb5::t_85c0783815bcf0 15
+  s_2e4959cfb1edb5::t_2989ea14feba36 14
+  s_2e4959cfb1edb5::t_01d3c1be90b38a 11-13
+tests/app/data/test_bigquery.py
+  s_2e4959cfb1edb5::t_7ffcb071ac989a 3-4
+  h_334e5c58273adb 6,8,121,126,136,141
+  s_2e4959cfb1edb5::t_a2cae0bbfd2aae 1-2,5,9-64,66-120,122-125,127-135,137-140,142-187
+  s_2e4959cfb1edb5::t_2b61bec771426a 65
+tests/app/utils/test_validations.py
+  s_2e4959cfb1edb5::t_0c7673e2f2f524 1
+  s_2e4959cfb1edb5::t_a4b8688ee6e899 140-192
+src/app/utils/utils.py
+  s_2e4959cfb1edb5::t_3e916d0e290fe0 43
+  s_66a9bd2f3332d6::t_d3fcc7da1c535c 72-87
+  h_334e5c58273adb 5,71,88-91
+.code_quality/pytest.ini
+  s_2e4959cfb1edb5::t_7948c16ee7939e 25
+src/app/data/gcs.py
+  h_334e5c58273adb 57,60,97-100,106,121,136-137,140
+  s_2e4959cfb1edb5::t_a00218a826ac5f 101-103,105,107,109-112,114-118,120,124-129,131-135,138-139,141-142
+  s_2e4959cfb1edb5::t_af2995a2aad512 7
+  s_2e4959cfb1edb5::t_5a61d29e4d7320 113,122-123
+  s_2e4959cfb1edb5::t_f1cd3918d82f6a 8
+  s_2e4959cfb1edb5::t_d8e3ed13681664 96
+  s_2e4959cfb1edb5::t_24e44c2c5d0217 104,119
+  s_2e4959cfb1edb5::t_b0216a6732134b 108,130
+  s_2e4959cfb1edb5::t_bcf9e924e851f3 58-59,61
+src/app/utils/validations.py
+  s_2e4959cfb1edb5::t_64691a8302c78d 181
+  s_2e4959cfb1edb5::t_5b40165cbb354a 165
+  s_2e4959cfb1edb5::t_f8713a6b534f56 166-171,175-180,182,184-185
+  s_2e4959cfb1edb5::t_baa9be4255d8c8 207,210
+  s_2e4959cfb1edb5::t_5148c511836d0d 186,188,190,192-196,198-206,208,211
+  h_334e5c58273adb 12,41,53-54,172-174,183,187,189,191,197,209
+  s_2e4959cfb1edb5::t_2264b47315b418 26-27,29-32,75-76,78,98-99,101,121-122,125,146-148,150,152-164
+  s_2e4959cfb1edb5::t_7f817e90bf3899 45-52,55
+src/app/data/sql/check_bronze_listings_exists.sql
+  s_2e4959cfb1edb5::t_d2519a3c996791 15-17,22
+  s_2e4959cfb1edb5::t_0c9d1deaa90cda 1-9,12-14,18-20
+  s_2e4959cfb1edb5::t_1dd19118bca12c 11
+  s_2e4959cfb1edb5::t_5b8fe946bdfa78 10,21
+tests/app/utils/test_gcs.py
+  s_2e4959cfb1edb5::t_7f4c1e9bdbfc8c 32-88
+  s_2e4959cfb1edb5::t_71cc2405b7f5af 3-7
+src/app/data/sql/check_table_exists.sql
+  s_2e4959cfb1edb5::t_d0a052166b8383 1-12,14
+  s_2e4959cfb1edb5::t_8fac55e52ad471 13,15
+tests/app/entrypoints/test_gcs_to_bigquery_bronze.py
+  s_2e4959cfb1edb5::t_3ed29a0b0546ec 23-36
+  s_2e4959cfb1edb5::t_8e00a90ba759fa 1-2,5-22,37-46,48-63,65-126
+  s_2e4959cfb1edb5::t_ae852392f675ce 3-4
+  s_2e4959cfb1edb5::t_4fafe4f0e8bcbf 47
+  h_334e5c58273adb 64
+src/app/utils/__init__.py
+  s_2e4959cfb1edb5::t_276bc10e0f146d 13,16
+  h_334e5c58273adb 10,23
+tests/conftest.py
+  s_2e4959cfb1edb5::t_bdc9a5ee727667 167,171-172,184,188-189,201,205-206,241,243,257-264
+  s_2e4959cfb1edb5::t_9c058b5a0809df 215-217,221,227,231-240,242,244-256,265-301
+  s_2e4959cfb1edb5::t_e1f8e23abc1ce8 37-38
+  s_2e4959cfb1edb5::t_b405c2179ef0f8 4
+  s_2e4959cfb1edb5::t_297825c987cc17 17-18
+  s_2e4959cfb1edb5::t_47d1044fd14150 9,12
+  s_2e4959cfb1edb5::t_9d5fa64ee66573 153,155-162
+  s_2e4959cfb1edb5::t_0794d4540f3413 218-220,222-226,228-230
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.12",
+  "base_commit_sha": "6a7bf1fd605b5eb825c81347a9c959a8d939f07b",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_2e4959cfb1edb5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01b567aa-7720-43cf-a0b9-39c46a870225",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    },
+    "s_66a9bd2f3332d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8792beff-853a-40a8-8eda-765479fa3d5d",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
