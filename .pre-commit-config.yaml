@@ -62,7 +62,7 @@ repos:
         language: system
         entry: poetry run sqlfluff fix --config .code_quality/.sqlfluff
         types: [sql]
-        exclude: (notebooks/)
+        files: ^(src|dbt)/
 
       - id: sqlfluff-lint
         name: sqlfluff lint
@@ -70,7 +70,7 @@ repos:
         language: system
         entry: poetry run sqlfluff lint --config .code_quality/.sqlfluff
         types: [sql]
-        exclude: (notebooks/)
+        files: ^(src|dbt)/
 
       - id: autoflake
         name: autoflake

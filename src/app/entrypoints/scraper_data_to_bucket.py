@@ -10,6 +10,7 @@ from typing import Dict
 from curl_cffi.requests.exceptions import RequestException
 from google.cloud import storage
 
+from app.data.gcs import ScraperBucket
 from app.data.scrapers import VivaRealScraper, ZapImoveisScraper
 from app.utils import (
     CloudSettings,
@@ -17,7 +18,6 @@ from app.utils import (
     get_credentials,
     task,
 )
-from app.utils.gcs import ScraperBucket
 from app.utils.validations import ScraperParameters
 
 logger = logging.getLogger(__name__)

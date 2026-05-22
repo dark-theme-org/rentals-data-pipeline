@@ -1,9 +1,9 @@
-"""Tests for ScraperParameters input validation."""
+"""Tests for ScraperParameters and BronzeParameters input validation."""
 
 import pytest
 from pydantic import ValidationError
 
-from app.utils.validations import ScraperParameters
+from app.utils.validations import BronzeParameters, ScraperParameters
 
 
 def test_from_env_success(monkeypatch: pytest.MonkeyPatch, valid_scraper_env: dict) -> None:
@@ -137,3 +137,56 @@ def test_file_extension_defaults_to_json(valid_scraper_env: dict) -> None:
     """Test file_extension defaults to the JSON value."""
     params = ScraperParameters.model_validate(valid_scraper_env)
     assert params.file_extension == "json"
+
+
+# ---------------------------------------------------------------------------
+# BronzeParameters
+# ---------------------------------------------------------------------------
+
+
+def test_bronze_params_from_env_success(
+    monkeypatch: pytest.MonkeyPatch, valid_bronze_env: dict
+) -> None:
+    """Test BronzeParameters.from_env instantiates correctly from environment variables."""
+    monkeypatch.setenv("ENVIRONMENT", valid_bronze_env["environment"])
+    monkeypatch.setenv("CITY", valid_bronze_env["city"])
+    monkeypatch.setenv("SITES", valid_bronze_env["sites"])
+    monkeypatch.setenv("PROPERTY_TYPES", valid_bronze_env["property_types"])
+    monkeypatch.setenv("UPLOAD_TO_BQ", str(valid_bronze_env["upload_to_bq"]).lower())
+    monkeypatch.setenv("FILE_DATE", valid_bronze_env["file_date"])
+    monkeypatch.setenv("START_PAGE", str(valid_bronze_env["start_page"]))
+    monkeypatch.setenv("MAX_PAGE", "-1")
+    params = BronzeParameters.from_env()
+    assert params.environment == "dev"
+    assert params.file_date == "2026-01-01"
+    assert params.upload_to_bq is True
+
+
+def test_bronze_params_validate_file_date_accepts_valid_date(
+    valid_bronze_env: dict,
+) -> None:
+    """Test validate_file_date accepts a well-formed YYYY-MM-DD string."""
+    params = BronzeParameters.model_validate({**valid_bronze_env, "file_date": "2026-06-15"})
+    assert params.file_date == "2026-06-15"
+
+
+def test_bronze_params_validate_file_date_raises_on_invalid_format(
+    valid_bronze_env: dict,
+) -> None:
+    """Test validate_file_date raises ValidationError for a non-date string."""
+    with pytest.raises(ValidationError, match="not a valid"):
+        BronzeParameters.model_validate({**valid_bronze_env, "file_date": "not-a-date"})
+
+
+def test_bronze_params_validate_file_date_raises_on_wrong_format(
+    valid_bronze_env: dict,
+) -> None:
+    """Test validate_file_date raises ValidationError for a date in DD/MM/YYYY format."""
+    with pytest.raises(ValidationError, match="not a valid"):
+        BronzeParameters.model_validate({**valid_bronze_env, "file_date": "01/01/2026"})
+
+
+def test_bronze_params_inherits_environment_validation(valid_bronze_env: dict) -> None:
+    """Test BronzeParameters inherits the environment validator from InputParameters."""
+    with pytest.raises(ValidationError, match="available environments"):
+        BronzeParameters.model_validate({**valid_bronze_env, "environment": "staging"})
