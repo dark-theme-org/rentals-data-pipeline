@@ -1,0 +1,59 @@
+src/app/data/gcs/buckets/scraper.py
+  s_416be50e3abbee::t_7240c8436e61ff 6
+  s_416be50e3abbee::t_01431a65977718 9
+  h_334e5c58273adb 34,45-46
+README.md
+  s_2e4959cfb1edb5::t_ec66a01bc4cba5 95-129
+CHANGELOG.md
+  h_334e5c58273adb 15
+src/app/data/gcs/__init__.py
+  s_416be50e3abbee::t_c2a50e599a0c2c 1-2,5-6
+  s_416be50e3abbee::t_8344d71ae3936f 4
+  s_416be50e3abbee::t_57eb5183d0353e 3
+src/app/entrypoints/gcs_to_bigquery_bronze.py
+  s_416be50e3abbee::t_bc756d4fd3f879 60
+src/README.md
+  s_2e4959cfb1edb5::t_1706903ec6c664 10-21,23-24,27-28,37-44,49-51,58-62,68
+src/app/data/gcs/buckets/__init__.py
+  s_416be50e3abbee::t_3f5d09407253d0 1-2,4-5
+  s_416be50e3abbee::t_79eaf7c6a3e2db 3,6
+tests/app/data/gcs/buckets/test_base.py
+  s_416be50e3abbee::t_4408ce8a9f58cf 1,9,32,42,46,49,52-55,65
+tests/app/data/gcs/buckets/test_scraper.py
+  s_416be50e3abbee::t_7db543163789f2 1-22
+src/app/data/gcs/buckets/base.py
+  s_416be50e3abbee::t_17a45c421cdae1 62-85,88-91
+  h_334e5c58273adb 38-39,44,52,61,86-87
+  s_416be50e3abbee::t_e18c6c77c5e84b 10
+  s_416be50e3abbee::t_93552b7f68efeb 4,40-43,48-51,60
+  s_416be50e3abbee::t_0da84e08e0fd47 7-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.12",
+  "base_commit_sha": "f495e8b035d81b42f15564443b2e3f211f66db20",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_2e4959cfb1edb5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01b567aa-7720-43cf-a0b9-39c46a870225",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    },
+    "s_416be50e3abbee": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6ec35a79-0054-460a-8b0c-8f6fa973cc61",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
