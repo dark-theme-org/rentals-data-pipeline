@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 
 - Set repository architecture with **core folders/files**;
-- Create `/data/scrapers` features to fetch and extract **properties** data;
+- Create `/data` features to fetch and extract **properties** data and manage the ETL pipeline;
 - Define `/entrypoints` for main scripts during task execution;
 - Creating `/utils` python objects to be used in multiple modules;
 - Use `/terraform` as IaaC to manage cloud resources;

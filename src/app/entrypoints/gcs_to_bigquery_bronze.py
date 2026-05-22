@@ -57,7 +57,7 @@ def gcs_to_bigquery_bronze() -> None:
                 )
                 blob = scraper_bucket.latest_blob(
                     gcs_client,
-                    file_date=params.file_date,
+                    filename=params.file_date,
                     extension=params.file_extension,
                 )
                 if blob is None:
