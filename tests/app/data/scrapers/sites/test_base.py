@@ -10,6 +10,58 @@ from pytest_mock import MockerFixture
 from app.data.scrapers.settings import City, PropertyTypes
 from app.data.scrapers.sites.base import SiteScraper
 
+
+@pytest.fixture(name="fast_retry")
+def fast_retry_(mocker: MockerFixture) -> None:
+    """No-op `tenacity` sleep so retry-decorated calls don't actually wait."""
+    mocker.patch("tenacity.nap.time.sleep")
+
+
+@pytest.fixture(name="html_with_item_list")
+def html_with_item_list_(item_list_payload: dict) -> str:
+    """HTML page containing an `ItemList` JSON-LD block alongside an unrelated block."""
+    return f"""
+    <html>
+      <head>
+        <script type="application/ld+json">
+          {{"@context": "https://schema.org", "@type": "WebPage", "name": "Sample"}}
+        </script>
+        <script type="application/ld+json">
+          {json.dumps(item_list_payload)}
+        </script>
+      </head>
+      <body><p>Listings</p></body>
+    </html>
+    """
+
+
+@pytest.fixture(name="html_without_item_list")
+def html_without_item_list_() -> str:
+    """HTML page with JSON-LD blocks but no `ItemList`."""
+    return """
+    <html>
+      <head>
+        <script type="application/ld+json">
+          {"@context": "https://schema.org", "@type": "WebPage", "name": "Sample"}
+        </script>
+      </head>
+      <body><p>No listings</p></body>
+    </html>
+    """
+
+
+@pytest.fixture(name="html_with_bad_json")
+def html_with_bad_json_() -> str:
+    """HTML page with a malformed JSON-LD block."""
+    return """
+    <html>
+      <head>
+        <script type="application/ld+json">{not valid json}</script>
+      </head>
+    </html>
+    """
+
+
 _STUB_URL_TEMPLATE = "https://example.com/{uf}/{city}/{property_type}/"
 _REQUESTS_GET = "app.data.scrapers.sites.base.requests.get"
 
@@ -32,15 +84,15 @@ def stub_scraper_(
     return SiteScraper(city=City.MACAE)
 
 
-def test_uf_resolves_registered_city(stub_scraper: SiteScraper, expected_uf: str) -> None:
-    """Test the `uf` property returns the UF mapped from the supplied city."""
-    assert str(stub_scraper.uf) == expected_uf
+def test_get_site_name_returns_class_var(stub_scraper: SiteScraper) -> None:
+    """Test get_site_name returns the _SITE_NAME class variable."""
+    assert stub_scraper.get_site_name() == "stub"
 
 
 def test_set_url_renders_url_and_returns_self(
     stub_scraper: SiteScraper,
-    expected_uf: str,
     expected_city: str,
+    expected_uf: str,
     property_apartment: str,
 ) -> None:
     """Test `set_url` formats the URL with the selected slug and returns self for chaining."""
@@ -89,6 +141,32 @@ def test_fetch_and_parse_html_passes_page_as_pagina_query_param(
     assert kwargs["params"] == {"pagina": 3}
 
 
+def test_fetch_and_parse_html_sets_referer_to_url_on_page_1(
+    stub_scraper: SiteScraper, mocker: MockerFixture, html_with_item_list: str
+) -> None:
+    """Test `fetch_and_parse_html` sets Referer to the base URL on the first page."""
+    response = mocker.MagicMock(status_code=200, text=html_with_item_list)
+    get = mocker.patch(_REQUESTS_GET, return_value=response)
+
+    stub_scraper.set_url("apartment").fetch_and_parse_html(page=1)
+
+    _, kwargs = get.call_args
+    assert kwargs["headers"]["Referer"] == stub_scraper.url
+
+
+def test_fetch_and_parse_html_sets_referer_to_previous_page_when_page_gt_1(
+    stub_scraper: SiteScraper, mocker: MockerFixture, html_with_item_list: str
+) -> None:
+    """Test `fetch_and_parse_html` sets Referer to url?pagina=N-1 on subsequent pages."""
+    response = mocker.MagicMock(status_code=200, text=html_with_item_list)
+    get = mocker.patch(_REQUESTS_GET, return_value=response)
+
+    stub_scraper.set_url("apartment").fetch_and_parse_html(page=3)
+
+    _, kwargs = get.call_args
+    assert kwargs["headers"]["Referer"] == f"{stub_scraper.url}?pagina=2"
+
+
 def test_fetch_and_parse_html_returns_none_on_404(
     stub_scraper: SiteScraper, mocker: MockerFixture
 ) -> None:
@@ -122,7 +200,7 @@ def test_fetch_and_parse_html_retries_then_succeeds(
 def test_fetch_and_parse_html_raises_http_error_after_retries(
     stub_scraper: SiteScraper, mocker: MockerFixture
 ) -> None:
-    """Test `fetch_and_parse_html` retries three times then raises `HTTPError` on non-200."""
+    """Test `fetch_and_parse_html` raises `HTTPError` after exhausting all 5 retry attempts."""
     response = mocker.MagicMock(status_code=503, text="boom")
     get = mocker.patch(_REQUESTS_GET, return_value=response)
 
