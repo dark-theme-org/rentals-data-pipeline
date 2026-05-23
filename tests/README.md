@@ -11,13 +11,13 @@ poetry run pytest -c .code_quality/pytest.ini
 A single file or test:
 
 ```bash
-poetry run pytest -c .code_quality/pytest.ini tests/app/utils/test_gcs.py
-poetry run pytest -c .code_quality/pytest.ini tests/app/utils/test_gcs.py::test_scraper_bucket_name
+poetry run pytest -c .code_quality/pytest.ini tests/app/utils/test_utils.py
+poetry run pytest -c .code_quality/pytest.ini tests/app/utils/test_utils.py::test_environment_members
 ```
 
 Config lives in [.code_quality/pytest.ini](../.code_quality/pytest.ini) — sets `pythonpath = src` for
-the src-layout, scopes discovery to `tests/`, enables `--strict-markers --strict-config`, and requires
-**90 % coverage** as a hard gate. Pytest also runs as the final pre-commit hook (see [.pre-commit-config.yaml](../.pre-commit-config.yaml)).
+the src-layout, scopes discovery to `tests/`, and enables `--strict-markers --strict-config`.
+Pytest also runs as the final pre-commit hook (see [.pre-commit-config.yaml](../.pre-commit-config.yaml)).
 
 ## Environment variables
 
@@ -25,44 +25,46 @@ the src-layout, scopes discovery to `tests/`, enables `--strict-markers --strict
 
 ```ini
 env =
+    USER=local
     ENVIRONMENT=dev
     CITY=macae
     SITES=vivareal,zapimoveis
     PROPERTY_TYPES=apartment,house
     UPLOAD_TO_GCS=true
+    UPLOAD_TO_BQ=true
+    FILE_DATE=2026-01-01
     START_PAGE=1
     MAX_PAGE=-1
+    VERSION=0-0-1-test-pytest
 ```
 
-These allow `ScraperParameters.from_env()` — called at module level in
-`scraper_data_to_bucket.py` — to succeed during test collection without real
-GCP credentials. Individual tests that need to override or remove a variable
-use `monkeypatch.setenv` / `monkeypatch.delenv`.
+These allow `ScraperParameters.from_env()` and `BronzeParameters.from_env()` — called at module
+level in the entrypoints — to succeed during test collection without real GCP credentials.
+Individual tests that need to override or remove a variable use `monkeypatch.setenv` /
+`monkeypatch.delenv`.
 
 ## Shared fixtures (`tests/conftest.py`)
 
+Only fixtures used by **2 or more** test files live here. Single-consumer fixtures stay in the
+test file that owns them.
+
 | Fixture | Type | Description |
 | --- | --- | --- |
-| `env` | `Environment` | `Environment.DEV` |
-| `file_extension` | `FileExtensions` | `FileExtensions.JSON` |
-| `expected_city` | `str` | `"macae"` |
-| `expected_uf` | `str` | `"rj"` |
-| `sa_email` | `str` | Throwaway SA email for credential tests |
-| `scraper_bucket` | `ScraperBucket` | Bound to `(dev, vivareal, macae, apartment)` |
-| `valid_scraper_env` | `dict` | Raw env-var dict for `ScraperParameters.model_validate(...)` |
-| `scraper_params` | `ScraperParameters` | Single-site/type instance for entrypoint tests |
-| `scraper_params_no_upload` | `ScraperParameters` | Same but `upload_to_gcs=False` |
-| `scraper_params_with_max_page` | `ScraperParameters` | Same but `max_page=1` for loop-termination tests |
+| `env` | `str` | `"dev"` — deployment environment from `ENVIRONMENT` |
+| `expected_city` | `str` | `"macae"` — city slug from `CITY` |
+| `expected_uf` | `str` | `"rj"` — canonical UF code for `UF.RJ` |
+| `file_date` | `str` | `"2026-01-01"` — scrape date from `FILE_DATE` |
+| `property_apartment` | `str` | `"ap"` — stub apartment slug for `PropertyTypes` |
+| `property_house` | `str` | `"ho"` — stub house slug for `PropertyTypes` |
 | `item_list_payload` | `dict` | JSON-LD `ItemList` with two listings |
-| `html_with_item_list` | `str` | HTML page embedding `item_list_payload` |
-| `html_without_item_list` | `str` | HTML page with no `ItemList` block |
-| `html_with_bad_json` | `str` | HTML page with malformed JSON-LD |
-| `fast_retry` | `None` (side-effect) | Patches `tenacity.nap.time.sleep` — apply with `@pytest.mark.usefixtures` |
-| `fast_long_sleep` | `None` (side-effect) | Patches `time.sleep` in the entrypoint — apply with `@pytest.mark.usefixtures` |
+| `scraper_bucket` | `ScraperBucket` | Bound to `(dev, vivareal, macae, apartment, page=1)` |
+| `audit_metadata` | `AuditMetadata` | Fixed timestamps derived from `file_date` |
+| `bronze_table` | `BronzeListingsTable` | Descriptor bound to dev env and `CloudSettings.PROJECT_ID` |
+| `raw_listing` | `dict` | Minimal raw listing dict as scraped from the source site |
 
 ## Conventions
 
-- **Shared fixtures live in [tests/conftest.py](conftest.py)** — even when only one test file uses them. No per-package `conftest.py`.
+- **Fixture placement**: fixtures used by ≥ 2 test files go in [tests/conftest.py](conftest.py); fixtures used by exactly one test file are defined locally in that file.
 - **Fixture naming**: `@pytest.fixture(name="x") def x_(...)`. Public name + underscored function dodges `pylint W0621` without per-line disables.
 - **Side-effect-only fixtures** (e.g. `fast_retry`) are applied via `@pytest.mark.usefixtures("name")` on the test, not as a parameter.
 - **`mocker` is typed as `MockerFixture`** from `pytest_mock`, not `# type: ignore`.
@@ -72,4 +74,4 @@ use `monkeypatch.setenv` / `monkeypatch.delenv`.
 
 ## Adding tests
 
-Use the `/pytest` skill — it mirrors `src/` into `tests/`, reuses or extends `tests/conftest.py`, and runs the suite end-to-end. If you write tests by hand, follow the conventions above and keep new fixtures in the root `conftest.py`.
+Use the `/pytest` skill — it mirrors `src/` into `tests/`, reuses or extends `tests/conftest.py`, and runs the suite end-to-end. If you write tests by hand, follow the conventions above.

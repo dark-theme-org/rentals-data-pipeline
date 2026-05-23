@@ -27,6 +27,11 @@ def test_inheritance_and_class_vars() -> None:
     assert VivaRealScraper._URL_TEMPLATE == URL_VIVA_REAL  # pylint: disable=w0212
 
 
+def test_get_site_name_returns_vivareal() -> None:
+    """Test get_site_name returns the VivaReal site name constant."""
+    assert VivaRealScraper.get_site_name() == SITE_NAME_VIVA_REAL
+
+
 def test_set_url_apartment_renders_vivareal_url() -> None:
     """Test set_url renders VivaReal's apartment URL."""
     scraper = VivaRealScraper(city=City.MACAE).set_url("apartment")

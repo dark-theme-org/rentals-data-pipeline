@@ -64,7 +64,14 @@ Never restore files outside this tracked set — unrelated uncommitted work must
 
    Fix any failures before moving on. If a failure exposes a real bug in `src/`, surface it to the contributor — do **not** modify `src/` to make a test pass unless that's clearly the intent.
 
-6. **Confirm or rollback gate.** Before reporting, present the contributor with the only second `AskUserQuestion` of the run:
+6. **Deduplication pass** — after all tests are green, scan every `test_*.py` file (not just the ones you just created) for repeated logic:
+   - **Module-level constants** (e.g. `_REQUESTS_GET = "..."`) — if the same string appears in two or more test files, extract it to the one that owns the concept or leave it local; never duplicate silently.
+   - **Fixtures** — if a local fixture you just added is structurally identical to one already in another `test_*.py`, consolidate: move it to conftest if it serves ≥ 2 files, otherwise keep the single canonical copy in the file that best owns it and remove the duplicate.
+   - **Helper functions** (e.g. `_single_pair_params`) — if the same construction pattern appears across multiple test files, evaluate whether a shared conftest fixture would reduce drift.
+   - **Inline test logic** — if the same 4+ line setup block appears in multiple tests inside the same file, extract a fixture rather than copy-pasting.
+   - Document every consolidation you make as part of the final report.
+
+8. **Confirm or rollback gate.** Before reporting, present the contributor with the only second `AskUserQuestion` of the run:
 
    - **question**: `"Keep the new tests, or roll back every change from this run?"`
    - **header**: `"Final check"`
@@ -79,7 +86,7 @@ Never restore files outside this tracked set — unrelated uncommitted work must
    - Verify the working tree is back to its prior state (e.g. `git status` shows the same delta as before Step 0).
    - Report what was reverted (paths deleted + paths restored), and stop.
 
-7. **Report** (only on Keep): test file paths (markdown links), number of tests added, any new conftest fixtures, and the pytest summary (`X passed in Ys`).
+9. **Report** (only on Keep): test file paths (markdown links), number of tests added, any new conftest fixtures, any deduplication changes made, and the pytest summary (`X passed in Ys`).
 
 ## Conventions
 
@@ -90,7 +97,8 @@ Never restore files outside this tracked set — unrelated uncommitted work must
 - Project pytest config is at `.code_quality/pytest.ini` — never duplicate it.
 
 ### Conftest (`tests/conftest.py`)
-- All shared fixtures live in the root `tests/conftest.py`. Even fixtures used by only one test file go here — reuse beats local-only.
+- A fixture belongs in `tests/conftest.py` **only** if it is used by **2 or more** test files. If a fixture is consumed by exactly one test file, define it locally in that file — conftest is for shared state, not a dumping ground.
+- Before adding a fixture to conftest, run an AST-based or grep check to count how many `test_*.py` files reference its name as a function parameter or in `usefixtures`. Add to conftest only when the count is ≥ 2.
 - **Fixture pattern**: register the public name via `name="..."` and suffix the function with an underscore. Avoids `pylint W0621` (`redefined-outer-name`) without per-line disables.
 
   ```python

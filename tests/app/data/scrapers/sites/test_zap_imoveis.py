@@ -27,6 +27,11 @@ def test_inheritance_and_class_vars() -> None:
     assert ZapImoveisScraper._URL_TEMPLATE == URL_ZAP_IMOVEIS  # pylint: disable=w0212
 
 
+def test_get_site_name_returns_zapimoveis() -> None:
+    """Test get_site_name returns the ZapImoveis site name constant."""
+    assert ZapImoveisScraper.get_site_name() == SITE_NAME_ZAP_IMOVEIS
+
+
 def test_set_url_apartment_renders_zapimoveis_url() -> None:
     """Test set_url renders ZapImoveis's apartment URL."""
     scraper = ZapImoveisScraper(city=City.MACAE).set_url("apartment")

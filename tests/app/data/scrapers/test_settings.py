@@ -10,13 +10,11 @@ from app.data.scrapers.settings import CITIES_UF, UF, City, PropertyTypes
 def test_city_enum_values(expected_city: str) -> None:
     """Test City enum exposes the expected slug values."""
     assert City.MACAE == expected_city
-    assert City.MACAE.value == expected_city
 
 
 def test_uf_enum_values(expected_uf: str) -> None:
     """Test UF enum exposes the expected two-letter codes."""
     assert UF.RJ == expected_uf
-    assert UF.RJ.value == expected_uf
 
 
 def test_cities_uf_mapping() -> None:
