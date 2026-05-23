@@ -1,0 +1,99 @@
+tests/README.md
+  s_afae6252f0f6f3::t_489bed9bf1d93c 14-15,19-20,28,34-35,38,41-44,48-50,53-58,60-63,67,77
+tests/app/utils/test_decorators.py
+  s_afae6252f0f6f3::t_d732f642f1b3f9 31-40
+  h_334e5c58273adb 16-18,23
+tests/app/data/scrapers/sites/test_viva_real.py
+  s_afae6252f0f6f3::t_cac44609ea5bbc 30-34
+tests/app/entrypoints/test_scraper_data_to_bucket.py
+  s_afae6252f0f6f3::t_a65a42b83f39be 5,12,20,25,30-31,36-45,49,51,55,57-63,70-75,77-95,108-109,115-117,121,127-128,134-136,140,146-147,152-153,157-158,165-166,172-173,175,178,182,189-190,195-196,200,206-207,212-214,218
+  s_afae6252f0f6f3::t_c31284f9b64984 76
+  s_afae6252f0f6f3::t_8c256f663c097f 4,21-24,26-29,32-33,46-48,50,52-54,56
+tests/conftest.py
+  s_afae6252f0f6f3::t_68b7683c4a4176 79,82
+  s_afae6252f0f6f3::t_7fbc6020608ada 78,80-81
+  s_afae6252f0f6f3::t_a188058f344c50 94,96
+  h_334e5c58273adb 90
+  s_afae6252f0f6f3::t_5795023b6489fb 9-10,14-16
+  s_afae6252f0f6f3::t_0481ad0e509e2c 87,89
+  s_afae6252f0f6f3::t_0aee214d8e7e0e 31-34
+  s_afae6252f0f6f3::t_0a98e37e747d19 88
+  s_afae6252f0f6f3::t_d7be10043341f1 27
+tests/app/entrypoints/test_gcs_to_bigquery_bronze.py
+  s_afae6252f0f6f3::t_f85c0e88bfe98c 4,38,41-42,45-47,49-51
+  s_afae6252f0f6f3::t_a36d73cf0b3ba8 18
+  s_afae6252f0f6f3::t_153dc60ada81f4 10,20,39-40,43-44,48,56-58,60-64,66-70,72-81,90,95,105-159,161-163,165-166,175,177,187,191-221
+  s_afae6252f0f6f3::t_861d38a80e9393 21-22,24-26,29-30,33-37,59,65,71
+tests/app/utils/test_utils.py
+  s_afae6252f0f6f3::t_32181351b46b1b 18-21
+  s_afae6252f0f6f3::t_20c2dbc4adbb62 36-57
+  s_afae6252f0f6f3::t_b4da0ff08a098b 58-61,66-69,71,74,81,84
+  s_afae6252f0f6f3::t_406cbba9e2fab6 3-4,8-15
+  s_afae6252f0f6f3::t_a4ebb2df0d8c70 62-65
+tests/app/data/bigquery/tables/test_base.py
+  s_afae6252f0f6f3::t_db2228c28ec766 9,15,20
+  s_afae6252f0f6f3::t_4a059376edd359 14
+  s_afae6252f0f6f3::t_39d39dc8e608fc 65,72
+tests/app/data/scrapers/sites/test_zap_imoveis.py
+  s_afae6252f0f6f3::t_ec477881e83723 30-34
+tests/app/data/bigquery/test_settings.py
+  s_afae6252f0f6f3::t_204f4b21ae0e16 3-4,11,13,15-16,21
+CLAUDE.md
+  s_afae6252f0f6f3::t_4fd20b78999b82 114
+tests/app/data/scrapers/sites/test_base.py
+  s_afae6252f0f6f3::t_05fe1dbf40665d 64
+  s_afae6252f0f6f3::t_bd42b0a6cf5b76 144-169
+  s_afae6252f0f6f3::t_3033cb9d0a6825 203
+  s_afae6252f0f6f3::t_8cd9a817e1464d 95
+  s_afae6252f0f6f3::t_4dadc5541c887a 13-63
+  s_afae6252f0f6f3::t_0da7df3e04b484 87-89
+tests/app/utils/test_validations.py
+  s_afae6252f0f6f3::t_cbd6f8ab88d087 49-50
+  s_afae6252f0f6f3::t_0e8673ab877afa 174
+  s_afae6252f0f6f3::t_dc10e9960faf0f 51-55
+  s_afae6252f0f6f3::t_3f97951f28acac 4
+  s_afae6252f0f6f3::t_d87a04d8b55c16 3,5,12-15,20,22-25,27-34,37-38
+  s_afae6252f0f6f3::t_4759de18bd753d 41-44,111,120,128,135,141,155,157,179-180,182-197,224-241
+  h_334e5c58273adb 11,16-19,21,26,35-36,46,56-60,171,175,199-201
+  s_afae6252f0f6f3::t_36c6763d5a5cdf 176
+tests/app/data/gcs/buckets/test_base.py
+  s_afae6252f0f6f3::t_f777ed3acd30ba 25,34,39,44,49,54,56,62,67
+  h_334e5c58273adb 13,17,19-20
+  s_afae6252f0f6f3::t_aa416e9892ce41 16
+.claude/skills/pytest/SKILL.md
+  s_afae6252f0f6f3::t_157070bbc9261f 74
+  s_afae6252f0f6f3::t_4e1bf71607a8c0 100-101
+  s_afae6252f0f6f3::t_69628ba71a4632 89
+  s_afae6252f0f6f3::t_dbcb9325f8a367 67-73
+.code_quality/pytest.ini
+  s_afae6252f0f6f3::t_973507ed20fdd9 25
+tests/app/data/bigquery/tables/test_bronze_listings.py
+  s_afae6252f0f6f3::t_62cf4e37c7ad84 36-37,61-62,70,78-79,87,107-137,139-146,148-156,171
+  s_afae6252f0f6f3::t_219254bee972dd 29-30,33-35,38-39
+  s_afae6252f0f6f3::t_d6722e8e4259a9 3,8-11,15,17,19-22,24
+  s_afae6252f0f6f3::t_3a7143a5ec8bf2 12-14,16,18,23
+tests/app/data/gcs/buckets/test_scraper.py
+  h_334e5c58273adb 17,20-21
+  s_afae6252f0f6f3::t_c00437d2d3369d 11,13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "2d94aa5f3cc7d5ba625795bc9e078d52d0b551a4",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_afae6252f0f6f3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5492044b-6683-45d8-8c27-6571349280cd",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
