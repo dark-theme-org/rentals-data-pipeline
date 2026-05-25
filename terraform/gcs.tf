@@ -1,4 +1,4 @@
-# GCS buckets for rentals data pipeline .
+# GCS buckets for rentals data pipeline.
 
 resource "google_storage_bucket" "scraper-bucket" {
   name          = "scraper-rentals-data"

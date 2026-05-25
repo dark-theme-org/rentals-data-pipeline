@@ -25,7 +25,7 @@
  * Clustering:    SRC_SITE_NAME, SRC_CITY_NAME, SRC_PROPERTY_TYPE_CAT, SRC_PAGE_NUM
  */
 CREATE TABLE `{{ destination }}` (
-    ID STRING NOT NULL DEFAULT GENERATE_UUID() OPTIONS (
+    ID STRING NOT NULL OPTIONS (
         description = "Surrogate key generated at row insertion."
     ),
     LISTING_ID STRING NOT NULL OPTIONS (

@@ -24,13 +24,19 @@ Single source of truth for GCP project configuration.
 
 ```yaml
 project_id: rentals-data-pipeline
-region: us-central1
+region: southamerica-east1
+developers:
+  - user:you@example.com
+environments:
+  dev: dev
+  test: test
+  prod: prod
 ```
 
 **Consumed by:**
 
-- `terraform/locals.tf` — via `yamldecode(file(...))`, drives all resource names and locations
-- `src/app/utils/utils.py` — `CloudSettings.PROJECT_ID` and `CloudSettings.REGION`
+- `terraform/locals.tf` — via `yamldecode(file(...))`, drives all resource names and locations; `environments` drives `google_bigquery_dataset` creation
+- `src/app/utils/utils.py` — `CloudSettings.PROJECT_ID`, `CloudSettings.REGION`, and `Environment` enum values
 - `scripts/deploy.py` — project ID, region, SA email, and Artifact Registry URL
 
 > **Note:** the `prefix` in `terraform/terraform.tf`'s backend block must be kept in
@@ -113,9 +119,9 @@ Cloud Workflows syntax. The deploy script picks it up automatically.
 
 ```bash
 gcloud workflows run etl-rentals-data \
-  --location us-central1 \
+  --location southamerica-east1 \
   --project rentals-data-pipeline \
-  --data='{"VERSION":"0-0-1","ENVIRONMENT":"dev","CITY":"macae","SITES":"vivareal","PROPERTY_TYPES":"apartment","UPLOAD_TO_GCS":"true","START_PAGE":"1","MAX_PAGE":"-1"}'
+  --data='{"VERSION":"0-0-1","ENVIRONMENT":"dev","CITY":"macae","SITES":"vivareal","PROPERTY_TYPES":"apartment","UPLOAD_TO_GCS":"true","START_PAGE":"1","MAX_PAGE":"-1","FILE_DATE":"","UPLOAD_TO_BQ":"true"}'
 ```
 
 All parameters are optional — the workflow defaults to the values defined in

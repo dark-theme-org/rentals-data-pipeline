@@ -14,6 +14,8 @@ main:
           - upload_to_gcs: ${map.get(args, "UPLOAD_TO_GCS")}
           - start_page: ${map.get(args, "START_PAGE")}
           - max_page: ${map.get(args, "MAX_PAGE")}
+          - file_date: ${map.get(args, "FILE_DATE")}
+          - upload_to_bq: ${map.get(args, "UPLOAD_TO_BQ")}
     - run_scraper_data_to_bucket:
         call: googleapis.run.v2.projects.locations.jobs.run
         args:
@@ -36,6 +38,31 @@ main:
                       value: ${start_page}
                     - name: MAX_PAGE
                       value: ${max_page}
-        result: operation
+        result: scraper_operation
+    - run_gcs_to_bigquery_bronze:
+        call: googleapis.run.v2.projects.locations.jobs.run
+        args:
+          name: ${"projects/" + project_id + "/locations/" + location + "/jobs/gcs-to-bigquery-bronze" + "-" + version}
+          body:
+            overrides:
+              containerOverrides:
+                - env:
+                    - name: ENVIRONMENT
+                      value: ${environment}
+                    - name: CITY
+                      value: ${city}
+                    - name: SITES
+                      value: ${sites}
+                    - name: PROPERTY_TYPES
+                      value: ${property_types}
+                    - name: FILE_DATE
+                      value: ${file_date}
+                    - name: UPLOAD_TO_BQ
+                      value: ${upload_to_bq}
+                    - name: START_PAGE
+                      value: ${start_page}
+                    - name: MAX_PAGE
+                      value: ${max_page}
+        result: bronze_operation
     - done:
-        return: ${operation}
+        return: ${bronze_operation}

@@ -40,7 +40,7 @@ def scraper_data_to_bucket() -> None:
     the matching :class:`ScraperBucket` location.
     """
     gcs_client = storage.Client(
-        credentials=get_credentials(params.sa_name),
+        credentials=get_credentials(),
         project=CloudSettings.PROJECT_ID,
     )
     for site in params.sites:

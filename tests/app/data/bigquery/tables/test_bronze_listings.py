@@ -13,14 +13,13 @@ def source_metadata_(
     scraper_bucket: ScraperBucket, file_date: str
 ) -> BronzeListingsTable.SourceMetadata:
     """SourceMetadata derived from the canonical scraper_bucket fixture."""
-    ts = f"{file_date}T00:00:00Z"
+    blob_stem = f"{file_date}T00:00:00Z"
     return BronzeListingsTable.SourceMetadata(
-        blob=f"{scraper_bucket.prefix}/{ts}.json",
+        blob=f"{scraper_bucket.prefix}/{blob_stem}.json",
         site_name=scraper_bucket.site,
         city_name=scraper_bucket.city,
         property_type_cat=scraper_bucket.property_type,
         page_num=scraper_bucket.page,
-        executed_at_ts=ts,
     )
 
 
@@ -30,23 +29,23 @@ def test_source_metadata_construction(
     file_date: str,
 ) -> None:
     """Test SourceMetadata stores all GCS lineage fields."""
-    ts = f"{file_date}T00:00:00Z"
-    assert source_metadata.blob == f"{scraper_bucket.prefix}/{ts}.json"
+    blob_stem = f"{file_date}T00:00:00Z"
+    assert source_metadata.blob == f"{scraper_bucket.prefix}/{blob_stem}.json"
     assert source_metadata.site_name == scraper_bucket.site
     assert source_metadata.city_name == scraper_bucket.city
     assert source_metadata.property_type_cat == scraper_bucket.property_type
     assert source_metadata.page_num == scraper_bucket.page
-    assert source_metadata.executed_at_ts == ts
+    assert source_metadata.executed_at_ts == f"{file_date}T00:00:00Z"
 
 
-def test_bronze_table_dataset(bronze_table: BronzeListingsTable) -> None:
-    """Test dataset returns env-scoped name."""
-    assert bronze_table.dataset == "dev_bronze"
+def test_bronze_table_dataset(bronze_table: BronzeListingsTable, env: str) -> None:
+    """Test dataset returns the environment name directly."""
+    assert bronze_table.dataset == env
 
 
 def test_bronze_table_table_name(bronze_table: BronzeListingsTable) -> None:
-    """Test table returns the fixed listings name."""
-    assert bronze_table.table == "listings"
+    """Test table returns the fixed bronze_listings name."""
+    assert bronze_table.table == "bronze_listings"
 
 
 def test_sql_file_paths_exist(bronze_table: BronzeListingsTable) -> None:

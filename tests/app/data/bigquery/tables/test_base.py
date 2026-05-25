@@ -15,9 +15,9 @@ def test_table_invalid_env_raises() -> None:
         BronzeListingsTable(env="staging", project=CloudSettings.PROJECT_ID)
 
 
-def test_table_destination(bronze_table: BronzeListingsTable) -> None:
+def test_table_destination(bronze_table: BronzeListingsTable, env: str) -> None:
     """Test destination formats project.dataset.table correctly."""
-    assert bronze_table.destination == f"{CloudSettings.PROJECT_ID}.dev_bronze.listings"
+    assert bronze_table.destination == f"{CloudSettings.PROJECT_ID}.{env}.bronze_listings"
 
 
 def test_read_and_replace_params_substitutes_placeholder(

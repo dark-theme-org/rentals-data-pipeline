@@ -14,7 +14,7 @@ def test_blob_name_joins_prefix_filename_and_extension(
 ) -> None:
     """Test blob_name renders prefix/filename.extension as a POSIX path."""
     extension = FileExtensions.JSON
-    filename = f"{file_date}T00-00-00Z"
+    filename = f"{file_date}T00:00:00Z"
     assert (
         scraper_bucket.blob_name(filename=filename, extension=extension)
         == f"{scraper_bucket.prefix}/{filename}.{extension}"
@@ -53,7 +53,9 @@ def test_latest_blob_passes_prefix_and_glob_to_list_blobs(
     gcs_client.list_blobs.return_value = iter([])
     scraper_bucket.latest_blob(gcs_client, filename=file_date, extension="json")
     gcs_client.list_blobs.assert_called_once_with(
-        scraper_bucket.name, prefix=scraper_bucket.prefix, match_glob=f"{file_date}T*.json"
+        scraper_bucket.name,
+        prefix=scraper_bucket.prefix,
+        match_glob=f"{scraper_bucket.prefix}/{file_date}T*.json",
     )
 
 

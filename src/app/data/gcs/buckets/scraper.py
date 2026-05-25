@@ -43,4 +43,4 @@ class ScraperBucket(Bucket):
     @property
     def glob_pattern(self) -> str:
         """Pattern to match blobs for a given scraper run date."""
-        return "{filename}T*.{extension}"
+        return f"{self.prefix}/{{filename}}T*.{{extension}}"

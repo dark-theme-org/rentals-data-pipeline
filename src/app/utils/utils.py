@@ -1,14 +1,12 @@
 """Generic enums, credential resolution, and logging setup shared across the app."""
 
 import logging
-import os
 from datetime import datetime, timezone
 from enum import StrEnum
 from pathlib import Path
 
 import google.auth
 import yaml
-from google.auth import impersonated_credentials
 from google.auth.credentials import Credentials
 
 _SETTINGS: dict = yaml.safe_load(
@@ -26,22 +24,15 @@ class CloudSettings(StrEnum):
 class Environment(StrEnum):
     """Supported deployment environments for the data pipeline."""
 
-    DEV = "dev"
-    TEST = "test"
-    PROD = "prod"
+    DEV = _SETTINGS["environments"]["dev"]
+    TEST = _SETTINGS["environments"]["test"]
+    PROD = _SETTINGS["environments"]["prod"]
 
 
 class FileExtensions(StrEnum):
     """Supported file extensions for blob storage payloads."""
 
     JSON = "json"
-
-
-class ServiceAccountNames(StrEnum):
-    """Env var names `get_credentials` reads to pick which service account to impersonate."""
-
-    BQ = "BQ_SA"
-    GCS = "GCS_SA"
 
 
 def configure_logging(level: int = logging.INFO) -> None:
@@ -91,29 +82,14 @@ def datetime_now_utc(date_trunc: bool = False) -> str:
     return now.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def get_credentials(env_var: str) -> Credentials:
+def get_credentials() -> Credentials:
     """
-    Resolve credentials for Google Cloud clients across local-dev and
-    attached-SA runtime contexts.
+    Resolve credentials for Google Cloud clients.
 
-    If ``env_var`` is set in the environment, impersonate the service
-    account named in that variable on top of the default Application
-    Default Credentials — the expected local-development path where the
-    developer's user account holds ``roles/iam.serviceAccountTokenCreator``
-    on the target SA. Different callers can use different env vars
-    (e.g. ``GCS_SA``, ``BQ_SA``) when they need to act as different SAs.
-
-    If ``env_var`` is unset, return the default ADC unchanged. In
-    attached-SA runtimes (Cloud Run, Cloud Workflows, GCE), this resolves
-    to the runtime's own service account via the metadata server with no
-    extra configuration.
-
-    ----------
-    Parameters
-    ----------
-    env_var : str
-        Name of the environment variable that, when set, holds the email
-        of the service account to impersonate.
+    Returns ADC credentials directly. In Cloud Run, resolves to the runtime
+    SA via the metadata server. Locally, resolves to whatever credentials are
+    configured via ``gcloud auth application-default login`` — use
+    ``--impersonate-service-account`` to mirror the Cloud Run SA permissions.
 
     ----------
     Returns
@@ -121,12 +97,5 @@ def get_credentials(env_var: str) -> Credentials:
     Credentials
         Credentials object to pass to ``<gcp-client>.Client(credentials=...)``.
     """
-    base_creds, _ = google.auth.default()
-    target_sa = os.environ.get(env_var)
-    if not target_sa:
-        return base_creds
-    return impersonated_credentials.Credentials(  # type: ignore[no-untyped-call]
-        source_credentials=base_creds,
-        target_principal=target_sa,
-        target_scopes=["https://www.googleapis.com/auth/cloud-platform"],
-    )
+    creds, _ = google.auth.default()
+    return creds

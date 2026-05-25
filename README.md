@@ -56,75 +56,59 @@ Collection runs automatically on Google Cloud through a managed workflow layer. 
 └── README.md                   # YOU ARE HERE!
 ```
 
-### *Workflow*
-
-#### *1. scraper_data_to_bucket*
+### *Workflow · etl_rentals_data*
 
 ```mermaid
 flowchart TD
-    Trigger["☁️ Cloud Workflows\netl_rentals_data\n(VERSION, ENVIRONMENT, CITY,\nSITES, PROPERTY_TYPES,\nUPLOAD_TO_GCS, START_PAGE, MAX_PAGE)"]
-    Trigger -->|"googleapis.run.v2\n.jobs.run"| CR["📦 Cloud Run Job\nscraper-data-to-bucket"]
+    Trigger["☁️ Cloud Workflows · etl_rentals_data\n(VERSION, ENVIRONMENT, CITY, SITES,\nPROPERTY_TYPES, UPLOAD_TO_GCS,\nFILE_DATE, UPLOAD_TO_BQ,\nSTART_PAGE, MAX_PAGE)"]
 
-    subgraph Entrypoint["scraper_data_to_bucket entrypoint"]
-        CR --> Pairs["for each (site, property_type)"]
-        Pairs --> Init["set_url · page = start_page\nlong_retry_count = 0"]
+    Trigger -->|"step 1 · googleapis.run.v2\n.jobs.run"| CR1["📦 Cloud Run Job\nscraper-data-to-bucket"]
 
-        Init --> MaxCheck{"page > max_page?"}
-        MaxCheck -->|yes| PairDone(["pair done"])
-
-        MaxCheck -->|no| Fetch["fetch_and_parse_html\npage=N · Accept-Language · Referer"]
-
+    subgraph ScraperEntrypoint["scraper_data_to_bucket entrypoint"]
+        CR1 --> Pairs1["for each (site, property_type)"]
+        Pairs1 --> Init["set_url · page = start_page\nlong_retry_count = 0"]
+        Init --> MaxCheck1{"page > max_page?"}
+        MaxCheck1 -->|yes| PairDone1(["pair done"])
+        MaxCheck1 -->|no| Fetch["fetch_and_parse_html\npage=N · Accept-Language · Referer"]
         Fetch -->|"RequestException\n(5 fast retries exhausted)"| LongCheck{"long_retry_count\n≥ max_long_retries?"}
-        LongCheck -->|yes| PairDone
+        LongCheck -->|yes| PairDone1
         LongCheck -->|"no · sleep 30–90 s"| Fetch
-
-        Fetch -->|"None — HTTP 404"| PairDone
+        Fetch -->|"None — HTTP 404"| PairDone1
         Fetch -->|"200 OK"| Extract["extract_properties\nJSON-LD ItemList"]
-        Extract -->|"ValueError — empty page"| PairDone
-        Extract -->|success| UpFlag{"upload_to_gcs?"}
-
-        UpFlag -->|false| Inc["page++"]
-        UpFlag -->|true| GCS[("GCS scraper-rentals-data\nenv/site/city/type/page/\nexecuted_at.json")]
-        GCS --> Inc
-        Inc --> MaxCheck
+        Extract -->|"ValueError — empty page"| PairDone1
+        Extract -->|success| UpFlag1{"upload_to_gcs?"}
+        UpFlag1 -->|false| Inc1["page++"]
+        UpFlag1 -->|true| GCS[("GCS scraper-rentals-data\nenv/site/city/type/page/\nexecuted_at.json")]
+        GCS --> Inc1
+        Inc1 --> MaxCheck1
+        PairDone1 --> Pairs1
     end
 
-    PairDone --> Pairs
-```
+    ScraperEntrypoint -->|"scraper_operation\nstep 2 · googleapis.run.v2\n.jobs.run"| CR2["📦 Cloud Run Job\ngcs-to-bigquery-bronze"]
 
-#### *2. gcs_to_bigquery_bronze*
-
-```mermaid
-flowchart TD
-    Trigger["☁️ Cloud Workflows\netl_rentals_data\n(VERSION, ENVIRONMENT, CITY,\nSITES, PROPERTY_TYPES,\nFILE_DATE, UPLOAD_TO_BQ)"]
-    Trigger -->|"googleapis.run.v2\n.jobs.run"| CR["📦 Cloud Run Job\ngcs-to-bigquery-bronze"]
-
-    subgraph Entrypoint["gcs_to_bigquery_bronze entrypoint"]
-        CR --> DDL{"table\nexists?"}
-        DDL -->|no| Create["CREATE TABLE\nenv_bronze.listings"]
-        DDL -->|yes| Pairs
-        Create --> Pairs["for each (site, property_type)"]
-
-        Pairs --> PageLoop["page = start_page"]
-        PageLoop --> MaxCheck{"page > max_page?"}
-        MaxCheck -->|yes| PairDone(["pair done"])
-
-        MaxCheck -->|no| Glob["ScraperBucket.latest_blob\nmatch_glob · most recently updated"]
-        Glob -->|"None — no blob for date/page"| PairDone
-
+    subgraph BronzeEntrypoint["gcs_to_bigquery_bronze entrypoint"]
+        CR2 --> DDL{"table\nexists?"}
+        DDL -->|no| Create["CREATE TABLE\nenv.bronze_listings"]
+        DDL -->|yes| Pairs2
+        Create --> Pairs2["for each (site, property_type)"]
+        Pairs2 --> PageLoop["page = start_page"]
+        PageLoop --> MaxCheck2{"page > max_page?"}
+        MaxCheck2 -->|yes| PairDone2(["pair done"])
+        MaxCheck2 -->|no| Glob["ScraperBucket.latest_blob\nmatch_glob · most recently updated"]
+        Glob -->|"None — no blob for date/page"| PairDone2
         Glob -->|blob found| DupCheck{"blob already\nloaded?"}
-        DupCheck -->|yes · skip| Inc["page++"]
+        DupCheck -->|yes · skip| Inc2["page++"]
         DupCheck -->|no| Download["blob.download_as_text\njson.loads"]
-
         Download --> Transform["row_schema\nLISTING_* · SRC_* · AUD_*"]
-        Transform --> UpFlag{"upload_to_bq?"}
-        UpFlag -->|false| Inc
-        UpFlag -->|true| BQ[("BigQuery\nenv_bronze.listings\nPARTITION BY DATE(SRC_EXECUTED_AT_TS)")]
-        BQ --> Inc
-        Inc --> MaxCheck
+        Transform --> UpFlag2{"upload_to_bq?"}
+        UpFlag2 -->|false| Inc2
+        UpFlag2 -->|true| BQ[("BigQuery\nenv.bronze_listings\nPARTITION BY DATE(SRC_EXECUTED_AT_TS)")]
+        BQ --> Inc2
+        Inc2 --> MaxCheck2
+        PairDone2 --> Pairs2
     end
 
-    PairDone --> Pairs
+    BronzeEntrypoint -->|"bronze_operation"| Done(["done"])
 ```
 
 ### *Documentations*

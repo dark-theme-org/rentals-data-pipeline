@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from app.data.scrapers import City, VivaRealScraper, ZapImoveisScraper
 from app.data.scrapers.settings import PropertyTypes
-from app.utils.utils import Environment, FileExtensions, ServiceAccountNames, datetime_now_utc
+from app.utils.utils import Environment, FileExtensions, datetime_now_utc
 
 logger = logging.getLogger(__name__)
 
@@ -157,7 +157,6 @@ class ScraperParameters(InputParameters):
 
     upload_to_gcs: bool
     max_long_retries: int = 3
-    sa_name: str = ServiceAccountNames.GCS.value
 
     @classmethod
     def from_env(cls) -> "ScraperParameters":
@@ -170,8 +169,6 @@ class BronzeParameters(InputParameters):
 
     upload_to_bq: bool
     file_date: str = Field(strict=True)
-    bq_sa_name: str = ServiceAccountNames.BQ.value
-    gcs_sa_name: str = ServiceAccountNames.GCS.value
 
     @classmethod
     def from_env(cls) -> "BronzeParameters":

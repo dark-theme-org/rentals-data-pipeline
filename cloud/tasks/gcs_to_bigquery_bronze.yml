@@ -22,3 +22,7 @@ inputs:
       default: ""
     - name: UPLOAD_TO_BQ
       default: true
+    - name: START_PAGE
+      default: 1
+    - name: MAX_PAGE
+      default: -1
