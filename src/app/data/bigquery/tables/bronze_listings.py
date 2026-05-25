@@ -37,9 +37,8 @@ class BronzeListingsTable(Table):
         @property
         def executed_at_ts(self) -> str:
             """Timestamp parsed from the blob filename, converted to BigQuery TIMESTAMP format."""
-            return datetime.strptime(PurePosixPath(self.blob).stem, "%Y-%m-%dT%H-%M-%SZ").strftime(
-                "%Y-%m-%dT%H:%M:%SZ"
-            )
+            _fmt = "%Y-%m-%dT%H:%M:%SZ"
+            return datetime.strptime(PurePosixPath(self.blob).stem, _fmt).strftime(_fmt)
 
     @property
     def dataset(self) -> str:

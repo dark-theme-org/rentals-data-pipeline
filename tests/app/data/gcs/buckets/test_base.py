@@ -14,7 +14,7 @@ def test_blob_name_joins_prefix_filename_and_extension(
 ) -> None:
     """Test blob_name renders prefix/filename.extension as a POSIX path."""
     extension = FileExtensions.JSON
-    filename = f"{file_date}T00-00-00Z"
+    filename = f"{file_date}T00:00:00Z"
     assert (
         scraper_bucket.blob_name(filename=filename, extension=extension)
         == f"{scraper_bucket.prefix}/{filename}.{extension}"

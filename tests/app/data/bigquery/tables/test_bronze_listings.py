@@ -13,7 +13,7 @@ def source_metadata_(
     scraper_bucket: ScraperBucket, file_date: str
 ) -> BronzeListingsTable.SourceMetadata:
     """SourceMetadata derived from the canonical scraper_bucket fixture."""
-    blob_stem = f"{file_date}T00-00-00Z"
+    blob_stem = f"{file_date}T00:00:00Z"
     return BronzeListingsTable.SourceMetadata(
         blob=f"{scraper_bucket.prefix}/{blob_stem}.json",
         site_name=scraper_bucket.site,
@@ -29,7 +29,7 @@ def test_source_metadata_construction(
     file_date: str,
 ) -> None:
     """Test SourceMetadata stores all GCS lineage fields."""
-    blob_stem = f"{file_date}T00-00-00Z"
+    blob_stem = f"{file_date}T00:00:00Z"
     assert source_metadata.blob == f"{scraper_bucket.prefix}/{blob_stem}.json"
     assert source_metadata.site_name == scraper_bucket.site
     assert source_metadata.city_name == scraper_bucket.city
