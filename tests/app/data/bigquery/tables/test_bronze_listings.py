@@ -39,14 +39,14 @@ def test_source_metadata_construction(
     assert source_metadata.executed_at_ts == ts
 
 
-def test_bronze_table_dataset(bronze_table: BronzeListingsTable) -> None:
-    """Test dataset returns env-scoped name."""
-    assert bronze_table.dataset == "dev_bronze"
+def test_bronze_table_dataset(bronze_table: BronzeListingsTable, env: str) -> None:
+    """Test dataset returns the environment name directly."""
+    assert bronze_table.dataset == env
 
 
 def test_bronze_table_table_name(bronze_table: BronzeListingsTable) -> None:
-    """Test table returns the fixed listings name."""
-    assert bronze_table.table == "listings"
+    """Test table returns the fixed bronze_listings name."""
+    assert bronze_table.table == "bronze_listings"
 
 
 def test_sql_file_paths_exist(bronze_table: BronzeListingsTable) -> None:

@@ -25,6 +25,20 @@ resource "google_project_iam_member" "sa_run_developer" {
   member  = "serviceAccount:${google_service_account.sa.email}"
 }
 
+resource "google_project_iam_member" "sa_bq_job_user" {
+  project = local.project_id
+  role    = "roles/bigquery.jobUser"
+  member  = "serviceAccount:${google_service_account.sa.email}"
+}
+
+resource "google_bigquery_dataset_iam_member" "sa_bq_data_editor" {
+  for_each   = local.environments
+  project    = local.project_id
+  dataset_id = google_bigquery_dataset.dataset[each.key].dataset_id
+  role       = "roles/bigquery.dataEditor"
+  member     = "serviceAccount:${google_service_account.sa.email}"
+}
+
 resource "google_service_account_iam_member" "sa_token_creator" {
   for_each           = toset(local.developers)
   service_account_id = google_service_account.sa.name

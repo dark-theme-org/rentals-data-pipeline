@@ -11,8 +11,6 @@ from app.data.bigquery.tables.base import Table
 
 logger = logging.getLogger(__name__)
 
-BRONZE_DATASET: str = "{env}_bronze"
-
 
 @dataclass(frozen=True, kw_only=True)
 class BronzeListingsTable(Table):
@@ -37,17 +35,17 @@ class BronzeListingsTable(Table):
 
     @property
     def dataset(self) -> str:
-        """Dataset name scoped by environment (e.g. ``"dev_bronze"``, ``"prod_bronze"``)."""
-        return BRONZE_DATASET.format(env=self.env)
+        """Dataset name scoped by environment (e.g. ``"dev"``, ``"prod"``)."""
+        return self.env
 
     @property
     def table(self) -> str:
-        """Fixed table name for scraped listings."""
-        return "listings"
+        """Fixed table name for Bronze scraped listings."""
+        return "bronze_listings"
 
     @property
     def create_sql_file_path(self) -> Path:
-        """Path to the DDL that creates ``{env}_bronze.listings``."""
+        """Path to the DDL that creates ``{env}.bronze_listings``."""
         return SQL_PATH / "create_bronze_listings_table.sql"
 
     @property

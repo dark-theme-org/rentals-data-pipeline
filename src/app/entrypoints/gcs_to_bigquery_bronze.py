@@ -28,15 +28,12 @@ def gcs_to_bigquery_bronze() -> None:
     For each configured (site, property_type) pair, download all scraped JSON blobs
     from GCS and load the flattened listings into the BigQuery Bronze table.
     """
-    bq_client = bigquery.Client(
-        credentials=get_credentials(params.bq_sa_name), project=CloudSettings.PROJECT_ID
-    )
+    credentials = get_credentials()
+    bq_client = bigquery.Client(credentials=credentials, project=CloudSettings.PROJECT_ID)
     table = BronzeListingsTable(env=params.environment, project=CloudSettings.PROJECT_ID)
     if not table.exists(bq_client):
         table.create(bq_client)
-    gcs_client = storage.Client(
-        credentials=get_credentials(params.gcs_sa_name), project=CloudSettings.PROJECT_ID
-    )
+    gcs_client = storage.Client(credentials=credentials, project=CloudSettings.PROJECT_ID)
     for site in params.sites:
         for property_type in params.property_types:
             logger.info(f"Processing site='{site}', property_type='{property_type}'...")

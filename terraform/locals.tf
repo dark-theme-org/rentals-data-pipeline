@@ -9,5 +9,6 @@ locals {
     managed_by = "terraform"
   }
 
-  developers = local._settings.developers
+  developers   = local._settings.developers
+  environments = toset(values(local._settings.environments))
 }
