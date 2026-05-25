@@ -2,7 +2,6 @@
 
 import json
 import logging
-from pathlib import PurePosixPath
 
 from google.cloud import bigquery, storage
 
@@ -29,7 +28,11 @@ def gcs_to_bigquery_bronze() -> None:
     from GCS and load the flattened listings into the BigQuery Bronze table.
     """
     credentials = get_credentials()
-    bq_client = bigquery.Client(credentials=credentials, project=CloudSettings.PROJECT_ID)
+    bq_client = bigquery.Client(
+        project=CloudSettings.PROJECT_ID,
+        credentials=credentials,
+        location=CloudSettings.REGION,
+    )
     table = BronzeListingsTable(env=params.environment, project=CloudSettings.PROJECT_ID)
     if not table.exists(bq_client):
         table.create(bq_client)
@@ -59,7 +62,7 @@ def gcs_to_bigquery_bronze() -> None:
                 )
                 if blob is None:
                     logger.info(
-                        f"No blob for page={page}, EXECUTED_AT='{params.executed_at}' "
+                        f"No blob for page={page}, FILE_DATE='{params.file_date}' "
                         f"under '{scraper_bucket.prefix}'. Stopping."
                     )
                     break
@@ -84,7 +87,6 @@ def gcs_to_bigquery_bronze() -> None:
                             city_name=scraper_bucket.city,
                             property_type_cat=scraper_bucket.property_type,
                             page_num=scraper_bucket.page,
-                            executed_at_ts=PurePosixPath(blob.name).stem,
                         ),
                         aud=AuditMetadata(
                             version_id=params.version,

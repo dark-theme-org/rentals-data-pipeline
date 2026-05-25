@@ -53,7 +53,9 @@ def test_latest_blob_passes_prefix_and_glob_to_list_blobs(
     gcs_client.list_blobs.return_value = iter([])
     scraper_bucket.latest_blob(gcs_client, filename=file_date, extension="json")
     gcs_client.list_blobs.assert_called_once_with(
-        scraper_bucket.name, prefix=scraper_bucket.prefix, match_glob=f"{file_date}T*.json"
+        scraper_bucket.name,
+        prefix=scraper_bucket.prefix,
+        match_glob=f"{scraper_bucket.prefix}/{file_date}T*.json",
     )
 
 

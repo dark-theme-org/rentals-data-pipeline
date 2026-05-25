@@ -15,7 +15,7 @@ _BQ_CLIENT = "app.entrypoints.gcs_to_bigquery_bronze.bigquery.Client"
 _STORAGE_CLIENT = "app.entrypoints.gcs_to_bigquery_bronze.storage.Client"
 _GET_CREDENTIALS = "app.entrypoints.gcs_to_bigquery_bronze.get_credentials"
 
-_BLOB_NAME = f"dev/{SITE_NAME_VIVA_REAL}/macae/apartment/1/{os.environ['FILE_DATE']}T00:00:00Z.json"
+_BLOB_NAME = f"dev/{SITE_NAME_VIVA_REAL}/macae/apartment/1/{os.environ['FILE_DATE']}T00-00-00Z.json"
 
 
 def _single_pair_params(env: str, expected_city: str, **overrides: object) -> BronzeParameters:

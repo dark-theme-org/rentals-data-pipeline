@@ -1,8 +1,10 @@
 """BigQuery table descriptor for the Bronze listings layer."""
 
 import logging
+import uuid
 from dataclasses import dataclass
-from pathlib import Path
+from datetime import datetime
+from pathlib import Path, PurePosixPath
 
 from google.cloud import bigquery
 
@@ -31,7 +33,13 @@ class BronzeListingsTable(Table):
         city_name: str
         property_type_cat: str
         page_num: int
-        executed_at_ts: str
+
+        @property
+        def executed_at_ts(self) -> str:
+            """Timestamp parsed from the blob filename, converted to BigQuery TIMESTAMP format."""
+            return datetime.strptime(PurePosixPath(self.blob).stem, "%Y-%m-%dT%H-%M-%SZ").strftime(
+                "%Y-%m-%dT%H:%M:%SZ"
+            )
 
     @property
     def dataset(self) -> str:
@@ -127,6 +135,7 @@ class BronzeListingsTable(Table):
         property_value = offers.get("propertyValue", {})
 
         return {
+            "ID": str(uuid.uuid4()),
             "LISTING_ID": listing.get("@id"),
             "LISTING_NAME": listing.get("name"),
             "LISTING_URL": listing.get("url"),

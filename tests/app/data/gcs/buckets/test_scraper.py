@@ -16,6 +16,6 @@ def test_scraper_bucket_prefix(scraper_bucket: ScraperBucket, env: str, expected
 def test_glob_pattern_formats_to_correct_glob(
     scraper_bucket: ScraperBucket, file_date: str
 ) -> None:
-    """Test glob_pattern.format produces a valid GCS glob for a given date and extension."""
+    """Test glob_pattern.format produces a full-path GCS glob for a given date and extension."""
     pattern = scraper_bucket.glob_pattern.format(filename=file_date, extension="json")
-    assert pattern == f"{file_date}T*.json"
+    assert pattern == f"{scraper_bucket.prefix}/{file_date}T*.json"

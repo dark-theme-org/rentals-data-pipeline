@@ -59,6 +59,10 @@ main:
                       value: ${file_date}
                     - name: UPLOAD_TO_BQ
                       value: ${upload_to_bq}
+                    - name: START_PAGE
+                      value: ${start_page}
+                    - name: MAX_PAGE
+                      value: ${max_page}
         result: bronze_operation
     - done:
         return: ${bronze_operation}
