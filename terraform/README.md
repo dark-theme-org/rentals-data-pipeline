@@ -15,10 +15,13 @@ hosted in the `darktheme-ops` project.
 | --- | --- |
 | `google_storage_bucket.scraper-bucket` | `scraper-rentals-data` — regional in `us-central1`, versioning on, lifecycle deletes live objects after 30 days, public access blocked |
 | `google_artifact_registry_repository.pipeline_images` | `${project_id}-docker` — Docker image repository for Cloud Run Job images. `immutable_tags = false` allows the same tag to be overwritten across deploys. |
+| `google_bigquery_dataset.dataset` | One BigQuery dataset per environment (`dev`, `test`, `prod`) — each dataset is the landing zone for the Bronze layer loaded by `gcs_to_bigquery_bronze`. |
 | `google_service_account.sa` | `${project_id}-sa` — single runtime identity used by Cloud Run Jobs, Cloud Workflows, and local dev via ADC impersonation |
 | `google_storage_bucket_iam_member.sa_bucket` | `storage.objectAdmin` on the data bucket |
 | `google_artifact_registry_repository_iam_member.sa_registry` | `artifactregistry.reader` on the image repository |
 | `google_project_iam_member.sa_run_developer` | `roles/run.developer` at project level — allows Cloud Workflows to trigger Cloud Run Jobs |
+| `google_project_iam_member.sa_bq_job_user` | `roles/bigquery.jobUser` at project level — allows the SA to submit BigQuery load jobs |
+| `google_bigquery_dataset_iam_member.sa_bq_data_editor` | `roles/bigquery.dataEditor` on each environment dataset — allows the SA to create tables and insert rows |
 | `google_service_account_iam_member.sa_token_creator` | `iam.serviceAccountTokenCreator` on the SA for each principal in `developer_principals` — enables local ADC impersonation |
 
 ## Files
@@ -29,6 +32,7 @@ hosted in the `darktheme-ops` project.
 | [locals.tf](locals.tf) | Reads `project_id` and `region` from `cloud/settings.yml` via `yamldecode`; defines `labels = { managed_by = "terraform" }` shared across all resources. |
 | [variables.tf](variables.tf) | Input variables. Only `developer_principals` (list of GCP principals granted SA impersonation). Configure per-developer in the gitignored `terraform.tfvars`; never commit individual emails. |
 | [gcs.tf](gcs.tf) | The data bucket and all bucket-level settings. |
+| [bigquery.tf](bigquery.tf) | BigQuery datasets — one per environment (`dev`, `test`, `prod`), each scoped to the project region. |
 | [registry.tf](registry.tf) | Artifact Registry Docker repository for pipeline images. |
 | [iam.tf](iam.tf) | Service account, all IAM bindings, and developer token creator grants. |
 
@@ -47,6 +51,7 @@ hosted in the `darktheme-ops` project.
     artifactregistry.googleapis.com \
     run.googleapis.com \
     workflows.googleapis.com \
+    bigquery.googleapis.com \
     --project rentals-data-pipeline
   ```
 
