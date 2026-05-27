@@ -7,32 +7,32 @@ Application code for the rentals data pipeline. Single top-level package — [`a
 ```text
 app/
 ├── data/
-│   ├── bigquery/                  # BigQuery table descriptors and metadata
-│   │   ├── settings.py            # AuditMetadata dataclass, SQL_PATH
-│   │   ├── sql/                   # DDL and query files (Jinja-templated, executed at runtime)
+│   ├── bigquery/                  # BigQuery table descriptors and SQL files
+│   │   ├── settings.py            # AuditMetadata dataclass and SQL_PATH constant
+│   │   ├── sql/                   # DDL and query files with {{ key }} placeholders
 │   │   │   ├── create_bronze_listings_table.sql
 │   │   │   ├── check_table_exists.sql
 │   │   │   └── check_bronze_listings_exists.sql
 │   │   └── tables/
-│   │       ├── base.py            # Table ABC — exists, create, read_and_replace_params, destination
-│   │       └── bronze_listings.py # BronzeListingsTable — blob_already_loaded, load_job_config, row_schema
+│   │       ├── base.py            # Table abstract base class
+│   │       └── bronze_listings.py # BronzeListingsTable and SourceMetadata
 │   ├── gcs/                       # GCS bucket descriptors
 │   │   └── buckets/
-│   │       ├── base.py            # Bucket ABC — blob_name, latest_blob(**kwargs)
-│   │       └── scraper.py         # ScraperBucket — name, prefix, glob_pattern
+│   │       ├── base.py            # Bucket abstract base class
+│   │       └── scraper.py         # ScraperBucket for scraped listings
 │   └── scrapers/                  # Real-estate listing scrapers
-│       ├── settings.py            # City / UF enums, CITIES_UF map, PropertyTypes
+│       ├── settings.py            # City, UF, PropertyTypes definitions
 │       └── sites/
-│           ├── base.py            # SiteScraper — URL build, fetch+parse, JSON-LD extract
+│           ├── base.py            # SiteScraper abstract base class
 │           ├── viva_real.py       # VivaRealScraper
 │           └── zap_imoveis.py     # ZapImoveisScraper
 ├── entrypoints/
-│   ├── scraper_data_to_bucket.py  # Scrape every (site, property_type) pair → GCS
-│   └── gcs_to_bigquery_bronze.py  # GCS scraped blobs → BigQuery Bronze layer
+│   ├── scraper_data_to_bucket.py  # Scrape listings and upload to GCS
+│   └── gcs_to_bigquery_bronze.py  # Load GCS snapshots into BigQuery Bronze
 └── utils/                         # Shared cross-cutting helpers
-    ├── decorators.py              # @task — start/end logging, exit-on-error
-    ├── utils.py                   # CloudSettings, Environment enums, datetime_now_utc, get_credentials
-    └── validations.py             # InputParameters, ScraperParameters, BronzeParameters (Pydantic)
+    ├── decorators.py              # @task decorator
+    ├── utils.py                   # Enums, logging setup, credentials, datetime helpers
+    └── validations.py             # Pydantic input parameter models
 ```
 
 ## Packages
@@ -55,22 +55,23 @@ Runnable scripts. Each module exposes a single `@task(label=...)` function and a
 
 [`scraper_data_to_bucket.py`](app/entrypoints/scraper_data_to_bucket.py) iterates every `(site, property_type)` pair and paginates through all pages from `START_PAGE` to `MAX_PAGE` (or until the site returns a 404 / empty page). Each page is uploaded individually to `<env>/<site>/<city>/<property_type>/<page>/<executed_at>.json`. When fast retries (tenacity) are exhausted, a two-level long-retry kicks in: sleep 30–90 s and retry the same page up to `MAX_LONG_RETRIES` times. Upload can be skipped via `UPLOAD_TO_GCS=false`.
 
-[`gcs_to_bigquery_bronze.py`](app/entrypoints/gcs_to_bigquery_bronze.py) loads the latest scraped snapshot for a given `FILE_DATE` into `{env}_bronze.listings` in BigQuery. For each `(site, property_type)` pair it paginates through GCS pages, skips already-loaded blobs, transforms each listing via `BronzeListingsTable.row_schema`, and batch-loads via `load_table_from_json`. Creates the table on first run using the DDL in `app/data/sql/`. Upload can be skipped via `UPLOAD_TO_BQ=false`.
+[`gcs_to_bigquery_bronze.py`](app/entrypoints/gcs_to_bigquery_bronze.py) loads the latest scraped snapshot for a given `FILE_DATE` into `{env}.bronze_listings` in BigQuery. For each `(site, property_type)` pair it paginates through GCS pages, skips already-loaded blobs, transforms each listing via `BronzeListingsTable.row_schema`, and batch-loads via `load_table_from_json`. Creates the table on first run using the DDL in `app/data/sql/`. Upload can be skipped via `UPLOAD_TO_BQ=false`.
 
 ### [`app/utils/`](app/utils/)
 
 Cross-cutting helpers re-exported from [`app/utils/__init__.py`](app/utils/__init__.py):
 
 - **`CloudSettings`** — `StrEnum` loaded from `cloud/settings.yml` at import time. Exposes `CloudSettings.PROJECT_ID` and `CloudSettings.REGION` as typed constants shared across all app code.
-- **`Environment`** (`dev`/`test`/`prod`), **`FileExtensions`** (`json`), **`ServiceAccountNames`** (`GCS_SA`, `BQ_SA`) — `StrEnum`s used wherever env scopes a path, a payload format is named, or a credential env var is referenced.
+- **`Environment`** (`dev`/`test`/`prod`), **`FileExtensions`** (`json`) — `StrEnum`s used wherever an env scope, or a payload format is named.
+- **`configure_logging(level=INFO)`** — attaches a `StreamHandler` to the root logger with a uniform format; idempotent (`basicConfig` is a no-op if a handler is already attached). Called once per entrypoint at module level.
 - **`datetime_now_utc(date_trunc=False)`** — returns the current UTC time as an ISO-8601 string; `date_trunc=True` returns only the `YYYY-MM-DD` portion.
 - **`@task(label)`** — wraps an entrypoint callable to log start/end and total runtime, and `sys.exit(1)` on any raised exception.
-- **`get_credentials(env_var)`** — resolves ADC or impersonated service-account credentials depending on whether `env_var` is set.
-- **`ScraperParameters` / `BronzeParameters`** ([`validations.py`](app/utils/validations.py)) — Pydantic models sharing a common `InputParameters` base (`environment`, `city`, `sites`, `property_types`, `start_page`, `max_page`, `file_extension`, `executed_at`). `ScraperParameters` adds `upload_to_gcs`; `BronzeParameters` adds `upload_to_bq` and `file_date`.
+- **`get_credentials()`** — resolves Application Default Credentials via `google.auth.default()`; in Cloud Run resolves to the runtime SA, locally resolves to whatever `gcloud auth application-default login` configured.
+- **`ScraperParameters` / `BronzeParameters`** ([`validations.py`](app/utils/validations.py)) — Pydantic models sharing a common `InputParameters` base (`environment`, `city`, `sites`, `property_types`, `version`, `start_page`, `max_page`, `file_extension`, `executed_at`). `ScraperParameters` adds `upload_to_gcs` and `max_long_retries` (controls the two-level retry in the scraper loop); `BronzeParameters` adds `upload_to_bq` and `file_date`.
 
 ## Conventions
 
 - All imports use the absolute `app.…` path (the src-layout makes `app` the package root). No `from .foo import …`.
-- Public enums, dataclasses, and Pydantic models are re-exported through `__init__.py` (`app.utils`, `app.data.scrapers`); reach for the re-export, not the inner module path, in callers.
+- Public enums, dataclasses, and Pydantic models are re-exported through `__init__.py` (`app.utils`, `app.data.scrapers`, `app.data.gcs`, `app.data.bigquery`); reach for the re-export, not the inner module path, in callers.
 - Dataclasses with multiple fields are declared `kw_only=True` — see `Bucket`/`ScraperBucket`, `Table`/`BronzeListingsTable`.
 - Tests live in [`tests/`](../tests/) mirroring this tree; conventions documented in [tests/README.md](../tests/README.md).

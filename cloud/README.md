@@ -35,7 +35,7 @@ environments:
 
 **Consumed by:**
 
-- `terraform/locals.tf` — via `yamldecode(file(...))`, drives all resource names and locations; `environments` drives `google_bigquery_dataset` creation
+- `terraform/locals.tf` — via `yamldecode(file(...))`, drives all resource names and locations; `environments` drives `google_bigquery_dataset` creation; `developers` drives `google_service_account_iam_member.sa_token_creator` grants
 - `src/app/utils/utils.py` — `CloudSettings.PROJECT_ID`, `CloudSettings.REGION`, and `Environment` enum values
 - `scripts/deploy.py` — project ID, region, SA email, and Artifact Registry URL
 
@@ -90,8 +90,9 @@ Each step calls one or more Cloud Run Jobs in sequence.
 - project_id: ${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}
 - location:   ${sys.get_env("GOOGLE_CLOUD_LOCATION")}
 
-# Accept runtime arguments with defaults
-- environment: ${default(map.get(args, "environment"), "dev")}
+# Accept runtime arguments (keys must be UPPERCASE to match Cloud Run env var convention)
+# Wrap with default() to provide a fallback when the arg is omitted at runtime
+- ENVIRONMENT: ${default(map.get(args, "ENVIRONMENT"), "dev")}
 
 # Trigger a Cloud Run Job
 call: googleapis.run.v2.projects.locations.jobs.run
@@ -107,7 +108,7 @@ args:
 
 **Consumed by:**
 
-- `scripts/deploy.py` — `run_workflow` deploys this file via `gcloud workflows deploy`
+- `scripts/deploy.py` — `deploy_workflow` uploads this file via `gcloud workflows deploy`; `run_workflow` triggers execution via `gcloud workflows run`
 - `terraform/` *(future)* — Terraform `fileset` loop creates one Cloud Workflow per file
 
 **Adding a new workflow:** drop a new `.yml` file in this folder following the
@@ -118,12 +119,14 @@ Cloud Workflows syntax. The deploy script picks it up automatically.
 ## Triggering a workflow manually
 
 ```bash
-gcloud workflows run etl-rentals-data \
+# Replace 0-0-1 with the version tag used when the workflow was deployed
+gcloud workflows run etl-rentals-data-0-0-1 \
   --location southamerica-east1 \
   --project rentals-data-pipeline \
   --data='{"VERSION":"0-0-1","ENVIRONMENT":"dev","CITY":"macae","SITES":"vivareal","PROPERTY_TYPES":"apartment","UPLOAD_TO_GCS":"true","START_PAGE":"1","MAX_PAGE":"-1","FILE_DATE":"","UPLOAD_TO_BQ":"true"}'
 ```
 
-All parameters are optional — the workflow defaults to the values defined in
-its `init` step. Note: argument keys must be **uppercase** to match the Cloud Run
-env var convention.
+The workflow name must match the versioned name created by `deploy.py`
+(`<workflow-name>-<version>`, dots replaced by dashes). All data arguments are
+optional when the workflow uses `default()` — argument keys must be **uppercase**
+to match the Cloud Run env var convention.
