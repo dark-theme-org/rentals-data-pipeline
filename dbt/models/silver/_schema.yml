@@ -1,0 +1,169 @@
+version: 2
+
+models:
+  - name: listings_deduped
+    description: >
+      Flattened, cleaned, and cross-site deduplicated rental listings.
+      Reads directly from Bronze, handles struct flattening, NULL coalescing,
+      and site deduplication in a single incremental model.
+      One row per (LISTING_ID, SCRAPE_DATE). Rows without a URL are excluded.
+    columns:
+      # ── Identity ─────────────────────────────────────────────────────────
+      - name: BRONZE_ID
+        description: "UUID from the Bronze row — traces back to the specific loaded row."
+        tests:
+          - not_null
+          - unique
+
+      - name: LISTING_ID
+        description: "Source site internal listing identifier (canonical after cross-site dedup)."
+        tests:
+          - not_null
+
+      # ── Listing attributes ────────────────────────────────────────────────
+      - name: LISTING_NAME
+        description: "Listing title. Defaults to 'unknown' when absent in source."
+        tests:
+          - not_null
+
+      - name: URL
+        description: "Canonical listing URL. Always present — rows without URL are filtered."
+        tests:
+          - not_null
+
+      - name: DESCRIPTION
+        description: "Free-text property description. Defaults to 'unknown' when absent."
+        tests:
+          - not_null
+
+      - name: PETS_ALLOWED
+        description: "Whether the listing explicitly allows pets. Defaults to TRUE when absent."
+        tests:
+          - not_null
+
+      - name: ROOMS
+        description: "Total number of rooms reported by the listing. May be NULL."
+
+      - name: BEDROOMS
+        description: "Number of bedrooms. May be NULL."
+
+      - name: BATHROOMS
+        description: "Number of bathrooms. May be NULL."
+
+      # ── Address ───────────────────────────────────────────────────────────
+      - name: STREET_ADDRESS
+        description: "Street address from the listing. Defaults to 'unknown' when absent."
+        tests:
+          - not_null
+
+      - name: LOCALITY
+        description: "Neighbourhood or district (e.g. Cavaleiros). Defaults to 'unknown'."
+        tests:
+          - not_null
+
+      - name: REGION
+        description: "State code (e.g. RJ). Defaults to 'unknown'."
+        tests:
+          - not_null
+
+      - name: COUNTRY
+        description: "Country code (e.g. BR). Defaults to 'unknown'."
+        tests:
+          - not_null
+
+      # ── Size ──────────────────────────────────────────────────────────────
+      - name: FLOOR_SIZE
+        description: "Floor area in square metres. May be NULL."
+
+      - name: FLOOR_SIZE_UNIT_CODE
+        description: "Unit of floor size (always M2 for current sources). Defaults to 'unknown'."
+        tests:
+          - not_null
+
+      # ── Media ─────────────────────────────────────────────────────────────
+      - name: IMAGES
+        description: "Ordered list of image URLs. Defaults to empty array when absent."
+        tests:
+          - not_null
+
+      - name: AMENITY_FEATURES
+        description: "List of amenity structs (NAME, VALUE). Defaults to empty array when absent."
+        tests:
+          - not_null
+
+      # ── Pricing ───────────────────────────────────────────────────────────
+      - name: PRICE
+        description: "Monthly rental price in the listing currency."
+        tests:
+          - not_null
+
+      - name: PRICE_CURRENCY
+        description: "Currency code for PRICE (e.g. BRL). Defaults to 'unknown'."
+        tests:
+          - not_null
+
+      - name: AVAILABILITY
+        description: "schema.org availability status. Defaults to 'unknown'."
+        tests:
+          - not_null
+
+      - name: OFFERS_NAME
+        description: "Name of the secondary offer (e.g. Condominium Fee). Defaults to 'unknown'."
+        tests:
+          - not_null
+
+      - name: OFFERS_PRICE
+        description: "Value of the secondary offer (e.g. condo fee amount). May be NULL."
+
+      - name: OFFERS_PRICE_CURRENCY
+        description: "Currency extracted from PROPERTY_VALUE.UNIT_TEXT (e.g. BRL). Defaults to 'unknown'."
+        tests:
+          - not_null
+
+      - name: OFFERS_PRICE_PERIOD
+        description: "Period extracted from PROPERTY_VALUE.UNIT_TEXT (e.g. month). Defaults to 'unknown'."
+        tests:
+          - not_null
+
+      # ── Source lineage ────────────────────────────────────────────────────
+      - name: SITE
+        description: "Scraping source site. Defaults to 'unknown' when absent."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["vivareal", "zapimoveis", "unknown"]
+
+      - name: CITY
+        description: "City slug used in the scraper run (e.g. macae). Defaults to 'unknown'."
+        tests:
+          - not_null
+
+      - name: PROPERTY_TYPE
+        description: "Property type search filter. Defaults to 'unknown' when absent."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["apartment", "house", "unknown"]
+
+      - name: PAGE
+        description: "Pagination page number the listing was collected from."
+        tests:
+          - not_null
+
+      - name: SCRAPE_DATE
+        description: "Date of the scraper run, derived from SRC_EXECUTED_AT_TS."
+        tests:
+          - not_null
+
+      # ── Audit ─────────────────────────────────────────────────────────────
+      - name: AUD_INS_TS
+        description: "Timestamp when this row was first inserted into the Silver table."
+        tests:
+          - not_null
+
+      - name: AUD_UPD_TS
+        description: "Timestamp of the last Silver-level update for this row."
+        tests:
+          - not_null

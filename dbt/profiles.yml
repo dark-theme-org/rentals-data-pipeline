@@ -1,0 +1,43 @@
+# Run dbt from the repo root with: dbt run --profiles-dir ./dbt
+# Or from the dbt/ directory directly: dbt run
+#
+# Values are read from environment variables. cloud/settings.yml is the single
+# source of truth — these variables must originate from there in CI/CD and
+# local runs:
+#
+#   GOOGLE_CLOUD_PROJECT_ID   →  cloud/settings.yml :: project_id
+#   GOOGLE_CLOUD_LOCATION     →  cloud/settings.yml :: region
+#   CLOUD_SETTINGS_ENV_DEV    →  cloud/settings.yml :: environments.dev
+#   CLOUD_SETTINGS_ENV_TEST   →  cloud/settings.yml :: environments.test
+#   CLOUD_SETTINGS_ENV_PROD   →  cloud/settings.yml :: environments.prod
+#
+# Fallback defaults are provided solely so that linters and formatters (sqlfluff)
+# work without requiring env vars to be exported first. They are not authoritative
+# — they mirror cloud/settings.yml and must be kept in sync if that file changes.
+default_profile:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: oauth
+      project: "{{ env_var('GOOGLE_CLOUD_PROJECT_ID') }}"
+      dataset: "{{ env_var('CLOUD_SETTINGS_ENV_DEV') }}"
+      location: "{{ env_var('GOOGLE_CLOUD_LOCATION') }}"
+      threads: 2
+      timeout_seconds: 300
+    test:
+      type: bigquery
+      method: oauth
+      project: "{{ env_var('GOOGLE_CLOUD_PROJECT_ID') }}"
+      dataset: "{{ env_var('CLOUD_SETTINGS_ENV_TEST') }}"
+      location: "{{ env_var('GOOGLE_CLOUD_LOCATION') }}"
+      threads: 4
+      timeout_seconds: 600
+    prod:
+      type: bigquery
+      method: oauth
+      project: "{{ env_var('GOOGLE_CLOUD_PROJECT_ID') }}"
+      dataset: "{{ env_var('CLOUD_SETTINGS_ENV_PROD') }}"
+      location: "{{ env_var('GOOGLE_CLOUD_LOCATION') }}"
+      threads: 4
+      timeout_seconds: 600
