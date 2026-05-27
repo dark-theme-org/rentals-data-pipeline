@@ -4,17 +4,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Rentals data pipeline. Application code lives in `src/` (src-layout), tests mirror that structure in `tests/`, notebooks in `notebooks/`, operational scripts in `scripts/`, all linter/formatter configs in `.code_quality/`.
+Rentals data pipeline. Application code lives in `src/` (src-layout), tests mirror that structure in `tests/`, notebooks in `notebooks/`, operational scripts in `scripts/`, all linter/formatter configs in `.code_quality/`, and GCP infrastructure is managed by Terraform in `terraform/`.
+
+The pipeline has two steps: (1) scrape rental listings from sites and upload raw JSON snapshots to GCS; (2) load those GCS snapshots into BigQuery as a Bronze layer table, partitioned by scrape date and deduplicated by source blob.
 
 Cloud execution is driven by YAML files under `cloud/`:
 
 - **`cloud/settings.yml`** — single source of truth for GCP project config (`project_id`, `region`). Read by `terraform/locals.tf`, `src/app/utils/utils.py` (`CloudSettings`), and `scripts/deploy.py`.
-- **`cloud/tasks/<name>.yml`** — one file per task; defines operator type, entrypoint, Cloud Run machine config, and input parameters with defaults. Terraform reads these to create Cloud Run Jobs; the Docker image reads the matching file at container startup via `scripts/setup_docker.py`.
-- **`cloud/workflows/<name>.yml`** — one file per DAG; Cloud Workflows native YAML that sequences tasks into an ordered execution graph. Terraform reads these to create Cloud Workflows.
+- **`cloud/tasks/<name>.yml`** — one file per task; defines operator type, entrypoint, Cloud Run machine config, and input parameters with defaults. `scripts/deploy.py` reads these to build Docker images and create Cloud Run Jobs; the Docker image reads the matching file at container startup via `scripts/setup_docker.py`.
+- **`cloud/workflows/<name>.yml`** — one file per DAG; Cloud Workflows native YAML that sequences tasks into an ordered execution graph. `scripts/deploy.py` reads these to deploy Cloud Workflows.
 
 The `Dockerfile` builds one image per task (`--build-arg TASK_NAME=<name>`). `scripts/setup_docker.py` is the container entrypoint: it reads `cloud/tasks/<TASK_NAME>.yml`, injects parameter defaults, then execs the task command.
 
-**`scripts/deploy.py`** is the deploy tool — it reads `cloud/tasks/` and `cloud/workflows/` and calls `docker build`, `gcloud run jobs create`, and `gcloud workflows deploy`. Terraform owns long-lived infrastructure (SA, GCS, Artifact Registry); the deploy script owns the application layer (images, jobs, workflows).
+**`scripts/deploy.py`** is the deploy tool — it reads `cloud/tasks/` and `cloud/workflows/` and calls `docker build`, `gcloud run jobs create`, and `gcloud workflows deploy`. Terraform owns long-lived infrastructure (SA, GCS bucket, Artifact Registry, BigQuery datasets); the deploy script owns the application layer (images, jobs, workflows).
 
 ## Stack & version pins
 

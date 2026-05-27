@@ -9,11 +9,11 @@
 
 ## *Motivation*
 
-Brazilian rental-market prices move fast and aren't trivially comparable across listing sites — each platform has its own search URLs, page layouts, and JSON-LD shapes, and none of them expose a public feed for tracking how asking prices for apartments and houses in a given city evolve over time. To answer questions like *"how is rent in Macaé trending vs. last quarter?"* we need to capture that history ourselves, listing by listing, day by day.
+Brazilian rental-market prices move fast and aren't trivially comparable across listing sites — each platform has its own search URLs, page layouts, and JSON-LD shapes, and none of them expose a public feed for tracking how asking prices for apartments and houses in a given city evolve over time. To answer questions like *"How is rent in a given city trending?"* we need to capture that history ourselves, listing by listing.
 
 ## *Main Goal*
 
-Land an append-only history of rental listings for every configured `(site, city, property_type)` tuple in a single GCS bucket, partitioned in a layout that downstream warehouse models (dbt-bigquery is on the dependency list for this) can consume directly without further cleanup.
+Land an append-only history of rental listings for every configured `(site, city, property_type)`, partitioned in a layout that downstream warehouse models can consume directly without further cleanup.
 
 ---
 
@@ -21,9 +21,9 @@ Land an append-only history of rental listings for every configured `(site, city
 
 ### *Solution*
 
-For each configured combination of listing site, city, and property type, the pipeline automatically collects all available rental listings across all pages and stores a per-page timestamped snapshot in cloud storage. Data is partitioned by environment, site, city, property type, and page so that downstream models can consume it directly without further cleanup.
+For each configured combination of `(site, city, property_type)`, the pipeline automatically collects all available rental listings across all pages and stores a per-page timestamped snapshot in cloud storage (data is partitioned by `environment, site, city, property_type, page`). Those snapshots are then loaded into BigQuery as a Bronze layer table — each listing is flattened into a structured row, deduplicated by source blob, and partitioned by scrape date, making the raw history available for downstream analytics.
 
-Collection runs automatically on Google Cloud through a managed workflow layer. Each pipeline step is containerised and executed on demand, with configuration centrally managed in `cloud/` — one YAML file per task defining how it runs, and one YAML file per workflow defining the execution order. Adding a new listing site or city requires only a small configuration change with no infrastructure work.
+Collection runs automatically on **Google Cloud** through a managed workflow layer. Each pipeline step is containerised and executed on demand, with configuration centrally managed in `cloud/` — one YAML file per task defining how it runs, and one YAML file per workflow defining the execution order. Adding a new listing site or city requires only a small configuration change with no infrastructure work.
 
 ### *Code Structure*
 
@@ -33,14 +33,10 @@ Collection runs automatically on Google Cloud through a managed workflow layer. 
 ├── .github/                    # GitHub automations;
 ├── .vscode/                    # VSCode configurations for development;
 ├── cloud/                      # Cloud execution configuration;
-│   ├── settings.yml            # Single source of truth for GCP project config (project_id, region);
-│   ├── tasks/                  # One YAML per task — operator type, machine config, parameters;
-│   └── workflows/              # One YAML per workflow — Cloud Workflows native execution graph;
 ├── docs/                       # Documentation files;
 ├── notebooks/                  # Jupyter notebooks for exploration and prototyping;
 ├── scripts/                    # Operational scripts (setup, Docker entrypoint, deploy);
 ├── src/                        # Source code;
-│   └── app/                    # Main application code;
 ├── terraform/                  # GCP infrastructure managed by Terraform;
 ├── tests/                      # Pytests for quality assurance;
 ├── .dockerignore               # Files excluded from the Docker build context;
@@ -60,55 +56,43 @@ Collection runs automatically on Google Cloud through a managed workflow layer. 
 
 ```mermaid
 flowchart TD
-    Trigger["☁️ Cloud Workflows · etl_rentals_data\n(VERSION, ENVIRONMENT, CITY, SITES,\nPROPERTY_TYPES, UPLOAD_TO_GCS,\nFILE_DATE, UPLOAD_TO_BQ,\nSTART_PAGE, MAX_PAGE)"]
+    Trigger["☁️ Cloud Workflows · etl_rentals_data\n(VERSION, ENVIRONMENT, CITY, SITES,\nPROPERTY_TYPES, START_PAGE, MAX_PAGE,\nFILE_DATE, UPLOAD_TO_GCS, UPLOAD_TO_BQ)"]
 
-    Trigger -->|"step 1 · googleapis.run.v2\n.jobs.run"| CR1["📦 Cloud Run Job\nscraper-data-to-bucket"]
+    Trigger -->|"step 1"| CR1["📦 Cloud Run Job\nscraper-data-to-bucket"]
 
-    subgraph ScraperEntrypoint["scraper_data_to_bucket entrypoint"]
-        CR1 --> Pairs1["for each (site, property_type)"]
-        Pairs1 --> Init["set_url · page = start_page\nlong_retry_count = 0"]
-        Init --> MaxCheck1{"page > max_page?"}
-        MaxCheck1 -->|yes| PairDone1(["pair done"])
-        MaxCheck1 -->|no| Fetch["fetch_and_parse_html\npage=N · Accept-Language · Referer"]
-        Fetch -->|"RequestException\n(5 fast retries exhausted)"| LongCheck{"long_retry_count\n≥ max_long_retries?"}
-        LongCheck -->|yes| PairDone1
-        LongCheck -->|"no · sleep 30–90 s"| Fetch
-        Fetch -->|"None — HTTP 404"| PairDone1
-        Fetch -->|"200 OK"| Extract["extract_properties\nJSON-LD ItemList"]
-        Extract -->|"ValueError — empty page"| PairDone1
-        Extract -->|success| UpFlag1{"upload_to_gcs?"}
-        UpFlag1 -->|false| Inc1["page++"]
-        UpFlag1 -->|true| GCS[("GCS scraper-rentals-data\nenv/site/city/type/page/\nexecuted_at.json")]
-        GCS --> Inc1
-        Inc1 --> MaxCheck1
+    subgraph ScraperJob["scraper_data_to_bucket — fetch listings and store in GCS"]
+        CR1 --> Pairs1["for each (site, property_type) pair"]
+        Pairs1 --> Fetch["fetch listing page N"]
+        Fetch -->|"404 / empty page"| PairDone1(["pair done"])
+        Fetch -->|"transient error"| Retry["retry with backoff\n5 fast retries · then long-sleep retry"]
+        Retry -->|"retries exhausted"| PairDone1
+        Retry --> Fetch
+        Fetch -->|"200 OK · listings found"| GCS[("GCS · scraper-rentals-data\nenv / site / city / type / page / timestamp.json")]
+        GCS --> NextPage1["next page"]
+        NextPage1 -->|"below max_page or unbounded"| Fetch
+        NextPage1 -->|"max_page reached"| PairDone1
         PairDone1 --> Pairs1
     end
 
-    ScraperEntrypoint -->|"scraper_operation\nstep 2 · googleapis.run.v2\n.jobs.run"| CR2["📦 Cloud Run Job\ngcs-to-bigquery-bronze"]
+    ScraperJob -->|"step 2"| CR2["📦 Cloud Run Job\ngcs-to-bigquery-bronze"]
 
-    subgraph BronzeEntrypoint["gcs_to_bigquery_bronze entrypoint"]
-        CR2 --> DDL{"table\nexists?"}
-        DDL -->|no| Create["CREATE TABLE\nenv.bronze_listings"]
-        DDL -->|yes| Pairs2
-        Create --> Pairs2["for each (site, property_type)"]
-        Pairs2 --> PageLoop["page = start_page"]
-        PageLoop --> MaxCheck2{"page > max_page?"}
-        MaxCheck2 -->|yes| PairDone2(["pair done"])
-        MaxCheck2 -->|no| Glob["ScraperBucket.latest_blob\nmatch_glob · most recently updated"]
-        Glob -->|"None — no blob for date/page"| PairDone2
-        Glob -->|blob found| DupCheck{"blob already\nloaded?"}
-        DupCheck -->|yes · skip| Inc2["page++"]
-        DupCheck -->|no| Download["blob.download_as_text\njson.loads"]
-        Download --> Transform["row_schema\nLISTING_* · SRC_* · AUD_*"]
-        Transform --> UpFlag2{"upload_to_bq?"}
-        UpFlag2 -->|false| Inc2
-        UpFlag2 -->|true| BQ[("BigQuery\nenv.bronze_listings\nPARTITION BY DATE(SRC_EXECUTED_AT_TS)")]
-        BQ --> Inc2
-        Inc2 --> MaxCheck2
+    subgraph BronzeJob["gcs_to_bigquery_bronze — load GCS snapshots into BigQuery"]
+        CR2 --> TableCheck{"bronze_listings\ntable exists?"}
+        TableCheck -->|no| CreateTable["create table"]
+        TableCheck -->|yes| Pairs2
+        CreateTable --> Pairs2["for each (site, property_type) pair"]
+        Pairs2 --> FindBlob["look up latest GCS blob\nfor target date · page N"]
+        FindBlob -->|"no blob found"| PairDone2(["pair done"])
+        FindBlob -->|"blob found"| DupCheck{"already loaded\ninto BigQuery?"}
+        DupCheck -->|"yes — skip"| NextPage2["next page"]
+        DupCheck -->|no| BQ[("BigQuery · env.bronze_listings\npartitioned by scrape date")]
+        BQ --> NextPage2
+        NextPage2 -->|"below max_page or unbounded"| FindBlob
+        NextPage2 -->|"max_page reached"| PairDone2
         PairDone2 --> Pairs2
     end
 
-    BronzeEntrypoint -->|"bronze_operation"| Done(["done"])
+    BronzeJob --> Done(["done"])
 ```
 
 ### *Documentations*

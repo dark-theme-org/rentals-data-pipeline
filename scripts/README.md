@@ -73,8 +73,11 @@ in those folders, not here.
     gcloud auth login
 
     # Configure Docker to use gcloud credentials for Artifact Registry
-    gcloud auth configure-docker us-central1-docker.pkg.dev
+    # (region must match cloud/settings.yml — currently southamerica-east1)
+    gcloud auth configure-docker southamerica-east1-docker.pkg.dev
     ```
+
+    > **Apple Silicon users**: images are always built for `linux/amd64` (Cloud Run's target platform). Docker Desktop with Rosetta emulation handles this automatically; no extra flags are needed when calling `deploy.py`.
 
   - *Flags*:
 
