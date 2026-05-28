@@ -7,9 +7,10 @@
 #
 #   GOOGLE_CLOUD_PROJECT_ID   →  cloud/settings.yml :: project_id
 #   GOOGLE_CLOUD_LOCATION     →  cloud/settings.yml :: region
-#   CLOUD_SETTINGS_ENV_DEV    →  cloud/settings.yml :: environments.dev
-#   CLOUD_SETTINGS_ENV_TEST   →  cloud/settings.yml :: environments.test
-#   CLOUD_SETTINGS_ENV_PROD   →  cloud/settings.yml :: environments.prod
+#   RUNTIME_ENVIRONMENT       →  cloud/settings.yml ::
+#                                  - environments.dev
+#                                  - environments.test
+#                                  - environments.prod
 #
 # Fallback defaults are provided solely so that linters and formatters (sqlfluff)
 # work without requiring env vars to be exported first. They are not authoritative
@@ -21,7 +22,7 @@ default_profile:
       type: bigquery
       method: oauth
       project: "{{ env_var('GOOGLE_CLOUD_PROJECT_ID') }}"
-      dataset: "{{ env_var('CLOUD_SETTINGS_ENV_DEV') }}"
+      dataset: "{{ env_var('ENVIRONMENT') }}"
       location: "{{ env_var('GOOGLE_CLOUD_LOCATION') }}"
       threads: 2
       timeout_seconds: 300
@@ -29,7 +30,7 @@ default_profile:
       type: bigquery
       method: oauth
       project: "{{ env_var('GOOGLE_CLOUD_PROJECT_ID') }}"
-      dataset: "{{ env_var('CLOUD_SETTINGS_ENV_TEST') }}"
+      dataset: "{{ env_var('ENVIRONMENT') }}"
       location: "{{ env_var('GOOGLE_CLOUD_LOCATION') }}"
       threads: 4
       timeout_seconds: 600
@@ -37,7 +38,7 @@ default_profile:
       type: bigquery
       method: oauth
       project: "{{ env_var('GOOGLE_CLOUD_PROJECT_ID') }}"
-      dataset: "{{ env_var('CLOUD_SETTINGS_ENV_PROD') }}"
+      dataset: "{{ env_var('ENVIRONMENT') }}"
       location: "{{ env_var('GOOGLE_CLOUD_LOCATION') }}"
       threads: 4
       timeout_seconds: 600
