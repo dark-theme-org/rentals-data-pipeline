@@ -3,7 +3,7 @@
 locals {
   _settings  = yamldecode(file("${path.module}/../cloud/settings.yml"))
   project_id = local._settings.project_id
-  region     = local._settings.region
+  location   = local._settings.location
 
   labels = {
     managed_by = "terraform"

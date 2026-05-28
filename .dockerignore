@@ -11,6 +11,9 @@ __pycache__/
 .vscode/
 docs/
 notebooks/
+dbt/dbt_packages/
+dbt/logs/
+dbt/target/
 scripts/setup_local.sh
 tests/
 .gitattributes

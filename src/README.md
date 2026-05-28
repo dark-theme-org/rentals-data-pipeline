@@ -61,13 +61,12 @@ Runnable scripts. Each module exposes a single `@task(label=...)` function and a
 
 Cross-cutting helpers re-exported from [`app/utils/__init__.py`](app/utils/__init__.py):
 
-- **`CloudSettings`** — `StrEnum` loaded from `cloud/settings.yml` at import time. Exposes `CloudSettings.PROJECT_ID` and `CloudSettings.REGION` as typed constants shared across all app code.
-- **`Environment`** (`dev`/`test`/`prod`), **`FileExtensions`** (`json`) — `StrEnum`s used wherever an env scope, or a payload format is named.
+- **`Environment`** (`dev`/`test`/`prod`), **`FileExtensions`** (`json`) — `StrEnum`s loaded from `cloud/settings.yml` at import time; used wherever an env scope or a payload format is named.
 - **`configure_logging(level=INFO)`** — attaches a `StreamHandler` to the root logger with a uniform format; idempotent (`basicConfig` is a no-op if a handler is already attached). Called once per entrypoint at module level.
 - **`datetime_now_utc(date_trunc=False)`** — returns the current UTC time as an ISO-8601 string; `date_trunc=True` returns only the `YYYY-MM-DD` portion.
 - **`@task(label)`** — wraps an entrypoint callable to log start/end and total runtime, and `sys.exit(1)` on any raised exception.
 - **`get_credentials()`** — resolves Application Default Credentials via `google.auth.default()`; in Cloud Run resolves to the runtime SA, locally resolves to whatever `gcloud auth application-default login` configured.
-- **`ScraperParameters` / `BronzeParameters`** ([`validations.py`](app/utils/validations.py)) — Pydantic models sharing a common `InputParameters` base (`environment`, `city`, `sites`, `property_types`, `version`, `start_page`, `max_page`, `file_extension`, `executed_at`). `ScraperParameters` adds `upload_to_gcs` and `max_long_retries` (controls the two-level retry in the scraper loop); `BronzeParameters` adds `upload_to_bq` and `file_date`.
+- **`ScraperParameters` / `BronzeParameters`** ([`validations.py`](app/utils/validations.py)) — Pydantic models sharing a common `InputParameters` base (`project_id`, `location`, `environment`, `city`, `sites`, `property_types`, `version`, `start_page`, `max_page`, `file_extension`, `executed_at`). `ScraperParameters` adds `upload_to_gcs` and `max_long_retries` (controls the two-level retry in the scraper loop); `BronzeParameters` adds `upload_to_bq` and `file_date`.
 
 ## Conventions
 

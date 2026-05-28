@@ -4,6 +4,11 @@
 # Or run 'sqlfluff dialects'
 dialect = bigquery
 
+# TEMPLATER: Jinja is the default and applies to all SQL files in the repo.
+# Directory-level .sqlfluff files only need to add context values for their
+# own template variables — they do not need to repeat this declaration.
+templater = jinja
+
 # EXTENSIONS: Standardizes which files the linter will scan.
 sql_file_exts = .sql
 
@@ -67,12 +72,9 @@ preferred_not_equal_style = c_style
 [sqlfluff:templater]
 unwrap_wrapped_queries = True
 
-# PROJECT DIR: Tells SQLFluff where to find your 'dbt_project.yml'.
-# './' assumes you are running the command from the project root.
-[sqlfluff:templater:dbt]
-project_dir = ./
-
 # JINJA BUILTINS: Ensures that standard dbt-Jinja functions are recognized
 # even if they aren't explicitly defined in your local macros.
+# dbt/ SQL files extend this via dbt/.sqlfluff, which adds jinja context
+# values for dbt built-ins not covered by apply_dbt_builtins (e.g. run_started_at).
 [sqlfluff:templater:jinja]
 apply_dbt_builtins = True

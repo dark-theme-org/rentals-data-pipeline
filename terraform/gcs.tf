@@ -2,7 +2,7 @@
 
 resource "google_storage_bucket" "scraper-bucket" {
   name          = "scraper-rentals-data"
-  location      = local.region
+  location      = local.location
   force_destroy = true
   project       = local.project_id
   storage_class = "STANDARD"

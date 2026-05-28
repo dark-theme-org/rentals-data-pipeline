@@ -1,7 +1,7 @@
 # Cloud settings — single source of truth for project-level configuration.
 
 project_id: rentals-data-pipeline
-region: southamerica-east1
+location: southamerica-east1
 developers:
   - user:darktheme.org@gmail.com
 environments:

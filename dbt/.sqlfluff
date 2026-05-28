@@ -1,0 +1,11 @@
+# dbt/-level sqlfluff config — loaded as a directory override on top of
+# .code_quality/.sqlfluff (passed via --config at invocation time).
+#
+# Purpose: define env_var as a jinja macro so sqlfluff can template
+# dbt/models/**/*.sql files that use env_var() without TMP errors.
+# .sqlfluff_macros/ is intentionally separate from macros/ so dbt does
+# not pick up these stubs at runtime (dbt_project.yml macro-paths: ["macros"]).
+
+[sqlfluff:templater:jinja]
+apply_dbt_builtins = True
+load_macros_from_path = .sqlfluff_macros

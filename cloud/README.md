@@ -9,7 +9,7 @@ modifying pipeline tasks and workflows.
 
 ```txt
 cloud/
-├── settings.yml        # Project-level GCP config (project_id, region)
+├── settings.yml        # Project-level GCP config (project_id, location)
 ├── tasks/              # One YAML file per Cloud Run Job
 │   └── <task_name>.yml
 └── workflows/          # One YAML file per Cloud Workflow
@@ -24,7 +24,7 @@ Single source of truth for GCP project configuration.
 
 ```yaml
 project_id: rentals-data-pipeline
-region: southamerica-east1
+location: southamerica-east1
 developers:
   - user:you@example.com
 environments:
@@ -36,8 +36,8 @@ environments:
 **Consumed by:**
 
 - `terraform/locals.tf` — via `yamldecode(file(...))`, drives all resource names and locations; `environments` drives `google_bigquery_dataset` creation; `developers` drives `google_service_account_iam_member.sa_token_creator` grants
-- `src/app/utils/utils.py` — `CloudSettings.PROJECT_ID`, `CloudSettings.REGION`, and `Environment` enum values
-- `scripts/deploy.py` — project ID, region, SA email, and Artifact Registry URL
+- `src/app/utils/utils.py` — `Environment` enum values
+- `scripts/deploy.py` — project ID, location, SA email, and Artifact Registry URL
 
 > **Note:** the `prefix` in `terraform/terraform.tf`'s backend block must be kept in
 > sync manually — Terraform backend blocks cannot use `locals` or `file()`.
@@ -53,19 +53,23 @@ and is used as-is across Docker builds, Terraform resources, and env vars.
 
 ```yaml
 description: <human-readable description>
-type: python               # operator type; drives the exec command
+type: python | dbt         # operator type; drives the exec command in setup_docker.py
 machine:
   cpu: "1"                 # vCPU allocation
   memory: 512Mi            # memory limit
   timeout: 600s            # max execution time
 retry:
   repetitions: 0           # Cloud Run Job max-retries
-entrypoint: <module.path>  # Python module path
+entrypoint: <value>        # python: dotted module path; dbt: sub-command + flags string
 inputs:
   parameters:
     - name: PARAM_NAME     # uppercase by convention (env var name)
       default: value       # used when not overridden at runtime
 ```
+
+> **Note:** `PROJECT_ID` and `LOCATION` are never declared as task parameters.
+> `scripts/setup_docker.py` injects them automatically from `cloud/settings.yml`
+> after the task parameters are set, so every task has them available as env vars.
 
 **Consumed by:**
 
@@ -86,13 +90,13 @@ Each step calls one or more Cloud Run Jobs in sequence.
 **Key patterns used:**
 
 ```yaml
-# Read project and location from the Cloud Workflows runtime
-- project_id: ${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}
-- location:   ${sys.get_env("GOOGLE_CLOUD_LOCATION")}
+# project_id and location come from workflow args, not from Cloud Workflows sys env vars.
+# scripts/deploy.py reads cloud/settings.yml and injects them into the --data payload.
+- project_id: ${map.get(args, "PROJECT_ID")}
+- location:   ${map.get(args, "LOCATION")}
 
 # Accept runtime arguments (keys must be UPPERCASE to match Cloud Run env var convention)
-# Wrap with default() to provide a fallback when the arg is omitted at runtime
-- ENVIRONMENT: ${default(map.get(args, "ENVIRONMENT"), "dev")}
+- ENVIRONMENT: ${map.get(args, "ENVIRONMENT")}
 
 # Trigger a Cloud Run Job
 call: googleapis.run.v2.projects.locations.jobs.run
@@ -105,6 +109,10 @@ args:
             - name: PARAM_NAME
               value: ${param_value}
 ```
+
+> **Note:** `PROJECT_ID` and `LOCATION` are **not** passed as `containerOverrides` env vars.
+> `scripts/setup_docker.py` injects them into every container at startup from `cloud/settings.yml`,
+> so the workflow only needs them to construct the Cloud Run job resource path.
 
 **Consumed by:**
 
@@ -123,7 +131,7 @@ Cloud Workflows syntax. The deploy script picks it up automatically.
 gcloud workflows run etl-rentals-data-0-0-1 \
   --location southamerica-east1 \
   --project rentals-data-pipeline \
-  --data='{"VERSION":"0-0-1","ENVIRONMENT":"dev","CITY":"macae","SITES":"vivareal","PROPERTY_TYPES":"apartment","UPLOAD_TO_GCS":"true","START_PAGE":"1","MAX_PAGE":"-1","FILE_DATE":"","UPLOAD_TO_BQ":"true"}'
+  --data='{"PROJECT_ID":"rentals-data-pipeline","LOCATION":"southamerica-east1","VERSION":"0-0-1","ENVIRONMENT":"dev","CITY":"macae","SITES":"vivareal","PROPERTY_TYPES":"apartment","UPLOAD_TO_GCS":"true","START_PAGE":"1","MAX_PAGE":"-1","FILE_DATE":"","UPLOAD_TO_BQ":"true"}'
 ```
 
 The workflow name must match the versioned name created by `deploy.py`

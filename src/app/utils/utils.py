@@ -12,21 +12,15 @@ from google.auth.credentials import Credentials
 _SETTINGS: dict = yaml.safe_load(
     (Path(__file__).parents[3] / "cloud" / "settings.yml").read_text(encoding="utf-8")
 )
-
-
-class CloudSettings(StrEnum):
-    """GCP project settings loaded from cloud/settings.yml."""
-
-    PROJECT_ID = _SETTINGS["project_id"]
-    REGION = _SETTINGS["region"]
+_SETTINGS_ENVS: dict = _SETTINGS["environments"]
 
 
 class Environment(StrEnum):
     """Supported deployment environments for the data pipeline."""
 
-    DEV = _SETTINGS["environments"]["dev"]
-    TEST = _SETTINGS["environments"]["test"]
-    PROD = _SETTINGS["environments"]["prod"]
+    DEV = _SETTINGS_ENVS["dev"]
+    TEST = _SETTINGS_ENVS["test"]
+    PROD = _SETTINGS_ENVS["prod"]
 
 
 class FileExtensions(StrEnum):

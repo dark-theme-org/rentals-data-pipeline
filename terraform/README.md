@@ -13,7 +13,7 @@ hosted in the `darktheme-ops` project.
 
 | Resource | What it is |
 | --- | --- |
-| `google_storage_bucket.scraper-bucket` | `scraper-rentals-data` — regional in `southamerica-east1` (read from `cloud/settings.yml`), versioning on, lifecycle deletes live objects after 30 days, public access blocked |
+| `google_storage_bucket.scraper-bucket` | `scraper-rentals-data` — location `southamerica-east1` (read from `cloud/settings.yml`), versioning on, lifecycle deletes live objects after 30 days, public access blocked |
 | `google_artifact_registry_repository.pipeline_images` | `${project_id}-docker` — Docker image repository for Cloud Run Job images. `immutable_tags = false` allows the same tag to be overwritten across deploys. |
 | `google_bigquery_dataset.dataset` | One BigQuery dataset per environment (`dev`, `test`, `prod`) — each dataset is the landing zone for the Bronze layer loaded by `gcs_to_bigquery_bronze`. |
 | `google_service_account.sa` | `${project_id}-sa` — single runtime identity used by Cloud Run Jobs, Cloud Workflows, and local dev via ADC impersonation |
@@ -29,9 +29,9 @@ hosted in the `darktheme-ops` project.
 | File | Purpose |
 | --- | --- |
 | [terraform.tf](terraform.tf) | Backend (`gs://dark-tfstates/rentals-data-pipeline`) and Google provider (`~> 6.10`). The backend `prefix` must match `project_id` in `cloud/settings.yml` — it cannot use locals or `file()`. |
-| [locals.tf](locals.tf) | Reads `project_id`, `region`, `developers`, and `environments` from `cloud/settings.yml` via `yamldecode`; defines `labels = { managed_by = "terraform" }` shared across all resources. To grant yourself ADC impersonation, add your GCP principal to the `developers` list in `cloud/settings.yml`. |
+| [locals.tf](locals.tf) | Reads `project_id`, `location`, `developers`, and `environments` from `cloud/settings.yml` via `yamldecode`; defines `labels = { managed_by = "terraform" }` shared across all resources. To grant yourself ADC impersonation, add your GCP principal to the `developers` list in `cloud/settings.yml`. |
 | [gcs.tf](gcs.tf) | The data bucket and all bucket-level settings. |
-| [bigquery.tf](bigquery.tf) | BigQuery datasets — one per environment (`dev`, `test`, `prod`), each scoped to the project region. |
+| [bigquery.tf](bigquery.tf) | BigQuery datasets — one per environment (`dev`, `test`, `prod`), each scoped to the project location. |
 | [registry.tf](registry.tf) | Artifact Registry Docker repository for pipeline images. |
 | [iam.tf](iam.tf) | Service account, all IAM bindings, and developer token creator grants. |
 

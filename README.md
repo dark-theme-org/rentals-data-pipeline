@@ -21,7 +21,7 @@ Land an append-only history of rental listings for every configured `(site, city
 
 ### *Solution*
 
-For each configured combination of `(site, city, property_type)`, the pipeline automatically collects all available rental listings across all pages and stores a per-page timestamped snapshot in cloud storage (data is partitioned by `environment, site, city, property_type, page`). Those snapshots are then loaded into BigQuery as a Bronze layer table — each listing is flattened into a structured row, deduplicated by source blob, and partitioned by scrape date, making the raw history available for downstream analytics.
+For each configured combination of `(site, city, property_type)`, the pipeline automatically collects all available rental listings across all pages and stores a per-page timestamped snapshot in cloud storage (data is partitioned by `environment, site, city, property_type, page`). Those snapshots are then loaded into BigQuery as a Bronze layer table — each listing is flattened into a structured row, deduplicated by source blob, and partitioned by scrape date. A dbt Silver layer then reads from Bronze, coalesces nulls, and applies cross-site deduplication via a window function, producing a single clean table (`silver_listings_deduped`) ready for downstream analytics.
 
 Collection runs automatically on **Google Cloud** through a managed workflow layer. Each pipeline step is containerised and executed on demand, with configuration centrally managed in `cloud/` — one YAML file per task defining how it runs, and one YAML file per workflow defining the execution order. Adding a new listing site or city requires only a small configuration change with no infrastructure work.
 
@@ -33,6 +33,7 @@ Collection runs automatically on **Google Cloud** through a managed workflow lay
 ├── .github/                    # GitHub automations;
 ├── .vscode/                    # VSCode configurations for development;
 ├── cloud/                      # Cloud execution configuration;
+├── dbt/                        # dbt project for Silver and Gold transformation layers;
 ├── docs/                       # Documentation files;
 ├── notebooks/                  # Jupyter notebooks for exploration and prototyping;
 ├── scripts/                    # Operational scripts (setup, Docker entrypoint, deploy);
@@ -56,7 +57,7 @@ Collection runs automatically on **Google Cloud** through a managed workflow lay
 
 ```mermaid
 flowchart TD
-    Trigger["☁️ Cloud Workflows · etl_rentals_data\n(VERSION, ENVIRONMENT, CITY, SITES,\nPROPERTY_TYPES, START_PAGE, MAX_PAGE,\nFILE_DATE, UPLOAD_TO_GCS, UPLOAD_TO_BQ)"]
+    Trigger["☁️ Cloud Workflows · etl_rentals_data\n(ENVIRONMENT, CITY, SITES, PROPERTY_TYPES,\nSTART_PAGE, MAX_PAGE, FILE_DATE,\nUPLOAD_TO_GCS, UPLOAD_TO_BQ)"]
 
     Trigger -->|"step 1"| CR1["📦 Cloud Run Job\nscraper-data-to-bucket"]
 
@@ -92,7 +93,15 @@ flowchart TD
         PairDone2 --> Pairs2
     end
 
-    BronzeJob --> Done(["done"])
+    BronzeJob -->|"step 3"| CR3["📦 Cloud Run Job\nprocess-silver-layer"]
+
+    subgraph SilverJob["process_silver_layer — dbt incremental merge into Silver"]
+        CR3 --> dbtRun["dbt run --select silver\n--target dev|test|prod"]
+        dbtRun --> Dedup["flatten structs · coalesce NULLs\ncross-site deduplication\n(QUALIFY ROW_NUMBER OVER ...)"]
+        Dedup --> BQSilver[("BigQuery · env.silver_listings_deduped\nincremental merge · unique key\n(LISTING_ID, SCRAPE_DATE)")]
+    end
+
+    SilverJob --> Done(["done"])
 ```
 
 ### *Documentations*
