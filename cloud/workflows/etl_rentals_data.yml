@@ -67,7 +67,7 @@ main:
     - run_process_silver_layer:
         call: googleapis.run.v2.projects.locations.jobs.run
         args:
-          name: ${"projects/" + project_id + "/locations/" + location + "/jobs/dbt-silver-layer" + "-" + version}
+          name: ${"projects/" + project_id + "/locations/" + location + "/jobs/process-silver-layer" + "-" + version}
           body:
             overrides:
               containerOverrides:
