@@ -26,6 +26,8 @@ Pytest also runs as the final pre-commit hook (see [.pre-commit-config.yaml](../
 ```ini
 env =
     USER=local
+    PROJECT_ID=rentals-data-pipeline
+    LOCATION=southamerica-east1
     ENVIRONMENT=dev
     CITY=macae
     SITES=vivareal,zapimoveis
@@ -50,6 +52,8 @@ test file that owns them.
 
 | Fixture | Type | Description |
 | --- | --- | --- |
+| `project_id` | `str` | `"rentals-data-pipeline"` — GCP project ID from `PROJECT_ID` |
+| `location` | `str` | `"southamerica-east1"` — GCP location from `LOCATION` |
 | `env` | `str` | `"dev"` — deployment environment from `ENVIRONMENT` |
 | `expected_city` | `str` | `"macae"` — city slug from `CITY` |
 | `expected_uf` | `str` | `"rj"` — canonical UF code for `UF.RJ` |
@@ -59,7 +63,7 @@ test file that owns them.
 | `item_list_payload` | `dict` | JSON-LD `ItemList` with two listings |
 | `scraper_bucket` | `ScraperBucket` | Bound to `(dev, vivareal, macae, apartment, page=1)` |
 | `audit_metadata` | `AuditMetadata` | Fixed timestamps derived from `file_date` |
-| `bronze_table` | `BronzeListingsTable` | Descriptor bound to dev env and `CloudSettings.PROJECT_ID` |
+| `bronze_table` | `BronzeListingsTable` | Descriptor bound to dev env and `project_id` fixture |
 | `raw_listing` | `dict` | Minimal raw listing dict as scraped from the source site |
 
 ## Conventions

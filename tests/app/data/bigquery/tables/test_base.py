@@ -6,18 +6,17 @@ import pytest
 from pytest_mock import MockerFixture
 
 from app.data.bigquery import BronzeListingsTable
-from app.utils import CloudSettings
 
 
-def test_table_invalid_env_raises() -> None:
+def test_table_invalid_env_raises(project_id: str) -> None:
     """Test Table.__post_init__ raises ValueError for an unknown environment."""
     with pytest.raises(ValueError, match="not a valid"):
-        BronzeListingsTable(env="staging", project=CloudSettings.PROJECT_ID)
+        BronzeListingsTable(env="staging", project=project_id)
 
 
-def test_table_destination(bronze_table: BronzeListingsTable, env: str) -> None:
+def test_table_destination(bronze_table: BronzeListingsTable, env: str, project_id: str) -> None:
     """Test destination formats project.dataset.table correctly."""
-    assert bronze_table.destination == f"{CloudSettings.PROJECT_ID}.{env}.bronze_listings"
+    assert bronze_table.destination == f"{project_id}.{env}.bronze_listings"
 
 
 def test_read_and_replace_params_substitutes_placeholder(

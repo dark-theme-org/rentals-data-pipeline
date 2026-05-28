@@ -26,11 +26,13 @@ class InputParameters(BaseModel):
     """
     Base model with shared fields and validation logic for all pipeline tasks.
 
-    Subclasses inherit ``environment``, ``city``, ``sites``, ``property_types``,
-    and ``version`` together with their validators. Task-specific fields and
-    ``from_env`` are defined in each subclass.
+    Subclasses inherit ``project_id``, ``location``, ``environment``, ``city``,
+    ``sites``, ``property_types``, and ``version`` together with their validators.
+    Task-specific fields and ``from_env`` are defined in each subclass.
     """
 
+    project_id: str = Field(strict=True)
+    location: str = Field(strict=True)
     environment: str = Field(strict=True)
     city: str = Field(strict=True)
     sites: list[str] = Field(strict=True)
@@ -43,8 +45,10 @@ class InputParameters(BaseModel):
 
     @classmethod
     def _base_env(cls) -> dict:
-        """Read the env vars shared across all pipeline tasks."""
+        """Read env vars shared across all pipeline tasks."""
         return {
+            "project_id": os.environ["PROJECT_ID"],
+            "location": os.environ["LOCATION"],
             "environment": os.environ["ENVIRONMENT"],
             "city": os.environ["CITY"],
             "sites": os.environ["SITES"],

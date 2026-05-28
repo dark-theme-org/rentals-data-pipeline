@@ -65,7 +65,7 @@ find cloud/tasks -name "*.yml" | sort
 find cloud/workflows -name "*.yml" | sort
 ```
 
-Also read `cloud/settings.yml` to resolve `project_id` and `region`.
+Also read `cloud/settings.yml` to resolve `project_id` and `location`.
 
 ---
 

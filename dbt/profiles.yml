@@ -1,16 +1,12 @@
 # Run dbt from the repo root with: dbt run --profiles-dir ./dbt
 # Or from the dbt/ directory directly: dbt run
 #
-# Values are read from environment variables. cloud/settings.yml is the single
+# Values are read from configuration file cloud/settings.yml as the single
 # source of truth — these variables must originate from there in CI/CD and
 # local runs:
 #
-#   GOOGLE_CLOUD_PROJECT_ID   →  cloud/settings.yml :: project_id
-#   GOOGLE_CLOUD_LOCATION     →  cloud/settings.yml :: region
-#   RUNTIME_ENVIRONMENT       →  cloud/settings.yml ::
-#                                  - environments.dev
-#                                  - environments.test
-#                                  - environments.prod
+#   PROJECT_ID  →  cloud/settings.yml :: project_id
+#   LOCATION    →  cloud/settings.yml :: location
 #
 # Fallback defaults are provided solely so that linters and formatters (sqlfluff)
 # work without requiring env vars to be exported first. They are not authoritative
@@ -21,24 +17,24 @@ default_profile:
     dev:
       type: bigquery
       method: oauth
-      project: "{{ env_var('GOOGLE_CLOUD_PROJECT_ID') }}"
-      dataset: "{{ env_var('ENVIRONMENT') }}"
-      location: "{{ env_var('GOOGLE_CLOUD_LOCATION') }}"
+      project: "{{ env_var('PROJECT_ID') }}"
+      dataset: dev
+      location: "{{ env_var('LOCATION') }}"
       threads: 2
       timeout_seconds: 300
     test:
       type: bigquery
       method: oauth
-      project: "{{ env_var('GOOGLE_CLOUD_PROJECT_ID') }}"
-      dataset: "{{ env_var('ENVIRONMENT') }}"
-      location: "{{ env_var('GOOGLE_CLOUD_LOCATION') }}"
+      project: "{{ env_var('PROJECT_ID') }}"
+      dataset: test
+      location: "{{ env_var('LOCATION') }}"
       threads: 4
       timeout_seconds: 600
     prod:
       type: bigquery
       method: oauth
-      project: "{{ env_var('GOOGLE_CLOUD_PROJECT_ID') }}"
-      dataset: "{{ env_var('ENVIRONMENT') }}"
-      location: "{{ env_var('GOOGLE_CLOUD_LOCATION') }}"
+      project: "{{ env_var('PROJECT_ID') }}"
+      dataset: prod
+      location: "{{ env_var('LOCATION') }}"
       threads: 4
       timeout_seconds: 600

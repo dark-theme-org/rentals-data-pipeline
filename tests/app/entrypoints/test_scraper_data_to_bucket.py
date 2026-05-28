@@ -17,9 +17,13 @@ _STORAGE_CLIENT = "app.entrypoints.scraper_data_to_bucket.storage.Client"
 _GET_CREDENTIALS = "app.entrypoints.scraper_data_to_bucket.get_credentials"
 
 
-def _single_scraper_params(env: str, expected_city: str, **overrides: object) -> ScraperParameters:
+def _single_scraper_params(
+    env: str, expected_city: str, project_id: str, location: str, **overrides: object
+) -> ScraperParameters:
     return ScraperParameters.model_validate(
         {
+            "project_id": project_id,
+            "location": location,
             "environment": env,
             "city": expected_city,
             "sites": SITE_NAME_VIVA_REAL,
@@ -40,21 +44,27 @@ def fast_long_sleep_(mocker: MockerFixture) -> None:
 
 
 @pytest.fixture(name="scraper_params")
-def scraper_params_(env: str, expected_city: str) -> ScraperParameters:
+def scraper_params_(
+    env: str, expected_city: str, project_id: str, location: str
+) -> ScraperParameters:
     """ScraperParameters scoped to a single (site, property_type) pair for entrypoint tests."""
-    return _single_scraper_params(env, expected_city)
+    return _single_scraper_params(env, expected_city, project_id, location)
 
 
 @pytest.fixture(name="scraper_params_no_upload")
-def scraper_params_no_upload_(env: str, expected_city: str) -> ScraperParameters:
+def scraper_params_no_upload_(
+    env: str, expected_city: str, project_id: str, location: str
+) -> ScraperParameters:
     """ScraperParameters with upload_to_gcs=False for GCS-skip-path tests."""
-    return _single_scraper_params(env, expected_city, upload_to_gcs=False)
+    return _single_scraper_params(env, expected_city, project_id, location, upload_to_gcs=False)
 
 
 @pytest.fixture(name="scraper_params_with_max_page")
-def scraper_params_with_max_page_(env: str, expected_city: str) -> ScraperParameters:
+def scraper_params_with_max_page_(
+    env: str, expected_city: str, project_id: str, location: str
+) -> ScraperParameters:
     """ScraperParameters with max_page=1 for loop-termination tests."""
-    return _single_scraper_params(env, expected_city, max_page=1)
+    return _single_scraper_params(env, expected_city, project_id, location, max_page=1)
 
 
 @pytest.fixture(name="gcs_mocks")

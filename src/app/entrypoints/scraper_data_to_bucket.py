@@ -13,7 +13,6 @@ from google.cloud import storage
 from app.data.gcs import ScraperBucket
 from app.data.scrapers import VivaRealScraper, ZapImoveisScraper
 from app.utils import (
-    CloudSettings,
     configure_logging,
     get_credentials,
     task,
@@ -41,7 +40,7 @@ def scraper_data_to_bucket() -> None:
     """
     gcs_client = storage.Client(
         credentials=get_credentials(),
-        project=CloudSettings.PROJECT_ID,
+        project=params.project_id,
     )
     for site in params.sites:
         scraper_class = SCRAPER_MAPPING[site].scraper_class

@@ -7,7 +7,18 @@ import pytest
 from app.data.bigquery import AuditMetadata, BronzeListingsTable
 from app.data.gcs import ScraperBucket
 from app.data.scrapers.sites.viva_real import SITE_NAME_VIVA_REAL
-from app.utils import CloudSettings
+
+
+@pytest.fixture(name="project_id")
+def project_id_() -> str:
+    """Google Cloud Project ID string read from the PROJECT_ID pytest.ini variable."""
+    return os.environ["PROJECT_ID"]
+
+
+@pytest.fixture(name="location")
+def location_() -> str:
+    """GCP region/location string read from the LOCATION pytest.ini variable."""
+    return os.environ["LOCATION"]
 
 
 @pytest.fixture(name="env")
@@ -91,9 +102,9 @@ def audit_metadata_(file_date: str) -> AuditMetadata:
 
 
 @pytest.fixture(name="bronze_table")
-def bronze_table_(env: str) -> BronzeListingsTable:
+def bronze_table_(env: str, project_id: str) -> BronzeListingsTable:
     """BronzeListingsTable descriptor bound to the dev environment."""
-    return BronzeListingsTable(env=env, project=CloudSettings.PROJECT_ID)
+    return BronzeListingsTable(env=env, project=project_id)
 
 
 @pytest.fixture(name="raw_listing")

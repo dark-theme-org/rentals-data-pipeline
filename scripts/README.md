@@ -73,7 +73,7 @@ in those folders, not here.
     gcloud auth login
 
     # Configure Docker to use gcloud credentials for Artifact Registry
-    # (region must match cloud/settings.yml — currently southamerica-east1)
+    # (location must match cloud/settings.yml — currently southamerica-east1)
     gcloud auth configure-docker southamerica-east1-docker.pkg.dev
     ```
 

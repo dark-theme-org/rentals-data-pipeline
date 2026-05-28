@@ -9,7 +9,6 @@ from app.data.bigquery import AuditMetadata, BronzeListingsTable
 from app.data.gcs import ScraperBucket
 from app.utils import (
     BronzeParameters,
-    CloudSettings,
     configure_logging,
     get_credentials,
     task,
@@ -29,14 +28,14 @@ def gcs_to_bigquery_bronze() -> None:
     """
     credentials = get_credentials()
     bq_client = bigquery.Client(
-        project=CloudSettings.PROJECT_ID,
+        project=params.project_id,
         credentials=credentials,
-        location=CloudSettings.REGION,
+        location=params.location,
     )
-    table = BronzeListingsTable(env=params.environment, project=CloudSettings.PROJECT_ID)
+    table = BronzeListingsTable(env=params.environment, project=params.project_id)
     if not table.exists(bq_client):
         table.create(bq_client)
-    gcs_client = storage.Client(credentials=credentials, project=CloudSettings.PROJECT_ID)
+    gcs_client = storage.Client(credentials=credentials, project=params.project_id)
     for site in params.sites:
         for property_type in params.property_types:
             logger.info(f"Processing site='{site}', property_type='{property_type}'...")

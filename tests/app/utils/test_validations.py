@@ -9,6 +9,8 @@ from pydantic import ValidationError
 from app.utils.validations import BronzeParameters, ScraperParameters
 
 _default_env = {
+    "project_id": os.environ["PROJECT_ID"],
+    "location": os.environ["LOCATION"],
     "environment": os.environ["ENVIRONMENT"],
     "city": os.environ["CITY"],
     "sites": os.environ["SITES"],

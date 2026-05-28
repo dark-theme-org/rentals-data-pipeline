@@ -10,7 +10,7 @@ The pipeline has two steps: (1) scrape rental listings from sites and upload raw
 
 Cloud execution is driven by YAML files under `cloud/`:
 
-- **`cloud/settings.yml`** — single source of truth for GCP project config (`project_id`, `region`). Read by `terraform/locals.tf`, `src/app/utils/utils.py` (`CloudSettings`), and `scripts/deploy.py`.
+- **`cloud/settings.yml`** — single source of truth for GCP project config (`project_id`, `location`). Read by `terraform/locals.tf`, `src/app/utils/utils.py` (`Environment`), and `scripts/deploy.py`.
 - **`cloud/tasks/<name>.yml`** — one file per task; defines operator type, entrypoint, Cloud Run machine config, and input parameters with defaults. `scripts/deploy.py` reads these to build Docker images and create Cloud Run Jobs; the Docker image reads the matching file at container startup via `scripts/setup_docker.py`.
 - **`cloud/workflows/<name>.yml`** — one file per DAG; Cloud Workflows native YAML that sequences tasks into an ordered execution graph. `scripts/deploy.py` reads these to deploy Cloud Workflows.
 

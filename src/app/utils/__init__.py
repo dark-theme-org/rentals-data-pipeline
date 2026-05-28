@@ -2,7 +2,6 @@
 
 from app.utils.decorators import task
 from app.utils.utils import (
-    CloudSettings,
     Environment,
     FileExtensions,
     configure_logging,
@@ -13,7 +12,6 @@ from app.utils.validations import BronzeParameters, ScraperParameters
 
 __all__ = [
     "BronzeParameters",
-    "CloudSettings",
     "Environment",
     "FileExtensions",
     "ScraperParameters",

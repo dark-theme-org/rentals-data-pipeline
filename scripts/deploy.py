@@ -15,10 +15,10 @@ WORKFLOWS_DIR = _cloud_dir / "workflows"
 
 _settings: dict = yaml.safe_load((_cloud_dir / "settings.yml").read_text(encoding="utf-8"))
 PROJECT_ID: str = _settings["project_id"]
-REGION: str = _settings["region"]
+LOCATION: str = _settings["location"]
 
 AR_REPO: str = f"{PROJECT_ID}-docker"
-IMAGE_URL: str = f"{REGION}-docker.pkg.dev/{PROJECT_ID}/{AR_REPO}/{{task_name}}:{{version}}"
+IMAGE_URL: str = f"{LOCATION}-docker.pkg.dev/{PROJECT_ID}/{AR_REPO}/{{task_name}}:{{version}}"
 SA_EMAIL: str = f"{PROJECT_ID}-sa@{PROJECT_ID}.iam.gserviceaccount.com"
 
 
@@ -127,7 +127,7 @@ def deploy_task(
             "--image",
             url,
             "--region",
-            REGION,
+            LOCATION,
             "--service-account",
             SA_EMAIL,
             "--memory",
@@ -169,7 +169,7 @@ def deploy_workflow(name: str, file: Path, version: str) -> None:
             "deploy",
             _versioned_name(name, version),
             "--location",
-            REGION,
+            LOCATION,
             "--source",
             str(file),
             "--service-account",
@@ -206,7 +206,7 @@ def run_workflow(name: str, version: str, params: dict[str, str] | None = None) 
             "run",
             _versioned_name(name, version),
             "--location",
-            REGION,
+            LOCATION,
             "--project",
             PROJECT_ID,
             "--data",

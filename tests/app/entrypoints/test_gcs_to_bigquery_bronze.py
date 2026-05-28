@@ -18,9 +18,13 @@ _GET_CREDENTIALS = "app.entrypoints.gcs_to_bigquery_bronze.get_credentials"
 _BLOB_NAME = f"dev/{SITE_NAME_VIVA_REAL}/macae/apartment/1/{os.environ['FILE_DATE']}T00:00:00Z.json"
 
 
-def _single_pair_params(env: str, expected_city: str, **overrides: object) -> BronzeParameters:
+def _single_pair_params(
+    env: str, expected_city: str, project_id: str, location: str, **overrides: object
+) -> BronzeParameters:
     return BronzeParameters.model_validate(
         {
+            "project_id": project_id,
+            "location": location,
             "environment": env,
             "city": expected_city,
             "sites": SITE_NAME_VIVA_REAL,
@@ -36,10 +40,14 @@ def _single_pair_params(env: str, expected_city: str, **overrides: object) -> Br
 
 
 @pytest.fixture(name="bronze_params")
-def bronze_params_(env: str, expected_city: str) -> BronzeParameters:
+def bronze_params_(
+    env: str, expected_city: str, project_id: str, location: str
+) -> BronzeParameters:
     """BronzeParameters covering all sites and property types for pagination tests."""
     return BronzeParameters.model_validate(
         {
+            "project_id": project_id,
+            "location": location,
             "environment": env,
             "city": expected_city,
             "sites": os.environ["SITES"],
@@ -54,21 +62,27 @@ def bronze_params_(env: str, expected_city: str) -> BronzeParameters:
 
 
 @pytest.fixture(name="bronze_params_single_pair")
-def bronze_params_single_pair_(env: str, expected_city: str) -> BronzeParameters:
+def bronze_params_single_pair_(
+    env: str, expected_city: str, project_id: str, location: str
+) -> BronzeParameters:
     """BronzeParameters scoped to a single (vivareal, apartment) pair for entrypoint tests."""
-    return _single_pair_params(env, expected_city)
+    return _single_pair_params(env, expected_city, project_id, location)
 
 
 @pytest.fixture(name="bronze_params_single_pair_no_upload")
-def bronze_params_single_pair_no_upload_(env: str, expected_city: str) -> BronzeParameters:
+def bronze_params_single_pair_no_upload_(
+    env: str, expected_city: str, project_id: str, location: str
+) -> BronzeParameters:
     """BronzeParameters with upload_to_bq=False for BQ-skip-path tests."""
-    return _single_pair_params(env, expected_city, upload_to_bq=False)
+    return _single_pair_params(env, expected_city, project_id, location, upload_to_bq=False)
 
 
 @pytest.fixture(name="bronze_params_with_max_page")
-def bronze_params_with_max_page_(env: str, expected_city: str) -> BronzeParameters:
+def bronze_params_with_max_page_(
+    env: str, expected_city: str, project_id: str, location: str
+) -> BronzeParameters:
     """BronzeParameters with max_page=1 for loop-termination tests."""
-    return _single_pair_params(env, expected_city, max_page=1)
+    return _single_pair_params(env, expected_city, project_id, location, max_page=1)
 
 
 def test_creates_table_and_loads_rows_on_success_path(
