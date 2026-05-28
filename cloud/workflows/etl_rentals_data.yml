@@ -64,5 +64,24 @@ main:
                     - name: MAX_PAGE
                       value: ${max_page}
         result: bronze_operation
+    - run_process_silver_layer:
+        call: googleapis.run.v2.projects.locations.jobs.run
+        args:
+          name: ${"projects/" + project_id + "/locations/" + location + "/jobs/dbt-silver-layer" + "-" + version}
+          body:
+            overrides:
+              containerOverrides:
+                - env:
+                    - name: ENVIRONMENT
+                      value: ${environment}
+                    - name: CITY
+                      value: ${city}
+                    - name: SITES
+                      value: ${sites}
+                    - name: PROPERTY_TYPES
+                      value: ${property_types}
+                    - name: FILE_DATE
+                      value: ${file_date}
+        result: silver_operation
     - done:
-        return: ${bronze_operation}
+        return: ${silver_operation}

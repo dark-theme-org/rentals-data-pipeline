@@ -9,16 +9,16 @@
     )
 }}
 
-{% set city = var('CITY', none) %}
-{% set sites = var('SITES', none) %}
+{% set city = env_var('CITY', none) %}
+{% set sites = env_var('SITES', none) %}
 {% if sites %}
 {% set sites = (sites.split(',') | map('trim') | join("', '")) if sites else none %}
 {% endif %}
-{% set property_types = var('PROPERTY_TYPES', none) %}
+{% set property_types = env_var('PROPERTY_TYPES', none) %}
 {% if property_types %}
 {% set property_types = property_types.split(',') | map('trim') | join("', '") %}
 {% endif %}
-{% set file_date = var('FILE_DATE', none) %}
+{% set file_date = env_var('FILE_DATE', none) %}
 {% set default_text = "'unknown'" %}
 {% set default_flag = true %}
 {% set default_int = 0 %}
@@ -28,7 +28,7 @@ WITH SOURCE AS (
     SELECT *
     FROM {{ source('bronze', 'bronze_listings') }}
     WHERE
-        DATE(SRC_EXECUTED_AT_TS) = {% if file_date %}DATE('{{ file_date }}'){% else %}CURRENT_DATE{% endif %}
+        DATE(SRC_EXECUTED_AT_TS) = {% if file_date %}DATE('{{ file_date }}'){% else %}CURRENT_DATE{% endif %}  -- noqa: LT05
         AND SRC_CITY_NAME = '{{ city }}'
         AND SRC_SITE_NAME IN ('{{ sites }}')
         AND SRC_PROPERTY_TYPE_CAT IN ('{{ property_types }}')

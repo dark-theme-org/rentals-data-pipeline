@@ -46,10 +46,13 @@ in those folders, not here.
     `bash scripts/setup_local.sh`.
 
 - **`setup_docker.py`** — Docker container entry point. Reads
-  `cloud/tasks/<TASK_NAME>.yml` at startup, validates the task type,
-  injects parameter defaults for any env vars not already set, then execs
-  the task command (replacing itself so exit codes and signals propagate
-  cleanly to Cloud Run).
+  `cloud/tasks/<TASK_NAME>.yml` at startup, injects parameter defaults for
+  any env vars not already set, injects `PROJECT_ID` and `LOCATION` from
+  `cloud/settings.yml`, then execs the task command (replacing itself so exit
+  codes and signals propagate cleanly to Cloud Run).
+  Supports two operator types driven by the `type` field in the task YAML:
+  - `python` — runs `python -m <entrypoint>`
+  - `dbt` — runs `dbt <entrypoint>`, appending `--target` from `ENVIRONMENT`
   - *Invocation*: called automatically by the Docker container via `CMD`;
     never invoked directly. Requires `TASK_NAME` to be set as an env var
     (baked in at image build time via `--build-arg TASK_NAME=<name>`).
@@ -61,8 +64,8 @@ in those folders, not here.
 
   The `--version` tag is appended to all GCP resource names so multiple
   versions can coexist:
-  - Image: `scraper_data_to_bucket:0.0.1`
-  - Cloud Run Job: `scraper-data-to-bucket-0-0-1`
+  - Images: `scraper_data_to_bucket:0.0.1`, `gcs_to_bigquery_bronze:0.0.1`, `process_silver_layer:0.0.1`
+  - Cloud Run Jobs: `scraper-data-to-bucket-0-0-1`, `gcs-to-bigquery-bronze-0-0-1`, `process-silver-layer-0-0-1`
   - Cloud Workflow: `etl-rentals-data-0-0-1`
 
   - *Invocation*: `poetry run python scripts/deploy.py --version <tag>`

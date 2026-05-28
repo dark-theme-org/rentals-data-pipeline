@@ -53,19 +53,23 @@ and is used as-is across Docker builds, Terraform resources, and env vars.
 
 ```yaml
 description: <human-readable description>
-type: python               # operator type; drives the exec command
+type: python | dbt         # operator type; drives the exec command in setup_docker.py
 machine:
   cpu: "1"                 # vCPU allocation
   memory: 512Mi            # memory limit
   timeout: 600s            # max execution time
 retry:
   repetitions: 0           # Cloud Run Job max-retries
-entrypoint: <module.path>  # Python module path
+entrypoint: <value>        # python: dotted module path; dbt: sub-command + flags string
 inputs:
   parameters:
     - name: PARAM_NAME     # uppercase by convention (env var name)
       default: value       # used when not overridden at runtime
 ```
+
+> **Note:** `PROJECT_ID` and `LOCATION` are never declared as task parameters.
+> `scripts/setup_docker.py` injects them automatically from `cloud/settings.yml`
+> after the task parameters are set, so every task has them available as env vars.
 
 **Consumed by:**
 
@@ -127,7 +131,7 @@ Cloud Workflows syntax. The deploy script picks it up automatically.
 gcloud workflows run etl-rentals-data-0-0-1 \
   --location southamerica-east1 \
   --project rentals-data-pipeline \
-  --data='{"ENVIRONMENT":"dev","CITY":"macae","SITES":"vivareal","PROPERTY_TYPES":"apartment","UPLOAD_TO_GCS":"true","START_PAGE":"1","MAX_PAGE":"-1","FILE_DATE":"","UPLOAD_TO_BQ":"true"}'
+  --data='{"PROJECT_ID":"rentals-data-pipeline","LOCATION":"southamerica-east1","VERSION":"0-0-1","ENVIRONMENT":"dev","CITY":"macae","SITES":"vivareal","PROPERTY_TYPES":"apartment","UPLOAD_TO_GCS":"true","START_PAGE":"1","MAX_PAGE":"-1","FILE_DATE":"","UPLOAD_TO_BQ":"true"}'
 ```
 
 The workflow name must match the versioned name created by `deploy.py`

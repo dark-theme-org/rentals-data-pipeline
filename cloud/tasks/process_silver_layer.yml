@@ -1,0 +1,22 @@
+# Task definition for the process_silver_layer Cloud Run Job.
+description: Run dbt Silver layer models to transform Bronze listings into a cleaned Silver table.
+type: dbt
+machine:
+  cpu: "1"
+  memory: 512Mi
+  timeout: 1800s
+retry:
+  repetitions: 0
+entrypoint: run --profiles-dir dbt --project-dir dbt --select silver
+inputs:
+  parameters:
+    - name: ENVIRONMENT
+      default: dev
+    - name: CITY
+      default: macae
+    - name: SITES
+      default: vivareal,zapimoveis
+    - name: PROPERTY_TYPES
+      default: apartment,house
+    - name: FILE_DATE
+      default: ""

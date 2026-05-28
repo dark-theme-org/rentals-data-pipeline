@@ -29,6 +29,10 @@ From the **project root**:
 ```bash
 export PROJECT_ID=rentals-data-pipeline
 export LOCATION=southamerica-east1
+export CITY=macae
+export SITES=vivareal,zapimoveis
+export PROPERTY_TYPES=apartment,house
+export FILE_DATE=2026-01-01   # omit or set empty to use CURRENT_DATE
 
 # dev (default — omit --target or pass it explicitly)
 dbt run --profiles-dir dbt --project-dir dbt --select silver
@@ -49,6 +53,10 @@ Or from the `dbt/` directory directly (`profiles.yml` is auto-discovered):
 ```bash
 cd dbt && dbt run --select silver --target prod
 ```
+
+> **In Cloud Run** the `process_silver_layer` task handles execution. `scripts/setup_docker.py`
+> injects all env vars from `cloud/tasks/process_silver_layer.yml` before launching dbt,
+> so no manual export is needed.
 
 ---
 
