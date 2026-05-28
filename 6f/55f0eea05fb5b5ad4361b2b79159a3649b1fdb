@@ -1,0 +1,14 @@
+cloud/workflows/etl_rentals_data.yml
+  h_334e5c58273adb 7-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "6f55f0eea05fb5b5ad4361b2b79159a3649b1fdb",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
