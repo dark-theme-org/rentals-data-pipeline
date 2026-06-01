@@ -134,7 +134,7 @@ latest scrape, FALSE once it disappears) and standard audit columns (`AUD_INS_TS
 | --- | --- | --- | --- |
 | `dim_listings` | `{env}.gold_dim_listings` | One row per `LISTING_ID` | `LISTING_ID` |
 | `dim_address` | `{env}.gold_dim_address` | One row per unique `(STREET_ADDRESS, LOCALITY, REGION, COUNTRY)` | `ADDRESS_SK` |
-| `dim_amenities` | `{env}.gold_dim_amenities` | One row per unique `(listing image set, AMENITY_NAME, AMENITY_VALUE)` | `['AMENITIES_SK', 'AMENITY_NAME', 'AMENITY_VALUE']` |
+| `dim_amenities` | `{env}.gold_dim_amenities` | One row per unique `(AMENITY_NAME, AMENITY_VALUE)` globally | `AMENITIES_SK` |
 | `dim_images` | `{env}.gold_dim_images` | One row per unique `(listing image set, IMAGE_URL)` | `['IMAGES_SK', 'IMAGE_URL']` |
 
 **Surrogate keys** are MD5 hashes computed by `generate_surrogate_key()`. Array-typed columns use
@@ -144,7 +144,7 @@ latest scrape, FALSE once it disappears) and standard audit columns (`AUD_INS_TS
 | --- | --- | --- | --- |
 | `ADDRESS_SK` | `STREET_ADDRESS`, `LOCALITY`, `REGION`, `COUNTRY` | — | `dim_address`, `fact_listings_scrapes` |
 | `IMAGES_SK` | `IMAGES` (full array) | `IMAGES` | `dim_images`, `fact_listings_scrapes` |
-| `AMENITIES_SK` | `AMENITY_FEATURES` (full array) | `AMENITY_FEATURES` | `dim_amenities`, `fact_listings_scrapes` |
+| `AMENITIES_SK` | `AF.NAME`, `AF.VALUE` (unnested struct fields) | — | `dim_amenities`; stored as `AMENITIES_SKS ARRAY<STRING>` in `fact_listings_scrapes` |
 
 #### Facts
 

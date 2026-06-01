@@ -78,15 +78,15 @@ models:
 
   - name: dim_amenities
     description: >
-      One row per (AMENITIES_SK, AMENITY_NAME, AMENITY_VALUE) combination.
-      AMENITIES_SK is a surrogate key derived from LISTING_ID, so all amenities
-      belonging to the same listing share the same AMENITIES_SK. Fact tables
-      store AMENITIES_SK to retrieve the full amenity set for a listing via a
-      one-to-many join. IN_LAST_SCRAPE_FLAG tracks whether the amenity appeared
-      in the most recent scrape.
+      Global amenity catalogue. One row per unique (AMENITY_NAME, AMENITY_VALUE)
+      combination across all listings. AMENITIES_SK is a stable surrogate key
+      derived from hash(AF.NAME, AF.VALUE). The fact table stores these SKs as
+      AMENITIES_SKS ARRAY<STRING> — one entry per amenity a listing has.
+      IN_LAST_SCRAPE_FLAG tracks whether the amenity type appeared in the most
+      recent scrape.
     columns:
       - name: AMENITIES_SK
-        description: "Surrogate key derived from LISTING_ID — shared by all amenities of the same listing."
+        description: "MD5 surrogate key over (AMENITY_NAME, AMENITY_VALUE) — globally unique per amenity type."
         tests:
           - not_null
       - name: AMENITY_NAME
@@ -162,8 +162,8 @@ models:
         description: "FK → dim_images.IMAGES_SK (hash of LISTING_ID + IMAGES array)."
         tests:
           - not_null
-      - name: AMENITIES_SK
-        description: "FK → dim_amenities.AMENITIES_SK (hash of LISTING_ID + AMENITY_FEATURES array)."
+      - name: AMENITIES_SKS
+        description: "ARRAY<STRING> of AMENITIES_SK values — one entry per amenity the listing has. Join to dim_amenities via IN UNNEST(AMENITIES_SKS)."
         tests:
           - not_null
       - name: SITE
