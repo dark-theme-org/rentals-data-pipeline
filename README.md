@@ -21,7 +21,7 @@ Land an append-only history of rental listings for every configured `(site, city
 
 ### *Solution*
 
-For each configured combination of `(site, city, property_type)`, the pipeline automatically collects all available rental listings across all pages and stores a per-page timestamped snapshot in cloud storage (data is partitioned by `environment, site, city, property_type, page`). Those snapshots are then loaded into BigQuery as a Bronze layer table — each listing is flattened into a structured row, deduplicated by source blob, and partitioned by scrape date. A dbt Silver layer then reads from Bronze, coalesces nulls, and applies cross-site deduplication via a window function, producing a single clean table (`silver_listings_deduped`) ready for downstream analytics.
+For each configured combination of `(site, city, property_type)`, the pipeline automatically collects all available rental listings across all pages and stores a per-page timestamped snapshot in cloud storage (data is partitioned by `environment, site, city, property_type, page`). Those snapshots are then loaded into BigQuery as a Bronze layer table — each listing is flattened into a structured row, deduplicated by source blob, and partitioned by scrape date. A dbt Silver layer then reads from Bronze, coalesces nulls, and applies cross-site deduplication via a window function, producing a single clean table (`silver_listings_deduped`). A dbt Gold layer then transforms Silver into an analytical star schema — four incremental dimensions (`dim_listings`, `dim_address`, `dim_amenities`, `dim_images`) tracking listing attributes, addresses, amenities and images, plus a central fact table (`fact_listings_scrapes`) capturing all mutable measures per `(LISTING_ID, SCRAPE_DATE)` — ready for downstream analytics and reporting.
 
 Collection runs automatically on **Google Cloud** through a managed workflow layer. Each pipeline step is containerised and executed on demand, with configuration centrally managed in `cloud/` — one YAML file per task defining how it runs, and one YAML file per workflow defining the execution order. Adding a new listing site or city requires only a small configuration change with no infrastructure work.
 
@@ -101,7 +101,15 @@ flowchart TD
         Dedup --> BQSilver[("BigQuery · env.silver_listings_deduped\nincremental merge · unique key\n(LISTING_ID, SCRAPE_DATE)")]
     end
 
-    SilverJob --> Done(["done"])
+    SilverJob -->|"step 4"| CR4["📦 Cloud Run Job\nmodel-gold-layer"]
+
+    subgraph GoldJob["model_gold_layer — dbt incremental merge into Gold"]
+        CR4 --> dbtRunGold["dbt run --select gold\n--target dev|test|prod"]
+        dbtRunGold --> GoldModels["build dimensions\n(dim_listings · dim_address\ndim_amenities · dim_images)\n+ fact_listings_scrapes"]
+        GoldModels --> BQGold[("BigQuery · env.gold_*\nincremental merge · FILE_DATE-scoped\nunique key per model")]
+    end
+
+    GoldJob --> Done(["done"])
 ```
 
 ### *Documentations*
