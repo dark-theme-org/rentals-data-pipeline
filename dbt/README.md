@@ -20,9 +20,9 @@ dbt/
 │       ├── _schema.yml          # Column docs and dbt tests for Gold models
 │       ├── dimensions/
 │       │   ├── dim_listings.sql       # SCD-1 listing catalogue with soft-delete
-│       │   ├── dim_address.sql        # Per-listing address (STREET_ADDRESS + LISTING_ID)
-│       │   ├── dim_amenities.sql      # Unnested amenity features per listing
-│       │   └── dim_images.sql         # Unnested image URLs per listing
+│       │   ├── dim_address.sql        # One row per unique address combination
+│       │   ├── dim_amenities.sql      # One row per unique (AMENITY_NAME, AMENITY_VALUE)
+│       │   └── dim_images.sql         # One row per unique (listing image set, IMAGE_URL)
 │       └── facts/
 │           └── fact_listings_scrapes.sql  # One row per (LISTING_ID, SCRAPE_DATE)
 └── macros/
@@ -133,17 +133,18 @@ latest scrape, FALSE once it disappears) and standard audit columns (`AUD_INS_TS
 | Model | Table name | Grain | unique_key |
 | --- | --- | --- | --- |
 | `dim_listings` | `{env}.gold_dim_listings` | One row per `LISTING_ID` | `LISTING_ID` |
-| `dim_address` | `{env}.gold_dim_address` | One row per `(LISTING_ID, STREET_ADDRESS)` | `ADDRESS_SK` |
-| `dim_amenities` | `{env}.gold_dim_amenities` | One row per `(listing, amenity)` | `['AMENITIES_SK', 'AMENITY_NAME', 'AMENITY_VALUE']` |
-| `dim_images` | `{env}.gold_dim_images` | One row per `(listing, image URL)` | `['IMAGES_SK', 'IMAGE_URL']` |
+| `dim_address` | `{env}.gold_dim_address` | One row per unique `(STREET_ADDRESS, LOCALITY, REGION, COUNTRY)` | `ADDRESS_SK` |
+| `dim_amenities` | `{env}.gold_dim_amenities` | One row per unique `(listing image set, AMENITY_NAME, AMENITY_VALUE)` | `['AMENITIES_SK', 'AMENITY_NAME', 'AMENITY_VALUE']` |
+| `dim_images` | `{env}.gold_dim_images` | One row per unique `(listing image set, IMAGE_URL)` | `['IMAGES_SK', 'IMAGE_URL']` |
 
-**Surrogate keys** are MD5 hashes computed by `generate_surrogate_key()`:
+**Surrogate keys** are MD5 hashes computed by `generate_surrogate_key()`. Array-typed columns use
+`TO_JSON_STRING()` internally via the `array_fields` parameter.
 
-| Key | Input columns | Used in |
-| --- | --- | --- |
-| `ADDRESS_SK` | `LISTING_ID`, `STREET_ADDRESS` | `dim_address`, `fact_listings_scrapes` |
-| `IMAGES_SK` | `LISTING_ID`, `IMAGES` (full array) | `dim_images`, `fact_listings_scrapes` |
-| `AMENITIES_SK` | `LISTING_ID`, `AMENITY_FEATURES` (full array) | `dim_amenities`, `fact_listings_scrapes` |
+| Key | Input columns | Array fields | Used in |
+| --- | --- | --- | --- |
+| `ADDRESS_SK` | `STREET_ADDRESS`, `LOCALITY`, `REGION`, `COUNTRY` | — | `dim_address`, `fact_listings_scrapes` |
+| `IMAGES_SK` | `IMAGES` (full array) | `IMAGES` | `dim_images`, `fact_listings_scrapes` |
+| `AMENITIES_SK` | `AMENITY_FEATURES` (full array) | `AMENITY_FEATURES` | `dim_amenities`, `fact_listings_scrapes` |
 
 #### Facts
 
@@ -169,7 +170,7 @@ WHERE SCRAPE_DATE = DATE('{{ file_date }}')  -- or CURRENT_DATE when not set
 | --- | --- |
 | `generate_schema_name` | Always returns the bare target schema (`dev` / `test` / `prod`); suppresses the `dev_silver` / `dev_gold` suffix dbt would otherwise append. |
 | `generate_alias_name` | Prepends the `+schema` value from `dbt_project.yml` to the model name as a table prefix — e.g. `silver_listings_deduped`, `gold_dim_listings`. |
-| `generate_surrogate_key(field_list)` | Returns an MD5 hex digest over the pipe-separated, null-coalesced string values of the given columns. Used by all Gold dimension and fact models. |
+| `generate_surrogate_key(field_list, array_fields=[])` | Returns an MD5 hex digest over the pipe-separated, null-coalesced string values of the given columns. Columns listed in `array_fields` are serialised with `TO_JSON_STRING()` instead of `CAST(... AS STRING)` to handle `ARRAY` and `STRUCT` types. Used by all Gold dimension and fact models. |
 
 The result is a flat dataset layout:
 

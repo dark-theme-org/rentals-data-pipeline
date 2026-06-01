@@ -10,7 +10,7 @@
     )
 }}
 
-{%- set address_sk_cols = ['LISTING_ID', 'STREET_ADDRESS'] -%}
+{%- set address_sk_cols = ['STREET_ADDRESS', 'LOCALITY', 'REGION', 'COUNTRY'] -%}
 
 {% if not is_incremental() %}
 
@@ -25,7 +25,7 @@ SELECT
     CURRENT_TIMESTAMP() AS AUD_UPD_TS
 FROM {{ ref('listings_deduped') }}
 QUALIFY ROW_NUMBER() OVER (
-    PARTITION BY LISTING_ID
+    PARTITION BY ADDRESS_SK
     ORDER BY SCRAPE_DATE DESC
 ) = 1
 

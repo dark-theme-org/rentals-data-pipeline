@@ -2,7 +2,7 @@ version: 2
 
 models:
   # ──────────────────────────── DIMENSIONS ────────────────────────────
-  - name: dim_listing
+  - name: dim_listings
     description: >
       Listing catalogue with soft-delete tracking. One row per LISTING_ID.
       Attributes (name, URL, description) are updated in-place on each run.
@@ -76,7 +76,7 @@ models:
         tests:
           - not_null
 
-  - name: dim_amenity
+  - name: dim_amenities
     description: >
       One row per (AMENITIES_SK, AMENITY_NAME, AMENITY_VALUE) combination.
       AMENITIES_SK is a surrogate key derived from LISTING_ID, so all amenities
@@ -132,6 +132,70 @@ models:
           - not_null
       - name: AUD_INS_TS
         description: "Timestamp when the row was first inserted."
+        tests:
+          - not_null
+      - name: AUD_UPD_TS
+        description: "Timestamp of the last update to this row."
+        tests:
+          - not_null
+
+  # ──────────────────────────────── FACTS ─────────────────────────────
+  - name: fact_listings_scrapes
+    description: >
+      Central fact table. One row per (LISTING_ID, SCRAPE_DATE) — the daily
+      snapshot of all mutable measures for a listing. Loaded incrementally,
+      filtered to a single scrape date per run via FILE_DATE.
+    columns:
+      - name: LISTING_ID
+        description: "FK → dim_listings.LISTING_ID."
+        tests:
+          - not_null
+      - name: SCRAPE_DATE
+        description: "Date of the scraper run — partition key and part of the unique key."
+        tests:
+          - not_null
+      - name: ADDRESS_SK
+        description: "FK → dim_address.ADDRESS_SK (hash of LISTING_ID + STREET_ADDRESS)."
+        tests:
+          - not_null
+      - name: IMAGES_SK
+        description: "FK → dim_images.IMAGES_SK (hash of LISTING_ID + IMAGES array)."
+        tests:
+          - not_null
+      - name: AMENITIES_SK
+        description: "FK → dim_amenities.AMENITIES_SK (hash of LISTING_ID + AMENITY_FEATURES array)."
+        tests:
+          - not_null
+      - name: SITE
+        description: "Scraping site slug (e.g. vivareal, zapimoveis) — degenerate dimension."
+        tests:
+          - not_null
+      - name: CITY
+        description: "City slug used in the scraper run — degenerate dimension."
+        tests:
+          - not_null
+      - name: PROPERTY_TYPE
+        description: "Property type filter (apartment, house) — degenerate dimension."
+        tests:
+          - not_null
+      - name: PRICE_BRL
+        description: "Monthly rental price in BRL at time of scrape (NULL when not in BRL)."
+      - name: CONDO_FEE_BRL
+        description: "Condominium fee in BRL at time of scrape (NULL when not available)."
+      - name: FLOOR_SIZE_M2
+        description: "Floor area in square metres (NULL when unit is not M2 or unavailable)."
+      - name: ROOMS
+        description: "Total number of rooms. May be NULL."
+      - name: BEDROOMS
+        description: "Number of bedrooms. May be NULL."
+      - name: BATHROOMS
+        description: "Number of bathrooms. May be NULL."
+      - name: PETS_ALLOWED
+        description: "Whether the listing explicitly allows pets."
+        tests:
+          - not_null
+      - name: AUD_INS_TS
+        description: "Timestamp when the row was first inserted into this table."
         tests:
           - not_null
       - name: AUD_UPD_TS

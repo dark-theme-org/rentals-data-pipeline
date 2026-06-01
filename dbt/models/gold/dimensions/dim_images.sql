@@ -10,25 +10,30 @@
     )
 }}
 
-{%- set images_sk_cols = ['LISTING_ID', 'IMAGES'] -%}
+{%- set images_sk_cols = ['IMAGES'] -%}
+{%- set images_array_fields = ['IMAGES'] -%}
 {% set default_text = "'unknown'" %}
 
 {% if not is_incremental() %}
 
-SELECT DISTINCT
-    {{ generate_surrogate_key(images_sk_cols) }} AS IMAGES_SK,
+SELECT
+    {{ generate_surrogate_key(images_sk_cols, images_array_fields) }} AS IMAGES_SK,
     COALESCE(IMAGE_URL, {{ default_text }}) AS IMAGE_URL,
     TRUE AS IN_LAST_SCRAPE_FLAG,
     CURRENT_TIMESTAMP() AS AUD_INS_TS,
     CURRENT_TIMESTAMP() AS AUD_UPD_TS
 FROM {{ ref('listings_deduped') }},
     UNNEST(IMAGES) AS IMAGE_URL
+QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY IMAGES_SK, IMAGE_URL
+    ORDER BY SCRAPE_DATE DESC
+) = 1
 
 {% else %}
 
 WITH SOURCE AS (
     SELECT DISTINCT
-        {{ generate_surrogate_key(images_sk_cols) }} AS IMAGES_SK,
+        {{ generate_surrogate_key(images_sk_cols, images_array_fields) }} AS IMAGES_SK,
         COALESCE(IMAGE_URL, {{ default_text }}) AS IMAGE_URL
     FROM {{ ref('listings_deduped') }},
         UNNEST(IMAGES) AS IMAGE_URL

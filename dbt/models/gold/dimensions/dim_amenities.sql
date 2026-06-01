@@ -6,17 +6,18 @@
             'data_type': 'timestamp',
             'granularity': 'day'
         },
-        cluster_by=['IN_LAST_SCRAPE_FLAG']
+        cluster_by=['AMENITIES_SK', 'IN_LAST_SCRAPE_FLAG']
     )
 }}
 
-{%- set amenity_sk_cols = ['LISTING_ID', 'AMENITY_FEATURES'] -%}
+{%- set amenity_sk_cols = ['AMENITY_FEATURES'] -%}
+{%- set amenity_array_fields = ['AMENITY_FEATURES'] -%}
 {% set default_text = "'unknown'" %}
 
 {% if not is_incremental() %}
 
-SELECT DISTINCT
-    {{ generate_surrogate_key(amenity_sk_cols) }} AS AMENITIES_SK,
+SELECT
+    {{ generate_surrogate_key(amenity_sk_cols, amenity_array_fields) }} AS AMENITIES_SK,
     COALESCE(AF.NAME, {{ default_text }}) AS AMENITY_NAME,
     COALESCE(AF.VALUE, {{ default_text }}) AS AMENITY_VALUE,
     TRUE AS IN_LAST_SCRAPE_FLAG,
@@ -24,12 +25,16 @@ SELECT DISTINCT
     CURRENT_TIMESTAMP() AS AUD_UPD_TS
 FROM {{ ref('listings_deduped') }},
     UNNEST(AMENITY_FEATURES) AS AF
+QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY AMENITIES_SK, AMENITY_NAME, AMENITY_VALUE
+    ORDER BY SCRAPE_DATE DESC
+) = 1
 
 {% else %}
 
 WITH SOURCE AS (
     SELECT DISTINCT
-        {{ generate_surrogate_key(amenity_sk_cols) }} AS AMENITIES_SK,
+        {{ generate_surrogate_key(amenity_sk_cols, amenity_array_fields) }} AS AMENITIES_SK,
         COALESCE(AF.NAME, {{ default_text }}) AS AMENITY_NAME,
         COALESCE(AF.VALUE, {{ default_text }}) AS AMENITY_VALUE
     FROM {{ ref('listings_deduped') }},

@@ -9,16 +9,16 @@
     )
 }}
 
-{% set city = env_var('CITY', none) %}
-{% set sites = env_var('SITES', none) %}
+{% set city = env_var('CITY', '') %}
+{% set sites = env_var('SITES', '') %}
 {% if sites %}
-{% set sites = (sites.split(',') | map('trim') | join("', '")) if sites else none %}
+{% set sites = (sites.split(',') | map('trim') | join("', '")) if sites else '' %}
 {% endif %}
-{% set property_types = env_var('PROPERTY_TYPES', none) %}
+{% set property_types = env_var('PROPERTY_TYPES', '') %}
 {% if property_types %}
 {% set property_types = property_types.split(',') | map('trim') | join("', '") %}
 {% endif %}
-{% set file_date = env_var('FILE_DATE', none) %}
+{% set file_date = env_var('FILE_DATE', '') %}
 {% set default_text = "'unknown'" %}
 {% set default_flag = true %}
 {% set default_int = 0 %}

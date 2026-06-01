@@ -10,9 +10,11 @@
 }}
 
 {% set file_date = env_var('FILE_DATE', none) %}
-{%- set address_sk_cols = ['LISTING_ID', 'STREET_ADDRESS'] -%}
-{%- set images_sk_cols = ['LISTING_ID', 'IMAGES'] -%}
-{%- set amenity_sk_cols = ['LISTING_ID', 'AMENITY_FEATURES'] -%}
+{%- set address_sk_cols = ['STREET_ADDRESS', 'LOCALITY', 'REGION', 'COUNTRY'] -%}
+{%- set images_sk_cols = ['IMAGES'] -%}
+{%- set images_array_fields = ['IMAGES'] -%}
+{%- set amenity_sk_cols = ['AMENITY_FEATURES'] -%}
+{%- set amenity_array_fields = ['AMENITY_FEATURES'] -%}
 
 WITH SOURCE AS (
     SELECT *
@@ -25,8 +27,8 @@ SELECT
     BRONZE_ID,
     LISTING_ID,
     {{ generate_surrogate_key(address_sk_cols) }} AS ADDRESS_SK,
-    {{ generate_surrogate_key(images_sk_cols) }} AS IMAGES_SK,
-    {{ generate_surrogate_key(amenity_sk_cols) }} AS AMENITIES_SK,
+    {{ generate_surrogate_key(images_sk_cols, images_array_fields) }} AS IMAGES_SK,
+    {{ generate_surrogate_key(amenity_sk_cols, amenity_array_fields) }} AS AMENITIES_SK,
     SITE,
     CITY,
     PROPERTY_TYPE,
