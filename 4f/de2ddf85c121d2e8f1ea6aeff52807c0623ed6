@@ -1,0 +1,23 @@
+dbt/README.md
+  s_bdc20e8ee43a89::t_ec36416cac915f 147
+  s_bdc20e8ee43a89::t_02b87c7d5bac68 137
+dbt/models/gold/_schema.yml
+  s_bdc20e8ee43a89::t_35f1028212b427 81-86,89
+  s_bdc20e8ee43a89::t_a6ed80e600f79d 165-166
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "4fde2ddf85c121d2e8f1ea6aeff52807c0623ed6",
+  "prompts": {},
+  "sessions": {
+    "s_bdc20e8ee43a89": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f8dd55f6-df20-4213-989e-73e3e109d3d5",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
