@@ -21,9 +21,6 @@ models:
       +on_schema_change: sync_all_columns
     gold:
       +schema: gold
-      dimensions:
-        +materialized: table
-      facts:
-        +materialized: incremental
-        +incremental_strategy: merge
-        +on_schema_change: sync_all_columns
+      +materialized: incremental
+      +incremental_strategy: merge
+      +on_schema_change: sync_all_columns

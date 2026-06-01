@@ -1,0 +1,140 @@
+version: 2
+
+models:
+  # ──────────────────────────── DIMENSIONS ────────────────────────────
+  - name: dim_listing
+    description: >
+      Listing catalogue with soft-delete tracking. One row per LISTING_ID.
+      Attributes (name, URL, description) are updated in-place on each run.
+      IN_LAST_SCRAPE_FLAG is TRUE while the listing appears in the latest
+      scrape and FALSE once it disappears. Mutable measures (price, size)
+      belong in fact_listing_snapshots.
+    columns:
+      - name: LISTING_ID
+        description: "Source site internal listing identifier — natural key."
+        tests:
+          - not_null
+          - unique
+      - name: LISTING_NAME
+        description: "Display name of the listing (latest scraped value)."
+        tests:
+          - not_null
+      - name: URL
+        description: "URL of the listing on the source site."
+        tests:
+          - not_null
+      - name: DESCRIPTION
+        description: "Free-text listing description (latest scraped value)."
+      - name: IN_LAST_SCRAPE_FLAG
+        description: "TRUE if the listing appeared in the latest scrape; FALSE once it disappears."
+        tests:
+          - not_null
+      - name: AUD_INS_TS
+        description: "Timestamp when the row was first inserted."
+        tests:
+          - not_null
+      - name: AUD_UPD_TS
+        description: "Timestamp of the last update to this row."
+        tests:
+          - not_null
+
+  - name: dim_address
+    description: >
+      One row per unique (STREET_ADDRESS, LOCALITY, REGION, COUNTRY) combination,
+      identified by a MD5 surrogate key (ADDRESS_SK). IN_LAST_SCRAPE_FLAG tracks
+      whether the address appeared in the most recent scrape run.
+    columns:
+      - name: ADDRESS_SK
+        description: "MD5 surrogate key over (STREET_ADDRESS, LOCALITY, REGION, COUNTRY)."
+        tests:
+          - not_null
+          - unique
+      - name: STREET_ADDRESS
+        description: "Street-level address (may be 'unknown' when not scraped)."
+      - name: LOCALITY
+        description: "Neighbourhood or district name."
+        tests:
+          - not_null
+      - name: REGION
+        description: "State or province."
+        tests:
+          - not_null
+      - name: COUNTRY
+        description: "Country code."
+        tests:
+          - not_null
+      - name: IN_LAST_SCRAPE_FLAG
+        description: "TRUE if this address appeared in the latest scrape; FALSE once it disappears."
+        tests:
+          - not_null
+      - name: AUD_INS_TS
+        description: "Timestamp when the row was first inserted."
+        tests:
+          - not_null
+      - name: AUD_UPD_TS
+        description: "Timestamp of the last update to this row."
+        tests:
+          - not_null
+
+  - name: dim_amenity
+    description: >
+      One row per (AMENITIES_SK, AMENITY_NAME, AMENITY_VALUE) combination.
+      AMENITIES_SK is a surrogate key derived from LISTING_ID, so all amenities
+      belonging to the same listing share the same AMENITIES_SK. Fact tables
+      store AMENITIES_SK to retrieve the full amenity set for a listing via a
+      one-to-many join. IN_LAST_SCRAPE_FLAG tracks whether the amenity appeared
+      in the most recent scrape.
+    columns:
+      - name: AMENITIES_SK
+        description: "Surrogate key derived from LISTING_ID — shared by all amenities of the same listing."
+        tests:
+          - not_null
+      - name: AMENITY_NAME
+        description: "Amenity category from the struct NAME field (e.g. Leisure, Safety)."
+        tests:
+          - not_null
+      - name: AMENITY_VALUE
+        description: "Specific amenity from the struct VALUE field (e.g. Pool, Doorman)."
+        tests:
+          - not_null
+      - name: IN_LAST_SCRAPE_FLAG
+        description: "TRUE if this amenity appeared in the latest scrape; FALSE once it disappears."
+        tests:
+          - not_null
+      - name: AUD_INS_TS
+        description: "Timestamp when the row was first inserted."
+        tests:
+          - not_null
+      - name: AUD_UPD_TS
+        description: "Timestamp of the last update to this row."
+        tests:
+          - not_null
+
+  - name: dim_images
+    description: >
+      One row per (IMAGES_SK, IMAGE_URL) pair. IMAGES_SK is a surrogate key
+      derived from LISTING_ID, so all images belonging to the same listing
+      share the same IMAGES_SK. Fact tables store IMAGES_SK to retrieve the
+      full image set for a listing via a one-to-many join.
+      IN_LAST_SCRAPE_FLAG tracks whether a URL appeared in the most recent scrape.
+    columns:
+      - name: IMAGES_SK
+        description: "Surrogate key derived from LISTING_ID — shared by all images of the same listing."
+        tests:
+          - not_null
+      - name: IMAGE_URL
+        description: "Image URL — natural key within a listing's image set."
+        tests:
+          - not_null
+      - name: IN_LAST_SCRAPE_FLAG
+        description: "TRUE if this URL appeared in the latest scrape; FALSE once it disappears."
+        tests:
+          - not_null
+      - name: AUD_INS_TS
+        description: "Timestamp when the row was first inserted."
+        tests:
+          - not_null
+      - name: AUD_UPD_TS
+        description: "Timestamp of the last update to this row."
+        tests:
+          - not_null
