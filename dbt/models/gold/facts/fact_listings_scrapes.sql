@@ -13,34 +13,46 @@
 {%- set address_sk_cols = ['STREET_ADDRESS', 'LOCALITY', 'REGION', 'COUNTRY'] -%}
 {%- set images_sk_cols = ['IMAGES'] -%}
 {%- set images_array_fields = ['IMAGES'] -%}
-{%- set amenity_sk_cols = ['AMENITY_FEATURES'] -%}
-{%- set amenity_array_fields = ['AMENITY_FEATURES'] -%}
+{%- set amenity_sk_cols = ['AF.NAME', 'AF.VALUE'] -%}
 
 WITH SOURCE AS (
-    SELECT *
+    SELECT
+        *,
+        {{ generate_surrogate_key(address_sk_cols) }} AS ADDRESS_SK,
+        {{ generate_surrogate_key(images_sk_cols, images_array_fields) }} AS IMAGES_SK
     FROM {{ ref('listings_deduped') }}
     WHERE
         SCRAPE_DATE = {% if file_date %}DATE('{{ file_date }}'){% else %}CURRENT_DATE{% endif %}  -- noqa: LT05
+),
+
+AMENITIES AS (
+    SELECT
+        SRC.LISTING_ID,
+        ARRAY_AGG(DISTINCT {{ generate_surrogate_key(amenity_sk_cols) }}) AS AMENITIES_SKS
+    FROM SOURCE AS SRC,
+        UNNEST(AMENITY_FEATURES) AS AF
+    GROUP BY SRC.LISTING_ID
 )
 
 SELECT
-    BRONZE_ID,
-    LISTING_ID,
-    {{ generate_surrogate_key(address_sk_cols) }} AS ADDRESS_SK,
-    {{ generate_surrogate_key(images_sk_cols, images_array_fields) }} AS IMAGES_SK,
-    {{ generate_surrogate_key(amenity_sk_cols, amenity_array_fields) }} AS AMENITIES_SK,
-    SITE,
-    CITY,
-    PROPERTY_TYPE,
-    PAGE,
-    SCRAPE_DATE,
-    PETS_ALLOWED,
-    ROOMS,
-    BEDROOMS,
-    BATHROOMS,
-    IF(FLOOR_SIZE_UNIT_CODE = 'M2', FLOOR_SIZE, NULL) AS FLOOR_SIZE_M2,
-    IF(PRICE_CURRENCY = 'BRL', PRICE, NULL) AS PRICE_BRL,
-    IF(OFFERS_NAME = 'Condominium Fee', OFFERS_PRICE, NULL) AS CONDO_FEE_BRL,
+    SRC.BRONZE_ID,
+    SRC.LISTING_ID,
+    SRC.ADDRESS_SK,
+    SRC.IMAGES_SK,
+    AMN.AMENITIES_SKS,
+    SRC.SITE,
+    SRC.CITY,
+    SRC.PROPERTY_TYPE,
+    SRC.PAGE,
+    SRC.SCRAPE_DATE,
+    SRC.PETS_ALLOWED,
+    SRC.ROOMS,
+    SRC.BEDROOMS,
+    SRC.BATHROOMS,
+    IF(SRC.FLOOR_SIZE_UNIT_CODE = 'M2', SRC.FLOOR_SIZE, NULL) AS FLOOR_SIZE_M2,
+    IF(SRC.PRICE_CURRENCY = 'BRL', SRC.PRICE, NULL) AS PRICE_BRL,
+    IF(SRC.OFFERS_NAME = 'Condominium Fee', SRC.OFFERS_PRICE, NULL) AS CONDO_FEE_BRL,
     CURRENT_TIMESTAMP() AS AUD_INS_TS,
     CURRENT_TIMESTAMP() AS AUD_UPD_TS
-FROM SOURCE
+FROM SOURCE AS SRC
+LEFT JOIN AMENITIES AS AMN ON SRC.LISTING_ID = AMN.LISTING_ID
