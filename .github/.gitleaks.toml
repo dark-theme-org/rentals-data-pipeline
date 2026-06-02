@@ -1,0 +1,7 @@
+title = "rentals-data-pipeline"
+
+[allowlist]
+description = "Exclude skill documentation that references secret patterns as examples"
+paths = [
+    '''.claude/''',
+]
