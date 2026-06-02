@@ -119,7 +119,7 @@ declares its own `unique_key` and optionally `partition_by` / `cluster_by`.
 
 | Model | Table name | Description |
 | --- | --- | --- |
-| `listings_deduped` | `{env}.silver_listings_deduped` | Flattened, NULL-coalesced, cross-site deduplicated listings. One row per `(LISTING_ID, SCRAPE_DATE)`. Rows without a URL are excluded. |
+| `listings_deduped` | `{env}.silver_listings_deduped` | Flattened, NULL-coalesced, cross-site deduplicated listings. One row per `(LISTING_ID, SCRAPE_DATE)`. Rows missing URL, FLOOR_SIZE, or PRICE are excluded. |
 
 ### Gold — `models/gold/`
 
