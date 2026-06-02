@@ -9,11 +9,14 @@ modifying pipeline tasks and workflows.
 
 ```txt
 cloud/
-├── settings.yml        # Project-level GCP config (project_id, location)
-├── tasks/              # One YAML file per Cloud Run Job
-│   └── <task_name>.yml
-└── workflows/          # One YAML file per Cloud Workflow
-    └── <workflow_name>.yml
+├── settings.yml                      # Project-level GCP config
+├── tasks/                            # One YAML file per Cloud Run Job
+│   ├── scraper_data_to_bucket.yml
+│   ├── gcs_to_bigquery_bronze.yml
+│   ├── process_silver_layer.yml
+│   └── model_gold_layer.yml
+└── workflows/                        # One YAML file per Cloud Workflow
+    └── etl_rentals_data.yml
 ```
 
 ---
@@ -121,6 +124,22 @@ args:
 
 **Adding a new workflow:** drop a new `.yml` file in this folder following the
 Cloud Workflows syntax. The deploy script picks it up automatically.
+
+---
+
+## Pipeline overview — `etl_rentals_data`
+
+The workflow sequences four Cloud Run Jobs in order:
+
+| Step | Job | Key inputs |
+| --- | --- | --- |
+| 1 | `scraper-data-to-bucket` | ENVIRONMENT, CITY, SITES, PROPERTY_TYPES, UPLOAD_TO_GCS, START_PAGE, MAX_PAGE |
+| 2 | `gcs-to-bigquery-bronze` | ENVIRONMENT, CITY, SITES, PROPERTY_TYPES, FILE_DATE, UPLOAD_TO_BQ, START_PAGE, MAX_PAGE |
+| 3 | `process-silver-layer` | ENVIRONMENT, CITY, SITES, PROPERTY_TYPES, FILE_DATE |
+| 4 | `model-gold-layer` | ENVIRONMENT, FILE_DATE |
+
+`FILE_DATE` (format `YYYY-MM-DD`) controls which scrape date is loaded by steps 2–4.
+Leave it empty to default to `CURRENT_DATE`.
 
 ---
 

@@ -1,0 +1,216 @@
+version: 2
+
+models:
+  # ──────────────────────────── DIMENSIONS ────────────────────────────
+  - name: dim_listings
+    description: >
+      Listing catalogue with soft-delete tracking. One row per LISTING_ID.
+      Attributes (name, URL, description) are updated in-place on each run.
+      IN_LAST_SCRAPE_FLAG is TRUE while the listing appears in the latest
+      scrape and FALSE once it disappears. Mutable measures (price, size)
+      belong in fact_listing_snapshots.
+    columns:
+      - name: LISTING_ID
+        description: "Source site internal listing identifier — natural key."
+        tests:
+          - not_null
+          - unique
+      - name: LISTING_NAME
+        description: "Display name of the listing (latest scraped value)."
+        tests:
+          - not_null
+      - name: URL
+        description: "URL of the listing on the source site."
+        tests:
+          - not_null
+      - name: DESCRIPTION
+        description: "Free-text listing description (latest scraped value)."
+      - name: IN_LAST_SCRAPE_FLAG
+        description: "TRUE if the listing appeared in the latest scrape; FALSE once it disappears."
+        tests:
+          - not_null
+      - name: AUD_INS_TS
+        description: "Timestamp when the row was first inserted."
+        tests:
+          - not_null
+      - name: AUD_UPD_TS
+        description: "Timestamp of the last update to this row."
+        tests:
+          - not_null
+
+  - name: dim_address
+    description: >
+      One row per unique (STREET_ADDRESS, LOCALITY, REGION, COUNTRY) combination,
+      identified by a MD5 surrogate key (ADDRESS_SK). IN_LAST_SCRAPE_FLAG tracks
+      whether the address appeared in the most recent scrape run.
+    columns:
+      - name: ADDRESS_SK
+        description: "MD5 surrogate key over (STREET_ADDRESS, LOCALITY, REGION, COUNTRY)."
+        tests:
+          - not_null
+          - unique
+      - name: STREET_ADDRESS
+        description: "Street-level address (may be 'unknown' when not scraped)."
+      - name: LOCALITY
+        description: "Neighbourhood or district name."
+        tests:
+          - not_null
+      - name: REGION
+        description: "State or province."
+        tests:
+          - not_null
+      - name: COUNTRY
+        description: "Country code."
+        tests:
+          - not_null
+      - name: IN_LAST_SCRAPE_FLAG
+        description: "TRUE if this address appeared in the latest scrape; FALSE once it disappears."
+        tests:
+          - not_null
+      - name: AUD_INS_TS
+        description: "Timestamp when the row was first inserted."
+        tests:
+          - not_null
+      - name: AUD_UPD_TS
+        description: "Timestamp of the last update to this row."
+        tests:
+          - not_null
+
+  - name: dim_amenities
+    description: >
+      Global amenity catalogue. One row per unique (AMENITY_NAME, AMENITY_VALUE)
+      combination across all listings. AMENITIES_SK is a stable surrogate key
+      derived from hash(AF.NAME, AF.VALUE). The fact table stores these SKs as
+      AMENITIES_SKS ARRAY<STRING> — one entry per amenity a listing has.
+      IN_LAST_SCRAPE_FLAG tracks whether the amenity type appeared in the most
+      recent scrape.
+    columns:
+      - name: AMENITIES_SK
+        description: "MD5 surrogate key over (AMENITY_NAME, AMENITY_VALUE) — globally unique per amenity type."
+        tests:
+          - not_null
+      - name: AMENITY_NAME
+        description: "Amenity category from the struct NAME field (e.g. Leisure, Safety)."
+        tests:
+          - not_null
+      - name: AMENITY_VALUE
+        description: "Specific amenity from the struct VALUE field (e.g. Pool, Doorman)."
+        tests:
+          - not_null
+      - name: IN_LAST_SCRAPE_FLAG
+        description: "TRUE if this amenity appeared in the latest scrape; FALSE once it disappears."
+        tests:
+          - not_null
+      - name: AUD_INS_TS
+        description: "Timestamp when the row was first inserted."
+        tests:
+          - not_null
+      - name: AUD_UPD_TS
+        description: "Timestamp of the last update to this row."
+        tests:
+          - not_null
+
+  - name: dim_images
+    description: >
+      One row per (IMAGES_SK, IMAGE_URL) pair. IMAGES_SK is a surrogate key
+      derived from LISTING_ID, so all images belonging to the same listing
+      share the same IMAGES_SK. Fact tables store IMAGES_SK to retrieve the
+      full image set for a listing via a one-to-many join.
+      IN_LAST_SCRAPE_FLAG tracks whether a URL appeared in the most recent scrape.
+    columns:
+      - name: IMAGES_SK
+        description: "Surrogate key derived from LISTING_ID — shared by all images of the same listing."
+        tests:
+          - not_null
+      - name: IMAGE_URL
+        description: "Image URL — natural key within a listing's image set."
+        tests:
+          - not_null
+      - name: IN_LAST_SCRAPE_FLAG
+        description: "TRUE if this URL appeared in the latest scrape; FALSE once it disappears."
+        tests:
+          - not_null
+      - name: AUD_INS_TS
+        description: "Timestamp when the row was first inserted."
+        tests:
+          - not_null
+      - name: AUD_UPD_TS
+        description: "Timestamp of the last update to this row."
+        tests:
+          - not_null
+
+  # ──────────────────────────────── FACTS ─────────────────────────────
+  - name: fact_listings_scrapes
+    description: >
+      Central fact table. One row per (LISTING_ID, SCRAPE_DATE) — the daily
+      snapshot of all mutable measures for a listing. Loaded incrementally,
+      filtered to a single scrape date per run via FILE_DATE.
+    columns:
+      - name: LISTING_ID
+        description: "FK → dim_listings.LISTING_ID."
+        tests:
+          - not_null
+      - name: SCRAPE_DATE
+        description: "Date of the scraper run — partition key and part of the unique key."
+        tests:
+          - not_null
+      - name: ADDRESS_SK
+        description: "FK → dim_address.ADDRESS_SK (hash of LISTING_ID + STREET_ADDRESS)."
+        tests:
+          - not_null
+      - name: IMAGES_SK
+        description: "FK → dim_images.IMAGES_SK (hash of LISTING_ID + IMAGES array)."
+        tests:
+          - not_null
+      - name: AMENITIES_SKS
+        description: "ARRAY<STRING> of AMENITIES_SK values — one entry per amenity the listing has. Join to dim_amenities via IN UNNEST(AMENITIES_SKS)."
+        tests:
+          - not_null
+      - name: SITE
+        description: "Scraping site slug (e.g. vivareal, zapimoveis) — degenerate dimension."
+        tests:
+          - not_null
+      - name: CITY
+        description: "City slug used in the scraper run — degenerate dimension."
+        tests:
+          - not_null
+      - name: PROPERTY_TYPE
+        description: "Property type filter (apartment, house) — degenerate dimension."
+        tests:
+          - not_null
+      - name: PRICE_BRL
+        description: "Monthly rental price in BRL — only BRL rows are loaded into the fact."
+        tests:
+          - not_null
+      - name: CONDO_FEE_BRL
+        description: "Condominium fee in BRL. Defaults to 0 when the listing has no condominium fee."
+        tests:
+          - not_null
+      - name: FLOOR_SIZE_M2
+        description: "Floor area in square metres — only M2 rows are loaded into the fact."
+        tests:
+          - not_null
+      - name: ROOMS
+        description: "Total number of rooms. Defaults to 0 when absent."
+        tests:
+          - not_null
+      - name: BEDROOMS
+        description: "Number of bedrooms. Defaults to 0 when absent."
+        tests:
+          - not_null
+      - name: BATHROOMS
+        description: "Number of bathrooms. Defaults to 0 when absent."
+        tests:
+          - not_null
+      - name: PETS_ALLOWED
+        description: "Whether the listing explicitly allows pets."
+        tests:
+          - not_null
+      - name: AUD_INS_TS
+        description: "Timestamp when the row was first inserted into this table."
+        tests:
+          - not_null
+      - name: AUD_UPD_TS
+        description: "Timestamp of the last update to this row."
+        tests:
+          - not_null

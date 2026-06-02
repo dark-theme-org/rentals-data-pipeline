@@ -6,7 +6,7 @@ models:
       Flattened, cleaned, and cross-site deduplicated rental listings.
       Reads directly from Bronze, handles struct flattening, NULL coalescing,
       and site deduplication in a single incremental model.
-      One row per (LISTING_ID, SCRAPE_DATE). Rows without a URL are excluded.
+      One row per (LISTING_ID, SCRAPE_DATE). Rows missing URL, FLOOR_SIZE, or PRICE are excluded.
     columns:
       # ── Identity ─────────────────────────────────────────────────────────
       - name: BRONZE_ID
@@ -42,13 +42,19 @@ models:
           - not_null
 
       - name: ROOMS
-        description: "Total number of rooms reported by the listing. May be NULL."
+        description: "Total number of rooms reported by the listing. Defaults to 0 when absent."
+        tests:
+          - not_null
 
       - name: BEDROOMS
-        description: "Number of bedrooms. May be NULL."
+        description: "Number of bedrooms. Defaults to 0 when absent."
+        tests:
+          - not_null
 
       - name: BATHROOMS
-        description: "Number of bathrooms. May be NULL."
+        description: "Number of bathrooms. Defaults to 0 when absent."
+        tests:
+          - not_null
 
       # ── Address ───────────────────────────────────────────────────────────
       - name: STREET_ADDRESS
@@ -113,7 +119,9 @@ models:
           - not_null
 
       - name: OFFERS_PRICE
-        description: "Value of the secondary offer (e.g. condo fee amount). May be NULL."
+        description: "Value of the secondary offer (e.g. condo fee amount). Defaults to 0 when absent."
+        tests:
+          - not_null
 
       - name: OFFERS_PRICE_CURRENCY
         description: "Currency extracted from PROPERTY_VALUE.UNIT_TEXT (e.g. BRL). Defaults to 'unknown'."
@@ -127,25 +135,25 @@ models:
 
       # ── Source lineage ────────────────────────────────────────────────────
       - name: SITE
-        description: "Scraping source site. Defaults to 'unknown' when absent."
+        description: "Scraping source site — taken directly from the Bronze source."
         tests:
           - not_null
           - accepted_values:
               arguments:
-                values: ["vivareal", "zapimoveis", "unknown"]
+                values: ["vivareal", "zapimoveis"]
 
       - name: CITY
-        description: "City slug used in the scraper run (e.g. macae). Defaults to 'unknown'."
+        description: "City slug used in the scraper run (e.g. macae) — taken directly from the Bronze source."
         tests:
           - not_null
 
       - name: PROPERTY_TYPE
-        description: "Property type search filter. Defaults to 'unknown' when absent."
+        description: "Property type search filter — taken directly from the Bronze source."
         tests:
           - not_null
           - accepted_values:
               arguments:
-                values: ["apartment", "house", "unknown"]
+                values: ["apartment", "house"]
 
       - name: PAGE
         description: "Pagination page number the listing was collected from."
