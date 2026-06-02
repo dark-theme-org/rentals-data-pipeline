@@ -179,17 +179,29 @@ models:
         tests:
           - not_null
       - name: PRICE_BRL
-        description: "Monthly rental price in BRL at time of scrape (NULL when not in BRL)."
+        description: "Monthly rental price in BRL — only BRL rows are loaded into the fact."
+        tests:
+          - not_null
       - name: CONDO_FEE_BRL
-        description: "Condominium fee in BRL at time of scrape (NULL when not available)."
+        description: "Condominium fee in BRL. Defaults to 0 when the listing has no condominium fee."
+        tests:
+          - not_null
       - name: FLOOR_SIZE_M2
-        description: "Floor area in square metres (NULL when unit is not M2 or unavailable)."
+        description: "Floor area in square metres — only M2 rows are loaded into the fact."
+        tests:
+          - not_null
       - name: ROOMS
-        description: "Total number of rooms. May be NULL."
+        description: "Total number of rooms. Defaults to 0 when absent."
+        tests:
+          - not_null
       - name: BEDROOMS
-        description: "Number of bedrooms. May be NULL."
+        description: "Number of bedrooms. Defaults to 0 when absent."
+        tests:
+          - not_null
       - name: BATHROOMS
-        description: "Number of bathrooms. May be NULL."
+        description: "Number of bathrooms. Defaults to 0 when absent."
+        tests:
+          - not_null
       - name: PETS_ALLOWED
         description: "Whether the listing explicitly allows pets."
         tests:

@@ -156,10 +156,16 @@ The fact stores all mutable measures (`PRICE_BRL`, `CONDO_FEE_BRL`, `FLOOR_SIZE_
 `ROOMS`, `BEDROOMS`, `BATHROOMS`, `PETS_ALLOWED`) plus the surrogate keys for joining to
 dimensions and degenerate dimensions (`SITE`, `CITY`, `PROPERTY_TYPE`, `PAGE`).
 
+Only rows where `PRICE_CURRENCY = 'BRL'` and `FLOOR_SIZE_UNIT_CODE = 'M2'` are loaded,
+so `PRICE_BRL` and `FLOOR_SIZE_M2` are always non-null. `CONDO_FEE_BRL` defaults to 0
+when the listing has no condominium fee.
+
 The `FILE_DATE` env var controls which scrape date is loaded per run:
 
 ```sql
 WHERE SCRAPE_DATE = DATE('{{ file_date }}')  -- or CURRENT_DATE when not set
+    AND PRICE_CURRENCY = 'BRL'
+    AND FLOOR_SIZE_UNIT_CODE = 'M2'
 ```
 
 ---
