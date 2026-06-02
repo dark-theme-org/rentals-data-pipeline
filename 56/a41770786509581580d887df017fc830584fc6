@@ -1,0 +1,32 @@
+dbt/models/silver/_schema.yml
+  s_0bbcdbde28c749::t_bc4f46e69c9708 45-47,50-52,55-57
+  s_0bbcdbde28c749::t_ba20a93498a02f 122-124
+  s_0bbcdbde28c749::t_b00ee2c18b8681 138,143,146,151,156
+  s_0bbcdbde28c749::t_35a641ccc96097 9
+dbt/README.md
+  s_0bbcdbde28c749::t_9fb2bd1490127b 122
+dbt/models/silver/listings_deduped.sql
+  s_0bbcdbde28c749::t_7d200112272e73 77-78
+  h_334e5c58273adb 44-46,59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "56a41770786509581580d887df017fc830584fc6",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_0bbcdbde28c749": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cd709f26-1efa-4e05-9396-68fb4a15e96f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
