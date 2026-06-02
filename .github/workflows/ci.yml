@@ -20,32 +20,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clone repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Scan for secrets (Gitleaks)
+      - name: Scan secrets (gitleaks)
         run: |
           curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks_8.18.4_linux_x64.tar.gz | tar -xz gitleaks
           ./gitleaks detect --source . --no-git --config .github/.gitleaks.toml
 
-      - name: Set up Python 3.13
+      - name: Setup Python (v3.13)
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
 
-      - name: Install Poetry
-        run: pip install --quiet poetry==1.8.3
+      - name: Install Poetry and dependencies
+        run: |
+          pip install --quiet poetry==1.8.3
+          poetry install --with dev --no-root --no-interaction
 
-      - name: Install dependencies
-        run: poetry install --with dev --no-root --no-interaction
-
-      - name: Audit dependencies
+      - name: Audit dependencies (pip-audit)
         run: |
           pip install pip-audit
           poetry export --without-hashes -f requirements.txt | pip-audit -r /dev/stdin
 
-      - name: Security code linter
+      - name: Security code linter (bandit)
         run: poetry run bandit -r src/ -c .code_quality/bandit.yaml
 
-      - name: Run tests
+      - name: Run python tests (pytest)
         run: poetry run pytest -c .code_quality/pytest.ini --cov=src --cov-config=.code_quality/.coveragerc
