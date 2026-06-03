@@ -1,0 +1,14 @@
+.github/workflows/ci.yml
+  h_334e5c58273adb 36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "d19346ee0380e23ee62c2a276bf9cb4221b0e84b",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
