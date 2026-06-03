@@ -33,7 +33,7 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Install Poetry and dependencies
+      - name: Install dependencies (poetry)
         run: |
           pip install --quiet poetry==1.8.3
           poetry install --with dev --no-interaction
