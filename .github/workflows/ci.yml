@@ -36,7 +36,7 @@ jobs:
       - name: Install Poetry and dependencies
         run: |
           pip install --quiet poetry==1.8.3
-          poetry install --with dev --no-root --no-interaction
+          poetry install --with dev --no-interaction
 
       - name: Audit dependencies (pip-audit)
         run: |
