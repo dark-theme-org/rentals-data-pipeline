@@ -1,0 +1,19 @@
+.github/workflows/backport.yml
+  s_4f1bb842cdd4a5::t_be9b14927864db 40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "53982db7e756960b477ce93cb2f48ecea05627df",
+  "prompts": {},
+  "sessions": {
+    "s_4f1bb842cdd4a5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26891292-cd16-4b88-8dab-2afb6730f937",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
