@@ -11,6 +11,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+---
+
+## [2026-06-04]
+
+### Added
+
 - Set repository architecture with **core folders/files**;
 - Add `/cloud` folder to manage `/tasks` (as *Cloud Run Jobs* interface); and `/workflows` (as *Cloud Workflows* interface) to properly config pipelines;
 - Insert `/dbt` resources for Silver/Gold layers ETL pipelines;
@@ -25,11 +41,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 - Adapt `.gitignore` to project needs;
 - New `README.md` template for properly project introduction.
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
