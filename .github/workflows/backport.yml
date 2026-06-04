@@ -35,7 +35,7 @@ jobs:
           echo "human=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
 
       - name: Create backport PR
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.BACKPORT_PAT_TOKEN }}
           base: develop
