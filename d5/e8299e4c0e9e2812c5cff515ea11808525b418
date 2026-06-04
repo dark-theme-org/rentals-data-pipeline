@@ -1,0 +1,33 @@
+.github/workflows/pr-checks.yml
+  h_334e5c58273adb 18,49,52-55,67,72-75,78-79,81-84,86-87,89
+  s_ac6a5435a80a2f::t_258e8f615cea01 76
+  s_ac6a5435a80a2f::t_47079bc86574c9 1,10,48,100
+  s_ac6a5435a80a2f::t_8c097cba789df8 17,20-47,50-51,61-65,85,88,90-93,95,101-107,111
+CODING_GUIDELINES.md
+  s_ac6a5435a80a2f::t_a27508b323ec80 18
+  s_ac6a5435a80a2f::t_f8744712948722 13,15,17,19-31
+CLAUDE.md
+  s_ac6a5435a80a2f::t_e3b49c945a2cf8 42-43
+  s_ac6a5435a80a2f::t_2b977c616eb418 41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "d5e8299e4c0e9e2812c5cff515ea11808525b418",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_ac6a5435a80a2f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23105b65-2a0d-468a-a5ef-0b21c174642f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
