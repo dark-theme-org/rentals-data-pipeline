@@ -1,0 +1,14 @@
+CHANGELOG.md
+  h_334e5c58273adb 14-29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "6047eff9915d276857a5866a070ed9724e62f831",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
