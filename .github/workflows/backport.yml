@@ -1,0 +1,40 @@
+name: Backport
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  backport:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository (ref `develop`)
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+          fetch-depth: 0
+
+      - name: Merge main into working tree
+        run: git merge origin/main --no-commit --no-ff
+
+      - name: Set timestamps
+        id: ts
+        run: |
+          echo "slug=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_OUTPUT
+          echo "human=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
+
+      - name: Create backport PR
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: develop
+          branch: backport/${{ steps.ts.outputs.slug }}
+          title: "[Backport] Sync main into develop at ${{ steps.ts.outputs.human }}"
+          labels: automatic-pr
+          draft: false

@@ -1,0 +1,26 @@
+# Task definition for the scraper_data_to_bucket Cloud Run Job.
+description: Scrape properties from sites and upload raw data to GCS.
+type: python
+machine:
+  cpu: "1"
+  memory: 512Mi
+  timeout: 3600s
+retry:
+  repetitions: 0
+entrypoint: app.entrypoints.scraper_data_to_bucket
+inputs:
+  parameters:
+    - name: ENVIRONMENT
+      default: dev
+    - name: CITY
+      default: macae
+    - name: SITES
+      default: vivareal,zapimoveis
+    - name: PROPERTY_TYPES
+      default: apartment,house
+    - name: UPLOAD_TO_GCS
+      default: true
+    - name: START_PAGE
+      default: 1
+    - name: MAX_PAGE
+      default: -1

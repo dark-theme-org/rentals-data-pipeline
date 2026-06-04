@@ -1,0 +1,46 @@
+{
+    // Recommended extensions for this project. VS Code surfaces these to new
+    // contributors the first time they open the workspace, so the editor
+    // experience matches the configurations declared in .vscode/settings.json.
+    //
+    // Extension IDs follow the format "<publisher>.<name>" and are inferred
+    // from the namespaces used in settings.json (e.g. "flake8.args" maps to
+    // ms-python.flake8). Verify each in the VS Code Marketplace if a
+    // recommendation does not appear after reload.
+    "recommendations": [
+        // Core Python support: drives "python.*" settings, debugger, REPL.
+        "ms-python.python",
+
+        // Pylance language server: drives "python.analysis.*" settings
+        // (IntelliSense, type-aware autocomplete, src-layout import resolution).
+        "ms-python.vscode-pylance",
+
+        // Black formatter (referenced in "[python].editor.defaultFormatter"
+        // and "black-formatter.args").
+        "ms-python.black-formatter",
+
+        // Autoflake (community, by Mikoz): provides "autoflake.path" and
+        // "autoflake.args" — removes unused imports/vars.
+        "mikoz.autoflake-extension",
+
+        // Flake8: provides "flake8.args" — style and quality linting.
+        "ms-python.flake8",
+
+        // Pylint: provides "pylint.args" — deeper static analysis.
+        "ms-python.pylint",
+
+        // isort: provides "isort.args" — import sorting that pairs with Black.
+        "ms-python.isort",
+
+        // Mypy type checker: provides "mypy-type-checker.args" — strict typing.
+        "ms-python.mypy-type-checker",
+
+        // Bandit (community, by Nicholas Hurley): provides "bandit.path" and
+        // "bandit.args" — security linting.
+        "nwgh.bandit",
+
+        // SQLFluff: provides "sqlfluff.*" settings and the
+        // "sqlfluff.vscode-sqlfluff" formatter for SQL/dbt files.
+        "dorzey.vscode-sqlfluff"
+    ]
+}

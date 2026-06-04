@@ -1,0 +1,119 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+
+concurrency:
+  group: pr-${{ github.head_ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  branch:
+    name: Branch standards
+    runs-on: ubuntu-latest
+    steps:
+      - name: Naming convention
+        env:
+          BRANCH: ${{ github.head_ref }}
+          BASE_BRANCH: ${{ github.base_ref }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          if [[ "$ACTOR" == "dependabot[bot]" || "$ACTOR" == "renovate[bot]" ]]; then
+            echo "Skipping branch check for bot actor '$ACTOR'."
+            exit 0
+          fi
+          if [[ "$BRANCH" == backport/* ]]; then
+            echo "Skipping branch check for automated backport branch '$BRANCH'."
+            exit 0
+          fi
+          if [[ "$BASE_BRANCH" == "main" ]]; then
+            pattern='^(hotfix|release)/[a-z0-9]+(-[a-z0-9]+){0,2}$'
+            allowed="hotfix, release"
+          else
+            pattern='^(enhancement|feature|fix|hotfix|refactor|release)/[a-z0-9]+(-[a-z0-9]+){0,2}$'
+            allowed="enhancement, feature, fix, hotfix, refactor, release"
+          fi
+          if ! echo "$BRANCH" | grep -qE "$pattern"; then
+            echo "::error::Branch '$BRANCH' is not allowed for PRs targeting '$BASE_BRANCH'."
+            echo "Expected: <prefix>/<slug>"
+            echo "  Allowed prefixes for '$BASE_BRANCH': $allowed"
+            echo "  Slug : 1-3 lowercase words/numbers separated by hyphens"
+            echo "  e.g. : feature/add-scraper, fix/null-pointer, release/1-2-0"
+            exit 1
+          fi
+          echo "Branch '$BRANCH' is valid for target '$BASE_BRANCH'."
+
+  security:
+    name: Security gates
+    runs-on: ubuntu-latest
+    needs: branch
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python (v3.13)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Secret scan (gitleaks)
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks_8.18.4_linux_x64.tar.gz | tar -xz gitleaks
+          ./gitleaks detect --source . --no-git --config .github/.gitleaks.toml
+
+      - name: Init code scanning tool (CodeQL)
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          queries: security-extended,security-and-quality
+
+      - name: Perform code scanning analysis (CodeQL)
+        uses: github/codeql-action/analyze@v3
+
+      - name: Find vulnerabilities (pip-audit)
+        run: |
+          pip install --quiet poetry==1.8.3 pip-audit
+          poetry export --without-hashes -f requirements.txt | pip-audit -r /dev/stdin
+
+  test:
+    name: Automated tests
+    runs-on: ubuntu-latest
+    needs: branch
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python (v3.13)
+        id: setup-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-
+
+      - name: Install dependencies (poetry)
+        run: |
+          pip install --quiet poetry==1.8.3
+          poetry config virtualenvs.in-project true
+          poetry install --with dev --no-interaction
+
+      - name: Run python tests (pytest)
+        run: poetry run pytest -c .code_quality/pytest.ini --cov=src --cov-config=.code_quality/.coveragerc

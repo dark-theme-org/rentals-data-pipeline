@@ -1,0 +1,26 @@
+name: rentals_dbt
+version: "0.0.1"
+config-version: 2
+
+profile: default_profile
+
+macro-paths: ["macros"]
+model-paths: ["models"]
+
+clean-targets:
+  - "dbt_packages"
+  - "logs"
+  - "target"
+
+models:
+  rentals_dbt:
+    silver:
+      +schema: silver
+      +materialized: incremental
+      +incremental_strategy: merge
+      +on_schema_change: sync_all_columns
+    gold:
+      +schema: gold
+      +materialized: incremental
+      +incremental_strategy: merge
+      +on_schema_change: sync_all_columns

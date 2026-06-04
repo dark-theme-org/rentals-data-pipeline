@@ -1,0 +1,16 @@
+# Task definition for the model_gold_layer Cloud Run Job.
+description: Run dbt Gold layer models to transform Silver listings into analytical dimensions and fact tables.
+type: dbt
+machine:
+  cpu: "1"
+  memory: 512Mi
+  timeout: 1800s
+retry:
+  repetitions: 0
+entrypoint: run --profiles-dir dbt --project-dir dbt --select gold
+inputs:
+  parameters:
+    - name: ENVIRONMENT
+      default: dev
+    - name: FILE_DATE
+      default: ""

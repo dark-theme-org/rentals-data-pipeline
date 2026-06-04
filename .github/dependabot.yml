@@ -1,0 +1,39 @@
+# Dependabot configuration.
+# Reference: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+
+updates:
+  # PYTHON DEPENDENCIES: Dependabot's 'pip' ecosystem parses pyproject.toml
+  # and understands Poetry's dependency syntax. Updates are opened as PRs
+  # against the project's main branch ('develop').
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    target-branch: "develop"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "automatic-pr"
+    rebase-strategy: "auto"
+    commit-message:
+      prefix: "fix"  # COMMIT MESSAGE: Must match the prefix regex enforced by .pre-commit-config.yaml
+
+  # GITHUB ACTIONS: Keeps action versions used in any workflows under
+  # .github/workflows/ current. Included pre-emptively so action versions
+  # stay fresh the moment CI lands; a no-op until then.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    target-branch: "develop"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "automatic-pr"
+    rebase-strategy: "auto"
+    commit-message:
+      prefix: "fix"  # COMMIT MESSAGE: Must match the prefix regex enforced by .pre-commit-config.yaml

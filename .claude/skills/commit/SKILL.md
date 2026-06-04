@@ -1,0 +1,465 @@
+---
+name: commit
+description: Stage, commit, and push the current branch end-to-end with project safety rails. Refuses commits to develop/main, scans staged content for secrets, never bypasses pre-commit hooks, never force-pushes.
+user-invocable: true
+allowed-tools: Bash, Read
+---
+
+# Commit Skill
+
+Your task is to walk the contributor through staging, committing, and pushing
+the current branch's work in a single guided flow. The default behavior is to
+bundle all pending changes into a single commit. This skill is opinionated
+about safety: it refuses commits to protected branches, scans staged content
+for secrets before committing, never bypasses pre-commit hooks, and never
+force-pushes.
+
+## Language
+
+Interact with the user in the same language they used to invoke the skill.
+
+## Hard rules — never violate these
+
+- ❌ **Protected branches**: refuse to commit if the current branch is
+  `develop` or `main`. The contributor must switch to a
+  `feature/*`, `fix/*`, or `enhancement/*` branch first.
+- ❌ **Never** use `git commit --no-verify` or `--amend` unless the
+  contributor explicitly requests it. If a pre-commit hook fails, fix the
+  underlying issue and create a new commit.
+- ❌ **Never** use `git push --force` or `--force-with-lease` unless the
+  contributor explicitly requests it.
+- ❌ **Never** auto-resolve a divergent push (don't auto-pull / auto-rebase).
+  Surface the situation and let the contributor decide.
+- ✅ Always show the contributor what's about to happen before each
+  side-effecting action (stage, commit, push) and accept overrides.
+
+## Confirmation gates — three explicit asks, everything else auto
+
+The skill exposes exactly **three confirmation gates** to the contributor.
+Use the `AskUserQuestion` tool at each one:
+
+1. **Before staging** (Step 3) — show the file list, ask to proceed.
+2. **Before committing** (Step 5) — show the drafted commit message,
+   ask to proceed.
+3. **Before pushing** (Step 6) — show the commit SHA + target remote,
+   ask to proceed.
+
+Every other step — preflight checks, status surfacing, message drafting,
+auto-fix retries, the post-push report — runs **automatically without
+asking**. The skill only pauses outside the three gates when it must
+**raise an issue** that blocks progress, in which case it surfaces the
+problem and stops (or asks for a decision specific to that issue):
+
+- protected branch detected
+- merge / rebase in progress
+- pre-commit not installed or hooks not wired
+- security scan flagged a file (filename pattern or diff content)
+- pre-commit hard failure (`flake8`, `pylint`, `mypy`, `bandit`, `pytest`)
+- divergent remote on push
+- contributor-supplied commit message fails the prefix regex
+
+If none of these conditions trigger, the skill flows through the
+non-gate steps silently and stops only at the next of the three gates.
+
+## Security mindset — read this before staging anything
+
+Leaking a credential into git history is hard to undo and may force the
+contributor to rotate keys, revoke tokens, or notify ops. **Treat every
+file as potentially containing secrets**, even if its name looks
+innocuous. A file named `config.json`, `notes.md`, or `helpers.py` can
+still hold an API key, a service-account JSON, or a database URL with
+embedded credentials.
+
+Defense in depth — apply every layer:
+
+1. **Filename patterns** (Step 3) are a first-pass filter, not the
+   source of truth.
+2. **Scan diff content** for these markers before staging:
+   - PEM private-key headers — match the regex
+     `[-]{5}BEGIN ([A-Z]+ )?PRIVATE KEY[-]{5}`. This catches RSA, DSA,
+     EC, OpenSSH, encrypted, and unlabeled private keys (algorithm name
+     appears between `BEGIN` and `PRIVATE KEY`).
+   - Certificate headers — match `[-]{5}BEGIN CERTIFICATE[-]{5}`.
+   - Cloud credential fields in JSON: `"private_key"`, `"client_email"`,
+     `"private_key_id"`
+   - Provider-specific token prefixes: `AKIA[0-9A-Z]{16}` (AWS),
+     `xox[abprs]-` (Slack), `ghp_` / `ghs_` / `gho_` / `ghu_` / `ghr_`
+     (GitHub), `glpat-` (GitLab)
+   - Generic secret markers: `password=`, `passwd=`, `secret=`,
+     `api_key=`, `apikey=`, `token=`, `access_key=`, `bearer ` followed
+     by a high-entropy string
+   - Database URLs with embedded credentials:
+     `://user:password@host` patterns
+3. **When in doubt, ask.** It is always cheaper to pause and confirm
+   than to leak a credential and rotate it later.
+
+If the staged diff contains any of these markers, the skill **must**
+flag the file and refuse to commit until the contributor either
+(a) unstages it, (b) replaces the secret with an environment-variable
+reference, or (c) explicitly confirms the value is a placeholder or
+an already-revoked credential.
+
+The pre-commit hook `detect-private-key` (configured in
+`.pre-commit-config.yaml`) catches PEM-format keys at commit time as a
+last-line defense. **Do not rely on it as the only defense** — the goal
+is to catch issues during staging, before the commit fires.
+
+## Overview of Steps
+
+1. Preflight — repo state, current branch, no in-progress merge or rebase
+2. Surface what's pending — staged / modified / untracked files
+3. Stage the right files — by default everything pending, gated per-file by the security scan
+4. Draft and validate a commit message — single-line or multi-line based on scope
+5. Commit — handle pre-commit auto-fixes and hard failures
+6. Confirm and push
+7. Report — commit SHA, branch, next steps
+
+---
+
+## Step-by-Step Instructions
+
+### Step 1 — Preflight
+
+Run these checks. Stop and surface the error if any fails.
+
+```bash
+# Confirm we're inside a git working tree
+git rev-parse --is-inside-work-tree
+
+# Read the current branch
+git rev-parse --abbrev-ref HEAD
+```
+
+**If the current branch is `develop` or `main`:** abort
+immediately. Tell the contributor:
+
+> Refusing to commit to `<branch>`. This branch is protected.
+> Switch to a `feature/*`, `fix/*`, or `enhancement/*` branch first
+> (e.g. `git checkout -b feature/your-change`) and re-run `/commit`.
+
+**Check for in-progress operations:** if `.git/MERGE_HEAD` or
+`.git/REBASE_HEAD` exists, abort and tell the contributor to finish or
+abort the merge / rebase before continuing.
+
+**Verify pre-commit is installed and wired into git.** This skill
+relies on the project's pre-commit hooks for linting, formatting,
+security scanning, and the commit-msg prefix check. If any of these
+checks fails, abort:
+
+```bash
+# 1. pre-commit is available in the project's venv
+poetry run pre-commit --version
+
+# 2. .git/hooks/pre-commit and .git/hooks/commit-msg are wired to
+#    pre-commit's shim
+grep -q "pre-commit" .git/hooks/pre-commit
+grep -q "pre-commit" .git/hooks/commit-msg
+```
+
+If pre-commit is missing or the git hooks aren't wired, tell the
+contributor:
+
+> Pre-commit is not installed correctly on this clone. The hooks
+> defined in `.pre-commit-config.yaml` are this project's safety net —
+> without them the commit will skip linting, formatting, security
+> scanning, and the commit-msg prefix check.
+>
+> Run `/setup` (specifically Step 6 — Set up pre-commit hooks) to
+> install everything, then re-run `/commit`.
+
+---
+
+### Step 2 — Surface what's pending
+
+```bash
+git status --short
+git diff --stat
+```
+
+Summarize for the contributor:
+
+- Number of files staged, modified, untracked
+- Whether the branch is ahead / behind its remote upstream
+
+**Edge cases:**
+
+- **Working tree clean and branch is ahead of remote** → skip Steps 3–5
+  (nothing new to commit) and go straight to Step 6 to push existing
+  commits.
+- **Working tree clean and branch is up to date with remote** → exit
+  cleanly with "Nothing to do".
+
+---
+
+### Step 3 — Stage the right files
+
+By default, this skill stages **every** pending change shown by
+`git status` — modified files, untracked files, deletions, and any
+needed untracking (e.g. `.python-version` if it's in `.gitignore` but
+still tracked) — and packs them all into a single commit. This avoids
+fragmenting related work across many tiny commits. The contributor may
+override the default by listing specific paths to include or exclude.
+
+**Apply the Security mindset section before staging anything.** Every
+file that would be added must pass two layers of checks first:
+
+**Layer 1 — flag risky filenames** and require explicit opt-in for
+each match:
+
+- `.env` / `.env.*`
+- `*credentials*` / `*service-account*` / `*.gcp.json`
+- `*.key` / `*.pem`
+- Any file larger than 500 KB
+
+**Layer 2 — scan the diff content** of every file about to be staged.
+For each path, run `git diff <path>` (or `git diff --cached <path>` if
+already staged, or `cat <path>` for new untracked files) and grep for
+the secret markers listed in the Security mindset section above
+(PEM headers, cloud credential JSON keys, token prefixes, generic
+`password=` / `secret=` / `token=` patterns, embedded-credential
+database URLs).
+
+If any file's diff or content contains a secret marker, **refuse to
+stage** that file until the contributor either:
+
+- removes the secret and replaces it with an environment-variable
+  reference (e.g. `os.environ["API_KEY"]`); or
+- excludes the file from this commit; or
+- explicitly confirms the matched value is a documented placeholder or
+  an already-revoked credential.
+
+Once every pending file has passed both layers, **gate 1 — ask before
+staging.** Use `AskUserQuestion` to show the contributor the list of
+files about to be staged and confirm:
+
+> Stage these N file(s) and proceed to commit drafting?
+>
+> Options:
+> - Stage all listed files
+> - Stage a subset (contributor lists paths)
+> - Cancel
+
+Only after the contributor confirms, run the stage command. The
+default — bundling all changes into one commit — is achieved with:
+
+```bash
+git add -A
+```
+
+This is acceptable **only because Steps 1–2 above already enumerated
+every pending path and the security scan ran on each one before this
+command fires.** If the scan flagged any file, do not run `git add -A`
+— either resolve the flagged files first, or fall back to listing the
+safe paths explicitly:
+
+```bash
+git add path/one path/two path/three
+```
+
+For files that need to be **untracked** (matched by `.gitignore` but
+still in the index — e.g. `.python-version`), use
+`git rm --cached <path>` instead of `git add`. This stages the
+untracking without removing the file from disk.
+
+The contributor may override the default at any point by:
+
+- Listing specific paths to stage (narrows the scope)
+- Listing specific paths to exclude (keeps everything else)
+
+---
+
+### Step 4 — Draft and validate the commit message
+
+Read recent log entries to match repo style:
+
+```bash
+git log -10 --oneline
+```
+
+Analyze what's being committed:
+
+```bash
+git diff --staged --stat
+git diff --staged
+```
+
+**Decide message length based on the staged changes:**
+
+- **Single-line message** — for small, single-theme commits (about
+  five or fewer files, or a single coherent change). Matches the
+  repo's existing short-message style.
+- **Multi-line message** (subject line + blank line + bulleted body)
+  — for larger or multi-themed commits where one line cannot capture
+  the breadth. Group the body bullets thematically (skills, configs,
+  docs, tooling bumps, etc.).
+
+The decision is the skill's, based on `git diff --staged --stat`:
+high file count or mixed themes ⇒ multi-line; otherwise one-line.
+**Draft the message automatically — do not ask the contributor here.**
+The drafted message will be shown for confirmation at gate 2 (Step 5)
+together with the commit action.
+
+Either way, the **subject line** has this form:
+
+```
+<prefix>: <short description in the imperative>
+```
+
+`<prefix>` must be one of: `analysis`, `change`, `feature`, `fix`,
+`refactor`, `test`. Defined in `.pre-commit-config.yaml`'s
+`commit-msg` hook.
+
+For multi-line messages, leave a blank line after the subject and
+group the body as bullets. The commit-msg hook uses
+`pygrep --multiline --negate`, so the regex below must match
+**somewhere** in the message — the subject line is what matches, not
+the body bullets.
+
+**Validate** the message against this regex before proceeding:
+
+```
+^((analysis|change|feature|fix|refactor|test): .*|Merge .*)$
+```
+
+If the contributor provides a custom message that fails the regex,
+ask them to revise. Never commit with an invalid message and never
+bypass the hook.
+
+---
+
+### Step 5 — Commit
+
+**Gate 2 — ask before committing.** Use `AskUserQuestion` to show the
+drafted message and confirm:
+
+> Commit the staged changes with this message?
+>
+> ```
+> <drafted message>
+> ```
+>
+> Options:
+> - Commit with this message
+> - Edit the message (contributor provides a replacement, re-validate
+>   against the prefix regex)
+> - Cancel
+
+Only after confirmation, fire the commit. Use a heredoc to preserve
+message formatting:
+
+```bash
+git commit -m "$(cat <<'EOF'
+<approved message>
+EOF
+)"
+```
+
+Pre-commit hooks fire automatically. `fail_fast: true` is set, so the
+first failing hook stops the run.
+
+**If the commit fails because hooks auto-modified files** (`black`,
+`autoflake`, `isort`): retry **automatically** — this is not a gate.
+
+1. Show the contributor a `git diff` of what was auto-fixed (info only,
+   no question).
+2. Re-stage the same paths from Step 3 (re-run `git add -A` if that
+   was the original choice, or the explicit list otherwise).
+3. Retry the commit with the same approved message.
+4. Loop at most twice. If a third attempt is needed, bail and surface
+   the situation as a raised issue so the contributor can investigate.
+
+**If the commit fails on a hard failure** (`flake8`, `pylint`, `mypy`,
+`bandit`, `pytest`):
+
+1. Surface the full hook output to the contributor.
+2. Leave staging intact so they can investigate.
+3. Tell them to fix the issue and re-run `/commit`.
+4. **Do not retry with `--no-verify`.**
+
+---
+
+### Step 6 — Confirm and push
+
+**Gate 3 — ask before pushing.** Pushing is a shared-state action; always
+confirm even though the contributor invoked `/commit`. Use
+`AskUserQuestion`:
+
+> Push commit `<sha>` on `<branch>` to `origin`?
+>
+> Options:
+> - Push to remote
+> - Skip push (commit stays local)
+
+If they decline, exit cleanly with the post-commit report (Step 7). The
+commit stays local; they can push manually later.
+
+If they confirm, detect upstream tracking:
+
+```bash
+git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null
+```
+
+- **Branch tracks a remote** → `git push`
+- **No upstream set** (first push for this branch) →
+  `git push -u origin <current-branch>`
+
+**Before pushing, fetch and check for divergence:**
+
+```bash
+git fetch
+git status -uno
+```
+
+If the local branch is behind the remote (someone else pushed), abort
+the push and tell the contributor to run `git pull --rebase` first.
+**Do not auto-pull.**
+
+**Never** pass `--force` or `--force-with-lease` unless the contributor
+explicitly says "force push" — even then, double-check that the target
+branch is not `develop` / `main`.
+
+---
+
+### Step 7 — Report
+
+Print:
+
+- New commit SHA (`git rev-parse HEAD` after the push)
+- Branch name
+- Remote URL (`git remote get-url origin`)
+- Summary of what was pushed (file count, +/- lines from
+  `git show --stat HEAD`)
+
+If this was the first push of the branch, also surface the GitHub URL
+the contributor can click to open a PR — usually
+`https://github.com/<owner>/<repo>/pull/new/<branch>`.
+
+---
+
+## Error Handling Principles
+
+- **Never skip a failed step silently** — always surface errors.
+- **Diagnose before retrying** — read the error message, explain what it
+  means, then decide on the next action.
+- **Hard failures stop the flow** — don't muscle through a failed hook
+  by bypassing it.
+- **The contributor is the source of truth** — when in doubt about
+  staging, message wording, or whether to push, ask.
+
+## Refusal triggers
+
+The skill must refuse and explain when:
+
+- The current branch is `develop` or `main`.
+- A merge or rebase is in progress.
+- **Pre-commit is not installed or the git hooks are not wired** —
+  redirect the contributor to `/setup` Step 6.
+- **A staged diff contains a secret marker** (PEM header, cloud
+  credential JSON key, token prefix, plaintext password, etc.) and
+  the contributor has not removed it, unstaged the file, or
+  explicitly confirmed the value is a placeholder / already-revoked.
+- A pre-commit hook fails with a hard error and the contributor has
+  not yet fixed the underlying issue.
+- The contributor asks the skill to push to a protected branch,
+  force push without explicit intent, bypass hooks, or stage
+  credentials.
