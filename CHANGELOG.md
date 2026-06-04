@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [2026-06-04]
+## [1.0.0] - 2026-06-04
 
 ### Added
 
