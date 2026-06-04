@@ -1,0 +1,38 @@
+.github/workflows/backport.yml
+  h_334e5c58273adb 1,17,35
+  s_4f1bb842cdd4a5::t_6e5becfef6f094 2-16,18-19,21-22,33-34,36,39-40
+  s_4f1bb842cdd4a5::t_140a3d65e59319 20,23-32,37-38
+CLAUDE.md
+  s_4f1bb842cdd4a5::t_94f4ffdd70098b 42
+  s_4f1bb842cdd4a5::t_343adb5f24e8b0 41
+CODING_GUIDELINES.md
+  s_4f1bb842cdd4a5::t_465817e73edcc0 13
+  s_4f1bb842cdd4a5::t_4a5a26b8f38a68 25
+.github/dependabot.yml
+  s_4f1bb842cdd4a5::t_48cd788f9103e2 36
+  s_4f1bb842cdd4a5::t_d92ccb42a954db 19
+.github/workflows/pr-checks.yml
+  s_4f1bb842cdd4a5::t_3236f6bf12134f 36,39,46-47
+  s_4f1bb842cdd4a5::t_899c91de18bf77 31-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "6b7bbc18282a6ce138dcae81f89a31f1af43769e",
+  "prompts": {},
+  "humans": {
+    "h_334e5c58273adb": {
+      "author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_4f1bb842cdd4a5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26891292-cd16-4b88-8dab-2afb6730f937",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "daiha98 <daihafelipe@gmail.com>"
+    }
+  }
+}
