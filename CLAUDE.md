@@ -38,7 +38,9 @@ Re-evaluate whenever dbt-core ships a new minor/major.
 ## Conventions
 
 - **Commit messages** must match `^((analysis|change|feature|fix|refactor|test): .*|Merge .*)$` — enforced by pre-commit's commit-msg hook.
-- **Branch prefixes** are independent from commit prefixes: `fix/*`, `enhancement/*`, `feature/*` (lowercase, hyphen-separated, ≤ 3 words).
+- **Branch prefixes** are independent from commit prefixes (lowercase, hyphen-separated, ≤ 3 words after the `/`). Allowed prefixes depend on the PR target, enforced by the `branch-checks` job in `.github/workflows/pr-checks.yml`:
+  - → `develop`: `enhancement/*`, `feature/*`, `fix/*`, `hotfix/*`, `refactor/*`, `release/*`
+  - → `main`: `hotfix/*`, `release/*` only
 - **Pre-commit ordering**: `sqlfluff → autoflake → isort → black → flake8 → pylint → mypy → bandit → pytest`. `fail_fast: true` is intentional — surface one problem at a time.
 - **Per-contributor files** (gitignored, never commit): `.claude/settings.local.json`, `.python-version`, anything matching `*credentials*.json` / `*service-account*.json`.
 

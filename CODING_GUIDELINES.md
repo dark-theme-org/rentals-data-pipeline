@@ -10,12 +10,25 @@ We use *ENGLISH* as the main language. Things like source code, comments, docume
 
 ## :arrow_right_hook: Branches
 
-After the category, the name should be *AT MOST THREE WORDS LONG, all in **LOWERCASE** and *HYPHEN-SEPARATED*.
+After the prefix, the slug must be *AT MOST THREE WORDS LONG, all in **LOWERCASE** and **HYPHEN-SEPARATED*** (e.g. `feature/add-scraper`, `fix/null-pointer`). This convention is enforced by CI on every pull request.
 
-### Follow name convention
+### Allowed prefixes
 
-* :bug: *BUG*: For a patch that fixes unwanted behavior, the branch name should be `fix/*` (e.g. `fix/question-box-height`);
-* :rocket: *ENHANCEMENT/FEATURE*: For new features or improvements to existing functionality, the branch name should be `enhancement/*` or `feature/*` (*e.g.* `feature/debounce`);
+| Prefix | When to use | Example |
+| ------ | ----------- | ------- |
+| `feature/*` | New functionality that did not exist before | `feature/add-zillow-scraper` |
+| `enhancement/*` | Improvement to existing functionality | `enhancement/faster-dedup` |
+| `fix/*` | Patch for unwanted or broken behavior | `fix/null-price-crash` |
+| `refactor/*` | Code restructuring with no behavior change | `refactor/bronze-loader` |
+| `hotfix/*` | Urgent patch for a production issue | `hotfix/auth-token-leak` |
+| `release/*` | Release preparation (version bump, changelog) | `release/v1-2-0` |
+
+### Target-branch rules
+
+The allowed prefixes depend on which branch you are merging into:
+
+* **→ `develop`**: all six prefixes above are allowed;
+* **→ `main`**: only `hotfix/*` and `release/*` — direct feature or fix work must go through `develop` first.
 
 ## :gem: Code Quality
 
