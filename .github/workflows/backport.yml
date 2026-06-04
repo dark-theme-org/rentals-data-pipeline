@@ -37,7 +37,7 @@ jobs:
       - name: Create backport PR
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.BACKPORT_PAT_TOKEN }}
           base: develop
           branch: backport/${{ steps.ts.outputs.slug }}
           title: "[Backport] Sync main into develop at ${{ steps.ts.outputs.human }}"
