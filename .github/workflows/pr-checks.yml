@@ -28,19 +28,23 @@ jobs:
             echo "Skipping branch check for bot actor '$ACTOR'."
             exit 0
           fi
+          if [[ "$BRANCH" == backport/* ]]; then
+            echo "Skipping branch check for automated backport branch '$BRANCH'."
+            exit 0
+          fi
           if [[ "$BASE_BRANCH" == "main" ]]; then
-            pattern='^(hotfix|release)/[a-z]+(-[a-z]+){0,2}$'
+            pattern='^(hotfix|release)/[a-z0-9]+(-[a-z0-9]+){0,2}$'
             allowed="hotfix, release"
           else
-            pattern='^(enhancement|feature|fix|hotfix|refactor|release)/[a-z]+(-[a-z]+){0,2}$'
+            pattern='^(enhancement|feature|fix|hotfix|refactor|release)/[a-z0-9]+(-[a-z0-9]+){0,2}$'
             allowed="enhancement, feature, fix, hotfix, refactor, release"
           fi
           if ! echo "$BRANCH" | grep -qE "$pattern"; then
             echo "::error::Branch '$BRANCH' is not allowed for PRs targeting '$BASE_BRANCH'."
             echo "Expected: <prefix>/<slug>"
             echo "  Allowed prefixes for '$BASE_BRANCH': $allowed"
-            echo "  Slug : 1-3 lowercase words separated by hyphens"
-            echo "  e.g. : feature/add-scraper, fix/null-pointer, hotfix/auth-crash"
+            echo "  Slug : 1-3 lowercase words/numbers separated by hyphens"
+            echo "  e.g. : feature/add-scraper, fix/null-pointer, release/1-2-0"
             exit 1
           fi
           echo "Branch '$BRANCH' is valid for target '$BASE_BRANCH'."

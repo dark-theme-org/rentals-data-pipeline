@@ -10,7 +10,7 @@ We use *ENGLISH* as the main language. Things like source code, comments, docume
 
 ## :arrow_right_hook: Branches
 
-After the prefix, the slug must be *AT MOST THREE WORDS LONG, all in **LOWERCASE** and **HYPHEN-SEPARATED*** (e.g. `feature/add-scraper`, `fix/null-pointer`). This convention is enforced by CI on every pull request.
+After the prefix, the slug must be *AT MOST THREE SEGMENTS LONG, all **LOWERCASE LETTERS AND DIGITS**, **HYPHEN-SEPARATED*** (e.g. `feature/add-scraper`, `fix/null-pointer`, `release/1-2-0`). This convention is enforced by CI on every pull request.
 
 ### Allowed prefixes
 
@@ -22,6 +22,7 @@ After the prefix, the slug must be *AT MOST THREE WORDS LONG, all in **LOWERCASE
 | `refactor/*` | Code restructuring with no behavior change | `refactor/bronze-loader` |
 | `hotfix/*` | Urgent patch for a production issue | `hotfix/auth-token-leak` |
 | `release/*` | Release preparation (version bump, changelog) | `release/v1-2-0` |
+| `backport/*` | **Auto-generated only** — do not create manually; opened by CI to sync `main` back into `develop` after each merge | `backport/2026-06-04-16-30-00` |
 
 ### Target-branch rules
 
