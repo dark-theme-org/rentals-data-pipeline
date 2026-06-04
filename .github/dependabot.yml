@@ -16,6 +16,7 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
+      - "automatic-pr"
     rebase-strategy: "auto"
     commit-message:
       prefix: "fix"  # COMMIT MESSAGE: Must match the prefix regex enforced by .pre-commit-config.yaml
@@ -32,6 +33,7 @@ updates:
     open-pull-requests-limit: 3
     labels:
       - "dependencies"
+      - "automatic-pr"
     rebase-strategy: "auto"
     commit-message:
       prefix: "fix"  # COMMIT MESSAGE: Must match the prefix regex enforced by .pre-commit-config.yaml
