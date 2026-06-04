@@ -20,6 +20,11 @@ jobs:
           ref: develop
           fetch-depth: 0
 
+      - name: Configure git identity
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
       - name: Merge main into working tree
         run: git merge origin/main --no-commit --no-ff
 
